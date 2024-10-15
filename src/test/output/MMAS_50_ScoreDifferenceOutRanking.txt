@@ -1,0 +1,6 @@
+Maximizing Rules:
+Antecedents: [67, 68, 47, 6, 142, 98, 65] | Consequent: 145
+Antecedents: [100, 34, 68, 58, 29, 7, 63, 142] | Consequent: 145
+Alternative 1: 1.285836  0.976190  0.000126  0.857215  -0.000000 
+Alternative 0: 1.291867  0.980769  0.000157  0.883587  -0.000000 
+Score: 8.547043320233927E-4

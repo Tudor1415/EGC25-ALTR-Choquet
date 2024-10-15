@@ -1,0 +1,67 @@
+{
+  "alternatives": [
+    [
+      0.9999968357731404, 0.0076825153645359336, 0.0, 0.65748284684768,
+      0.9999967577674125
+    ],
+    [
+      0.9999992095954628, 0.015365030729064668, 0.0, 0.6574833413175118,
+      0.9999991906595234
+    ],
+    [
+      0.9999984183197085, 0.010864717421662328, 0.0, 0.65748317649407,
+      0.9999983796946762
+    ],
+    [
+      0.9999998425423647, 0.019321182485584135, 0.0016556291390728477,
+      0.9999996719688696, 0.999999488761781
+    ],
+    [
+      0.9999996843092837, 0.013662139156104413, 8.278145695364238e-4,
+      0.9999993423224797, 0.999998975899405
+    ],
+    [
+      0.7032360111586672, 0.02794925520603022, 0.0, 0.5799193873930187,
+      0.6183687666579225
+    ],
+    [
+      0.9999994733544136, 0.018818242584195795, 0.0, 0.6574833962586959,
+      0.9999994609813194
+    ]
+  ],
+  "alternativeMap": {
+    "tools.alternatives.Alternative@1b5bb098": 5,
+    "tools.alternatives.Alternative@18dd597b": 4,
+    "tools.alternatives.Alternative@278143c9": 1,
+    "tools.alternatives.Alternative@a2fca8f5": 2,
+    "tools.alternatives.Alternative@f15193aa": 3,
+    "tools.alternatives.Alternative@9ba7fdfb": 0,
+    "tools.alternatives.Alternative@9e17ae7b": 6
+  },
+  "scoreMap": {
+    "tools.alternatives.Alternative@1b5bb098": [0.9902591348060125],
+    "tools.alternatives.Alternative@18dd597b": [0.9901586868375607],
+    "tools.alternatives.Alternative@278143c9": [0.9901586868375607],
+    "tools.alternatives.Alternative@a2fca8f5": [0.9902646930778454],
+    "tools.alternatives.Alternative@f15193aa": [0.990189031228997],
+    "tools.alternatives.Alternative@9e17ae7b": [0.403171805934853],
+    "tools.alternatives.Alternative@9ba7fdfb": [
+      0.990229082126566, 0.9902159718021717
+    ]
+  },
+  0.9901718298355878
+  0.990249491549831
+  0.9902045917147606
+  0.990289390074507
+  0.9902336776827089
+  0.6965478270530765
+  "preferences": [
+    [1, 2, 1.0e-6],
+    [3, 4, 1.0e-6],
+    [1, 5, 1.0e-6],
+    [6, 7, 1.0e-6]
+  ],
+  "kAdditivity": 2,
+  "approachType": "Generalized Least Squares",
+  "significantFigures": 3
+}

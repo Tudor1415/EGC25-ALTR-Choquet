@@ -1,0 +1,21 @@
+{
+  "alternatives": [
+    [
+      0.8810767188015463, 0.011526411050577385, 0.0, 0.7026678877470414,
+      0.4810126605544983
+    ],
+    [
+      0.9999998699405911, 0.016300798682824497, 0.004201680672268907,
+      0.9999994366350192, 0.9999989670591122
+    ]
+  ],
+  "alternativeMap": {
+    "tools.alternatives.Alternative@95933c16": 0,
+    "tools.alternatives.Alternative@a5c8ff76": 1
+  },
+  "scoreMap": { "1": 0.008326739282990898, "2": 0.013584768946093392 },
+  "preferences": [[1, 2, 1.0e-6]],
+  "kAdditivity": 2,
+  "approachType": "Generalized Least Squares",
+  "significantFigures": 3
+}
