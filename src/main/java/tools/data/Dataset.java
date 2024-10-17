@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,7 +15,6 @@ import java.util.stream.Collectors;
 
 import com.zaxxer.sparsebits.SparseBitSet;
 
-import java.util.Arrays;
 import lombok.Getter;
 import lombok.Setter;
 import tools.rules.DecisionRule;
@@ -48,6 +48,7 @@ public class Dataset {
     private @Setter @Getter int nbConsequentItems; // The number of different consequent items
     private @Setter @Getter int nbTransactions; // The number of transactions in the transactional dataset
     private @Setter @Getter String[][] transactions; // The array of transactions red from the dat file.
+    private @Getter UnionFind equivalenceClasses; // The item equivalence classes
 
     public Dataset(String filename, String expDir, Set<String> consequentItemsSet) throws IOException {
         // Variables regarding the file
@@ -67,6 +68,9 @@ public class Dataset {
         // Initializing the number of items for sampling
         this.nbAntecedentItems = getAntecedentItemsSet().size();
         this.nbConsequentItems = getConsequentItemsSet().size();
+
+        // Find the equivalence classes
+        findEquivalenceClasses();
     }
 
     public Dataset(String[][] transactionalDataset, Set<String> consequentItemsSet) {
@@ -82,6 +86,30 @@ public class Dataset {
         // Initializing the number of items for sampling
         this.nbAntecedentItems = getAntecedentItemsSet().size();
         this.nbConsequentItems = getConsequentItemsSet().size();
+
+        // Find the equivalence classes
+        findEquivalenceClasses();
+    }
+
+    public void findEquivalenceClasses() {
+        HashSet<String> neverSeen = new HashSet<>();
+        neverSeen.addAll(getConsequentItemsSet());
+        neverSeen.addAll(getAntecedentItemsSet());
+
+        this.equivalenceClasses = new UnionFind(neverSeen.toArray(new String[0]));
+
+        String[][] transactions = getTransactions();
+
+        while (!neverSeen.isEmpty()) {
+            for (String[] transaction : transactions) {
+                String classRep = transaction[0];
+
+                for (String item : transaction) {
+                    equivalenceClasses.union(item, classRep);
+                    neverSeen.remove(item);
+                }
+            }
+        }
     }
 
     /**

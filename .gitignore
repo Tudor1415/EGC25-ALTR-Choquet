@@ -25,3 +25,11 @@ sampling_experiment/output_plots/ratio_1\:1/*.pdf
 sampling_experiment/output_plots/ratio_1\:10/*.png
 
 target/*
+
+src/test/resources/adult.dat
+src/test/resources/toms.dat
+src/test/resources/bank.dat
+src/test/resources/dota.dat
+src/test/resources/credit.dat
+src/test/resources/mushroom.dat
+src/test/resources/connect.dat
