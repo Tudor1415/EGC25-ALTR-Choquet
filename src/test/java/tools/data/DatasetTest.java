@@ -250,7 +250,7 @@ public class DatasetTest {
 
     @Test
     public void datasetEquivalenceClasses() throws IOException {
-        String datasetName = "toms";
+        String datasetName = "mushroom";
 
         Dataset dataset = new Dataset(datasetName+".dat", "src/test/resources/", getClassItems(datasetName));
 
