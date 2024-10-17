@@ -17,7 +17,7 @@ import io.gitlab.chaver.mining.patterns.constraints.factory.ConstraintFactory;
 import io.gitlab.chaver.mining.patterns.io.DatReader;
 import io.gitlab.chaver.mining.patterns.io.TransactionalDatabase;
 
-public class DRMiningExample {
+public class DRMiningChoco {
 
     static int[] getItemset(BoolVar[] x, TransactionalDatabase database) {
         return IntStream
@@ -43,6 +43,8 @@ public class DRMiningExample {
                 return new HashSet<>(Arrays.asList(911, 912));
             case "mushroom":
                 return new HashSet<>(Arrays.asList(116, 117));
+            case "iris":
+                return new HashSet<>(Arrays.asList(12, 13));
             default:
                 return null;
         }
@@ -56,58 +58,36 @@ public class DRMiningExample {
         model.sum(y, "=", 1).post();
     }
 
-    public static void mine(String dataPath, Set<Integer> classItems, String outputCsvPath) throws Exception {
+    public static void mine(String dataPath, Set<Integer> classItems, String outputCsvPath, int minFreq, int minConf)
+            throws Exception {
         TransactionalDatabase database = new DatReader(dataPath).read();
-        // Min frequency of the rule (absolute value)
-        int minFreq = 10;
-        // Min confidence of the rule (percentage)
-        int minConf = 90;
         Model model = new Model("Association Rule mining");
-        // Antecedent of the rule : x
         BoolVar[] x = model.boolVarArray("x", database.getNbItems());
-        // Consequent of the rule : y
         BoolVar[] y = model.boolVarArray("y", database.getNbItems());
-        // z = x U y
         BoolVar[] z = model.boolVarArray("z", database.getNbItems());
         for (int i = 0; i < database.getNbItems(); i++) {
-            // Ensure that an item i is not in the antecedent and consequent of the rule at
-            // the same time
             model.arithm(x[i], "+", y[i], "<=", 1).post();
-            // z[i] = x[i] OR y[i]
             model.addClausesBoolOrEqVar(x[i], y[i], z[i]);
         }
-        // sum(x) >= 1 (i.e. the antecedent of the rule is not empty)
         model.addClausesBoolOrArrayEqualTrue(x);
-        // sum(y) >= 1 (i.e. the consequent of the rule is not empty)
         model.addClausesBoolOrArrayEqualTrue(y);
-        // Frequency of z
+
         IntVar freqZ = model.intVar("freqZ", minFreq, database.getNbTransactions());
         ConstraintFactory.coverSize(database, freqZ, z).post();
-        // Frequency of x
         IntVar freqX = model.intVar("freqX", minFreq, database.getNbTransactions());
         ConstraintFactory.coverSize(database, freqX, x).post();
-
-        // Frequency of y
         IntVar freqY = model.intVar("freqY", minFreq, database.getNbTransactions());
         ConstraintFactory.coverSize(database, freqY, y).post();
-
-        // Confidence of the rule = freqZ / freqX (multiplied by 100 to get an integer
-        // variable)
         freqZ.mul(100).ge(freqX.mul(minConf)).post();
-        // Only class items in the consequence of the rule
         consequentItemsConstraint(model, y, classItems, database);
 
-        // Write the results to a CSV file, limiting to a maximum of 10,000 rules
         try (Writer writer = new FileWriter(outputCsvPath)) {
             writer.write("antecedent,consequent,freqX,freqY,freqZ\n");
-
             Solver solver = model.getSolver();
-            int ruleCount = 0;  // Counter for the number of rules written
+            int ruleCount = 0;
             while (solver.solve() && ruleCount < 10000) {
                 int[] antecedent = getItemset(x, database);
                 int[] consequent = getItemset(y, database);
-
-                // Write rule data to the CSV
                 writer.write("{"
                         + Arrays.stream(antecedent).mapToObj(String::valueOf).reduce((a, b) -> a + ";" + b).orElse("")
                         + "}," +
@@ -118,20 +98,25 @@ public class DRMiningExample {
                         freqY.getValue() + "," +
                         freqZ.getValue() + "\n");
 
-                ruleCount++;  // Increment the rule counter
+                ruleCount++;
             }
-
             solver.printStatistics();
         }
     }
 
     public static void main(String[] args) throws Exception {
-        for (int i = 1; i <= 10; i++) {
-            System.out.println("Fold: " + i);
-            String dataPath = "data/folds/toms/train/train_" + i + ".dat";
-            Set<Integer> classItems = getClassItems("toms");
-            String outputCsvPath = "data/folds/toms/train/train_rules_" + i + ".csv";
-            mine(dataPath, classItems, outputCsvPath);
+        String dataPath = args.length > 0 ? args[0] : "data/dat-files/iris.dat";
+        String datasetName = args.length > 1 ? args[1] : "iris";
+        String outputPath = args.length > 2 ? args[2] : "data/mined_rules/iris.csv";
+        int minSupport = args.length > 3 ? Integer.parseInt(args[3]) : 1;
+        int minConfidence = args.length > 4 ? Integer.parseInt(args[4]) : 1;
+
+        Set<Integer> classItems = getClassItems(datasetName);
+        if (classItems == null) {
+            System.out.println("Invalid dataset name provided.");
+            return;
         }
+
+        mine(dataPath, classItems, outputPath, minSupport, minConfidence);
     }
 }
