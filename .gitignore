@@ -25,3 +25,6 @@ sampling_experiment/output_plots/ratio_1\:1/*.pdf
 sampling_experiment/output_plots/ratio_1\:10/*.png
 
 target/*
+
+src/test/resources/adult.dat
+src/test/resources/toms.dat

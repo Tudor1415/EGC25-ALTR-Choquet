@@ -13,8 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.jgrapht.alg.util.UnionFind;
-
 import com.zaxxer.sparsebits.SparseBitSet;
 
 import lombok.Getter;
@@ -50,7 +48,7 @@ public class Dataset {
     private @Setter @Getter int nbConsequentItems; // The number of different consequent items
     private @Setter @Getter int nbTransactions; // The number of transactions in the transactional dataset
     private @Setter @Getter String[][] transactions; // The array of transactions red from the dat file.
-    private @Getter UnionFind<String> equivalenceClasses; // The item equivalence classes
+    private @Getter UnionFind equivalenceClasses; // The item equivalence classes
 
     public Dataset(String filename, String expDir, Set<String> consequentItemsSet) throws IOException {
         // Variables regarding the file
@@ -98,7 +96,7 @@ public class Dataset {
         neverSeen.addAll(getConsequentItemsSet());
         neverSeen.addAll(getAntecedentItemsSet());
 
-        this.equivalenceClasses = new UnionFind<>(neverSeen);
+        this.equivalenceClasses = new UnionFind(neverSeen.toArray(new String[0]));
 
         String[][] transactions = getTransactions();
 
@@ -107,10 +105,8 @@ public class Dataset {
                 String classRep = transaction[0];
 
                 for (String item : transaction) {
-                    if (neverSeen.contains(item)) {
-                        equivalenceClasses.union(item, classRep);
-                        neverSeen.remove(item);
-                    }
+                    equivalenceClasses.union(item, classRep);
+                    neverSeen.remove(item);
                 }
             }
         }
