@@ -40,7 +40,7 @@ import tools.utils.RuleUtil;
 
 public class SamplingMethodExperiment {
 
-    private static List<String> datasetNames = Arrays.asList("toms");
+    private static List<String> datasetNames = Arrays.asList("toms", "bank", "credit", "connect", "mushroom");
     private static String[] allMeasureNames = new String[] { "lift", "confidence", "support", "yuleQ", "kruskal",
             "cosine", "phi", "pavillon", "certainty" };
 
@@ -160,12 +160,14 @@ public class SamplingMethodExperiment {
                 outputDirectory);
 
         // Process Unrestricted Sampler
-        // processUnrestrictedSampling(dataset, scoreFunction, datasetName, foldIdx, samplingIterations, outputDirectory,
-        //         measureNames);
+        // processUnrestrictedSampling(dataset, scoreFunction, datasetName, foldIdx,
+        // samplingIterations, outputDirectory,
+        // measureNames);
 
         // Process Batch Sampler
-        processBatchSamplingForCertainties(dataset, scoreFunction, measureNames, datasetName, foldIdx, samplingIterations,
-        outputDirectory);
+        processBatchSamplingForCertainties(dataset, scoreFunction, measureNames, datasetName, foldIdx,
+                samplingIterations,
+                outputDirectory);
     }
 
     private static void processSamplingForCertainties(Dataset dataset, ISinglevariateFunction scoreFunction,
@@ -379,40 +381,48 @@ public class SamplingMethodExperiment {
     }
 
     public static void runOnDataset() throws IOException {
-        for (String datasetName : datasetNames) {
-            Dataset dataset = new Dataset(datasetName + ".dat", "data/dat-files/", getClassItems(datasetName));
+        // Process dataset names in parallel
+        datasetNames.parallelStream().forEach(datasetName -> {
+            try {
+                Dataset dataset = new Dataset(datasetName + ".dat", "data/dat-files/", getClassItems(datasetName));
 
-            for (int samplingIterations = 1; samplingIterations < 1_000_001; samplingIterations *= 10) {
-                final int samplingIterationsFinal = samplingIterations;
+                // Process sampling iterations in sequential order, but each dataset runs in
+                // parallel
+                for (int samplingIterations = 1; samplingIterations < 1_000_001; samplingIterations *= 10) {
+                    final int samplingIterationsFinal = samplingIterations;
 
-                ExecutorService executor = Executors.newFixedThreadPool(3);
+                    ExecutorService executor = Executors.newFixedThreadPool(10);
 
-                IntStream.iterate(1, foldIdx -> foldIdx + 1)
-                        .limit(10)
-                        .forEach(foldIdx -> {
-                            final int foldIdxFinal = foldIdx;
+                    // Process each fold in parallel using a thread pool
+                    IntStream.iterate(1, foldIdx -> foldIdx + 1)
+                            .limit(10)
+                            .forEach(foldIdx -> {
+                                final int foldIdxFinal = foldIdx;
 
-                            executor.submit(() -> {
-                                System.out.println(
-                                        "Dataset: " + datasetName + " - Iterations: " + samplingIterationsFinal);
-                                runOnFold(dataset, owa_score_function, allMeasureNames, datasetName, foldIdxFinal,
-                                        samplingIterationsFinal, "results/sampling_experiment/samples/ratio_1to1/");
+                                executor.submit(() -> {
+                                    System.out.println(
+                                            "Dataset: " + datasetName + " - Iterations: " + samplingIterationsFinal);
+                                    runOnFold(dataset, owa_score_function, allMeasureNames, datasetName, foldIdxFinal,
+                                            samplingIterationsFinal, "results/sampling_experiment/samples/ratio_1to1/");
+                                });
                             });
-                        });
 
-                // Shutdown the executor and wait for tasks to complete
-                executor.shutdown();
-                try {
-                    // Wait for all tasks to complete before proceeding
-                    if (!executor.awaitTermination(12, TimeUnit.HOURS)) {
+                    // Shutdown the executor and wait for tasks to complete
+                    executor.shutdown();
+                    try {
+                        // Wait for all tasks to complete before proceeding
+                        if (!executor.awaitTermination(12, TimeUnit.HOURS)) {
+                            executor.shutdownNow();
+                        }
+                    } catch (InterruptedException e) {
                         executor.shutdownNow();
+                        Thread.currentThread().interrupt();
                     }
-                } catch (InterruptedException e) {
-                    executor.shutdownNow();
-                    Thread.currentThread().interrupt();
                 }
+            } catch (IOException e) {
+                e.printStackTrace(); // Handle dataset loading exception
             }
-        }
+        });
     }
 
     /**
