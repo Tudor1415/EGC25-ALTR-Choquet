@@ -11,8 +11,7 @@ import tools.alternatives.Alternative;
 import tools.alternatives.IAlternative;
 import tools.data.Dataset;
 import tools.functions.multivariate.CertaintyFunction;
-import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
-import tools.functions.multivariate.outRankingCertainties.Thurstone;
+import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
 import tools.functions.singlevariate.ISinglevariateFunction;
 import tools.normalization.Normalizer;
 import tools.normalization.Normalizer.NormalizationMethod;
@@ -21,21 +20,21 @@ import tools.utils.RandomUtil;
 import tools.utils.RuleUtil;
 
 public class SMAS implements ISampler {
-    private static final double DEFAULT_SMOOTH_COUNTS = 1e-6d;
+    protected static final double DEFAULT_SMOOTH_COUNTS = 1e-6d;
 
-    private @Getter @Setter int maximumIterations;
-    private @Getter @Setter int topK = 1;
-    private @Getter @Setter DecisionRule rule;
-    private @Getter @Setter Dataset dataset;
-    private @Getter @Setter TreeSet<DecisionRule> topRules;
-    private @Getter @Setter CertaintyFunction outRankingCertainty;
-    private @Getter ISinglevariateFunction scoringFunction;
-    private @Getter @Setter String[] measureNames;
-    private @Getter @Setter double smoothCounts = 1e-6d;
-    private @Getter RandomUtil random = new RandomUtil();
-    private @Getter List<Double> scoreHistory = new ArrayList<>();
-    private @Getter @Setter Normalizer.NormalizationMethod normalizationTechnique = NormalizationMethod.MIN_MAX_SCALING;
-    private @Getter Normalizer normalizer = new Normalizer();
+    protected @Getter @Setter int maximumIterations;
+    protected @Getter @Setter int topK = 1;
+    protected @Getter @Setter DecisionRule rule;
+    protected @Getter @Setter Dataset dataset;
+    protected @Getter @Setter TreeSet<DecisionRule> topRules;
+    protected @Getter @Setter CertaintyFunction outRankingCertainty;
+    protected @Getter ISinglevariateFunction scoringFunction;
+    protected @Getter @Setter String[] measureNames;
+    protected @Getter @Setter double smoothCounts = 1e-6d;
+    protected @Getter RandomUtil random = new RandomUtil();
+    protected @Getter List<Double> scoreHistory = new ArrayList<>();
+    protected @Getter @Setter Normalizer.NormalizationMethod normalizationTechnique = NormalizationMethod.MIN_MAX_SCALING;
+    protected @Getter Normalizer normalizer = new Normalizer();
 
     public SMAS(int maximumIterations, Dataset dataset, CertaintyFunction outRankingCertainty,
             ISinglevariateFunction scoringFunction, String[] measureNames, double smoothCounts, int topK) {
@@ -52,7 +51,7 @@ public class SMAS implements ISampler {
 
     public SMAS(int maximumIterations, Dataset dataset, ISinglevariateFunction scoringFunction, String[] measureNames,
             int topK) {
-        this(maximumIterations, dataset, new BradleyTerry(scoringFunction), scoringFunction, measureNames,
+        this(maximumIterations, dataset, new ScoreDifference(scoringFunction), scoringFunction, measureNames,
                 DEFAULT_SMOOTH_COUNTS, topK);
     }
 
@@ -113,7 +112,7 @@ public class SMAS implements ISampler {
 
     }
 
-    private DecisionRule updateRule(DecisionRule rule) {
+    protected DecisionRule updateRule(DecisionRule rule) {
         String[] antecedentItems = getDataset().getAntecedentItemsArray();
         String[] consequentItems = getDataset().getConsequentItemsArray();
 
@@ -126,7 +125,7 @@ public class SMAS implements ISampler {
         return rule;
     }
 
-    private void processAntecedents(DecisionRule rule, String[] antecedentItems, int[] antecedentShuffle) {
+    protected void processAntecedents(DecisionRule rule, String[] antecedentItems, int[] antecedentShuffle) {
         for (int i = 0; i < antecedentShuffle.length; i++) {
             updateNormalization(rule);
 
@@ -142,7 +141,7 @@ public class SMAS implements ISampler {
         }
     }
 
-    private void processConsequents(DecisionRule rule, String[] consequentItems, int[] consequentShuffle) {
+    protected void processConsequents(DecisionRule rule, String[] consequentItems, int[] consequentShuffle) {
         for (int i = 0; i < consequentShuffle.length; i++) {
             updateNormalization(rule);
 
@@ -159,16 +158,16 @@ public class SMAS implements ISampler {
         }
     }
 
-    private boolean isCertaintyHighEnough(double modifiedScore, double originalScore) {
+    protected boolean isCertaintyHighEnough(double modifiedScore, double originalScore) {
         double certainty = modifiedScore == 0 ? 0 : getOutRankingCertainty().computeScore(modifiedScore, originalScore);
         return getRandom().Bernoulli(certainty);
     }
 
-    private void updateNormalization(DecisionRule rule) {
+    protected void updateNormalization(DecisionRule rule) {
         getNormalizer().normalize(rule.getAlternative().getVector(), NormalizationMethod.NO_NORMALIZATION, true);
     }
 
-    private void initNormalization() {
+    protected void initNormalization() {
         List<DecisionRule> validRules = getDataset().getRandomValidRules(100, smoothCounts, measureNames);
 
         for (DecisionRule rule : validRules)
