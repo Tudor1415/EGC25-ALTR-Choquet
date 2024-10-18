@@ -8,7 +8,7 @@ import tools.functions.singlevariate.ISinglevariateFunction;
 import tools.normalization.Normalizer;
 import tools.rules.DecisionRule;
 
-public interface ISampler {
+public interface ISampler extends Sampler {
 
     int getMaximumIterations();
 

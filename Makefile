@@ -1,4 +1,4 @@
-DATASETS = bank credit toms connect
+DATASETS = bank credit toms connect mushroom
 exp_active = results/active_learning
 exp_norm = results/active_normalization
 exp_sample = results/sampling_experiment
