@@ -47,7 +47,7 @@ public class UnrestrictedSampler implements Sampler {
                 }
             }
             if (RuleUtil.isValid(currentRule))
-                sample.add(RuleUtil.deepCopy(currentRule));
+                sample.add(RuleUtil.simpleCopy(currentRule));
         }
 
         return sample;

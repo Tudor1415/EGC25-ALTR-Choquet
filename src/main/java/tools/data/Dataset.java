@@ -40,6 +40,7 @@ public class Dataset {
 
     // Variables regarding the dataset
     private @Setter @Getter Map<String, SparseBitSet> itemsMap; // The map value -> item coverage in the dataset
+    private @Setter @Getter Map<String, int[]> intArrayItemsMap; // The map value -> item coverage in the dataset
     private @Setter @Getter Set<String> consequentItemsSet; // The set of the values all the class items
     private @Setter @Getter Set<String> antecedentItemsSet; // The set of the values of all the antecedent items
     private @Setter @Getter String[] consequentItemsArray; // The array of the values all the class items
@@ -70,7 +71,7 @@ public class Dataset {
         this.nbConsequentItems = getConsequentItemsSet().size();
 
         // Find the equivalence classes
-        findEquivalenceClasses();
+        // findEquivalenceClasses();
     }
 
     public Dataset(String[][] transactionalDataset, Set<String> consequentItemsSet) {
@@ -88,7 +89,7 @@ public class Dataset {
         this.nbConsequentItems = getConsequentItemsSet().size();
 
         // Find the equivalence classes
-        findEquivalenceClasses();
+        // findEquivalenceClasses();
     }
 
     public void findEquivalenceClasses() {
@@ -168,6 +169,7 @@ public class Dataset {
      */
     public void getItemsFromTransactions() {
         this.itemsMap = new HashMap<>();
+        this.intArrayItemsMap = new HashMap<>();
 
         // Iterate through transactions to identify unique items and their occurrences
         for (int transactionIndex = 0; transactionIndex < transactions.length; transactionIndex++) {
@@ -177,6 +179,26 @@ public class Dataset {
                 itemsMap.computeIfAbsent(itemValue, k -> new SparseBitSet()).set(transactionIndex);
             }
         }
+
+        for(String item : itemsMap.keySet())
+            intArrayItemsMap.put(item, bitSetToIntArray(itemsMap.get(item)));
+    }
+
+    /**
+     * Converts a SparseBitSet to an array of integers where each element is 1 if
+     * the bit at that index is set, or 0 otherwise.
+     *
+     * @param bitSet the SparseBitSet to convert
+     * @return an array of integers representing the bit values
+     */
+    protected int[] bitSetToIntArray(SparseBitSet bitSet) {
+        int length = bitSet.length();
+        int[] array = new int[length];
+        for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
+            array[i] = 1;
+        }
+        // All other elements are already 0 by default
+        return array;
     }
 
     /**
