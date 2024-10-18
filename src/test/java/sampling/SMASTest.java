@@ -12,11 +12,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.chocosolver.solver.search.strategy.assignments.DecisionOperator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import tools.alternatives.Alternative;
 import tools.alternatives.IAlternative;
 import tools.data.Dataset;
 import tools.functions.multivariate.CertaintyFunction;
@@ -42,10 +40,10 @@ class SMASTest {
     static void setUp() throws IOException {
         // Mock dataset
         Set<String> classItemValues = new HashSet<>();
-        classItemValues.add("145");
-        classItemValues.add("146");
+        classItemValues.add("911");
+        classItemValues.add("912");
 
-        dataset = new Dataset("adult.dat", "src/test/resources/", classItemValues);
+        dataset = new Dataset("toms.dat", "src/test/resources/", classItemValues);
 
         // Measures
         measureNames = new String[] { "lift", "confidence", "support", "yuleQ", "kruskal" };

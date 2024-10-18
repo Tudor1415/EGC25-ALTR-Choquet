@@ -27,7 +27,7 @@ import tools.train.iterative.KappalabIterative;
 
 public class ExperimentActiveNormalization {
     public static final String dataDirectory = "data/folds/";
-    public static final String expDirectory = "active_normalization/samples/";
+    public static final String expDirectory = "results/active_normalization/samples/";
 
     public static final List<String> datasetNames = Arrays.asList("adult",
             "bank");

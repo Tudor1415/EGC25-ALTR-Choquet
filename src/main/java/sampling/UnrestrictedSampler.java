@@ -8,7 +8,7 @@ import tools.rules.DecisionRule;
 import tools.utils.RandomUtil;
 import tools.utils.RuleUtil;
 
-public class UnrestrictedSampler {
+public class UnrestrictedSampler implements Sampler {
     private Dataset dataset;
     private int numIterations;
 

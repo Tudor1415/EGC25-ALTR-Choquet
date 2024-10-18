@@ -21,8 +21,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import sampling.BatchSampler;
 import sampling.SMAS;
 import sampling.UnrestrictedSampler;
+import sampling.Sampler;
 import tools.alternatives.IAlternative;
 import tools.data.Dataset;
 import tools.functions.multivariate.CertaintyFunction;
@@ -40,8 +42,7 @@ public class SamplingMethodExperiment {
 
     private static List<String> datasetNames = Arrays.asList("toms");
     private static String[] allMeasureNames = new String[] { "lift", "confidence", "support", "yuleQ", "kruskal",
-            "cosine",
-            "phi", "pavillon", "certainty" };
+            "cosine", "phi", "pavillon", "certainty" };
 
     private static String dataDirectory = "data/folds/";
 
@@ -69,6 +70,16 @@ public class SamplingMethodExperiment {
         smas.setScoringFunction(scoringFunction);
         smas.setNormalizationTechnique(NormalizationMethod.NO_NORMALIZATION);
         return smas;
+    }
+
+    private static BatchSampler createBatchSampler(int maxIterations, Dataset dataset,
+            CertaintyFunction outRankingCertainty,
+            ISinglevariateFunction scoringFunction, String[] measureNames, double smoothCounts) {
+        BatchSampler BatchSampler = new BatchSampler(maxIterations, dataset, scoringFunction, measureNames,
+                maxIterations);
+        BatchSampler.setScoringFunction(scoringFunction);
+        BatchSampler.setNormalizationTechnique(NormalizationMethod.NO_NORMALIZATION);
+        return BatchSampler;
     }
 
     private static String ruleToString(DecisionRule rule) {
@@ -141,89 +152,124 @@ public class SamplingMethodExperiment {
     /**
      * Runs the experiment on a single fold of the dataset.
      */
-
     private static void runOnFold(Dataset dataset, ISinglevariateFunction scoreFunction, String[] measureNames,
             String datasetName, int foldIdx, int samplingIterations, String outputDirectory) {
+
+        // Process regular SMAS sampling
+        processSamplingForCertainties(dataset, scoreFunction, measureNames, datasetName, foldIdx, samplingIterations,
+                outputDirectory);
+
+        // Process Unrestricted Sampler
+        // processUnrestrictedSampling(dataset, scoreFunction, datasetName, foldIdx, samplingIterations, outputDirectory,
+        //         measureNames);
+
+        // Process Batch Sampler
+        processBatchSamplingForCertainties(dataset, scoreFunction, measureNames, datasetName, foldIdx, samplingIterations,
+        outputDirectory);
+    }
+
+    private static void processSamplingForCertainties(Dataset dataset, ISinglevariateFunction scoreFunction,
+            String[] measureNames, String datasetName, int foldIdx, int samplingIterations, String outputDirectory) {
+
         CertaintyFunction[] outRankingCertainties = createOutRankingCertainties(scoreFunction);
 
-        for (int i = 0; i < outRankingCertainties.length; i++) {
-            final int certaintyIndex = i;
+        for (CertaintyFunction certaintyFunction : outRankingCertainties) {
+            SMAS sampler = createSMAS(samplingIterations, dataset, certaintyFunction, scoreFunction, measureNames,
+                    0.01d);
 
-            // Iterate over normalization methods
-            SMAS sampler = createSMAS(samplingIterations, dataset, outRankingCertainties[certaintyIndex],
-                    scoreFunction, measureNames, 0.01d);
-            List<DecisionRule> sample = new ArrayList<>();
+            // Run the sampling with a timeout
+            List<DecisionRule> sample = executeSamplingWithTimeout(sampler, 30);
 
-            // Run sampler.sample() with a one-hour timeout
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            Future<List<DecisionRule>> future = executor.submit(() -> {
-                // Execute the sampling and store the result in the sample variable
-                List<DecisionRule> result = sampler.sample();
-                return result; // Return the sample
-            });
+            // Process the results after sampling
+            String filename = createFileName(datasetName, foldIdx, scoreFunction, sampler, certaintyFunction);
+            List<Double> approxScores = computeApproxScores(sample, scoreFunction);
 
-            try {
-                // Timeout set to 1 hour
-                sample = future.get(30, TimeUnit.MINUTES); // Save the result of sampler.sample() in sample
-            } catch (TimeoutException e) {
-                System.err.println("Sampling timed out after half an hour.");
-                future.cancel(true); // Cancel the task
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            } finally {
-                executor.shutdownNow();
-            }
-
-            // After sampling, process the sample
-            String filename = datasetName + "_" + foldIdx + "_" + scoreFunction.getName() + "_"
-                    + sampler.getMaximumIterations() + "_" + sampler.getOutRankingCertainty().getName();
-
-            List<Double> approxScore = sample.parallelStream()
-                    .map(rule -> scoreFunction.computeScore(rule.getAlternative()))
-                    .collect(Collectors.toList());
-
-            writeSampleToCSV(sample, approxScore, filename, samplingIterations, outputDirectory);
+            // Write the results to CSV
+            writeSampleToCSV(sample, approxScores, filename, samplingIterations, outputDirectory);
         }
+    }
 
-        // For UnrestrictedSampler
+    private static void processUnrestrictedSampling(Dataset dataset, ISinglevariateFunction scoreFunction,
+            String datasetName, int foldIdx, int samplingIterations, String outputDirectory, String[] measureNames) {
+
         UnrestrictedSampler unrestrictedSampler = new UnrestrictedSampler(dataset, samplingIterations);
-        List<DecisionRule> unrestrictedSample = new ArrayList<>();
 
-        // Run unrestrictedSampler.sample() with a one-hour timeout
-        ExecutorService executorUnrestricted = Executors.newSingleThreadExecutor();
-        Future<List<DecisionRule>> futureUnrestricted = executorUnrestricted.submit(() -> {
-            // Execute the sampling and store the result in unrestrictedSample
-            List<DecisionRule> result = unrestrictedSampler.sample();
-            return result; // Return the sample
-        });
+        // Run the unrestricted sampling with a timeout
+        List<DecisionRule> unrestrictedSample = executeSamplingWithTimeout(unrestrictedSampler, 30);
 
-        try {
-            // Timeout set to 1 hour
-            unrestrictedSample = futureUnrestricted.get(30, TimeUnit.MINUTES);
-        } catch (TimeoutException e) {
-            System.err.println("Unrestricted Sampling timed out after half an hour.");
-            futureUnrestricted.cancel(true); // Cancel the task
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        } finally {
-            executorUnrestricted.shutdownNow();
-        }
-
-        // After sampling, process the unrestrictedSample
+        // Process the results after unrestricted sampling
         String filename = datasetName + "_" + foldIdx + "_" + scoreFunction.getName() + "_"
                 + samplingIterations + "_UnrestrictedSampling";
 
-        List<Double> approxScore;
+        List<Double> approxScores = computeValidRuleScores(unrestrictedSample, dataset, measureNames, scoreFunction);
 
-        if (unrestrictedSample.isEmpty()) {
-            approxScore = new ArrayList<>(); // Initialize approxScore as an empty list
-        } else {
-            approxScore = unrestrictedSample.parallelStream()
-                    .map(rule -> getValidRuleScore(rule, dataset, 0.01d, measureNames, scoreFunction))
-                    .collect(Collectors.toList());
+        // Write the results to CSV
+        writeSampleToCSV(unrestrictedSample, approxScores, filename, samplingIterations, outputDirectory);
+    }
+
+    private static void processBatchSamplingForCertainties(Dataset dataset, ISinglevariateFunction scoreFunction,
+            String[] measureNames, String datasetName, int foldIdx, int samplingIterations, String outputDirectory) {
+
+        CertaintyFunction[] outRankingCertainties = createOutRankingCertainties(scoreFunction);
+
+        // for (CertaintyFunction certaintyFunction : outRankingCertainties) {
+        BatchSampler sampler = createBatchSampler(samplingIterations, dataset, null, scoreFunction, measureNames,
+                0.01d);
+
+        // Run the sampling with a timeout
+        List<DecisionRule> sample = executeSamplingWithTimeout(sampler, 30);
+
+        // Process the results after sampling
+        String filename = datasetName + "_" + foldIdx + "_" + scoreFunction.getName() + "_"
+                + samplingIterations + "_BatchSampling";
+        List<Double> approxScores = computeApproxScores(sample, scoreFunction);
+
+        // Write the results to CSV
+        writeSampleToCSV(sample, approxScores, filename, samplingIterations, outputDirectory);
+        // }
+    }
+
+    private static List<DecisionRule> executeSamplingWithTimeout(Sampler sampler, int timeoutInMinutes) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<List<DecisionRule>> future = executor.submit(() -> sampler.sample());
+
+        List<DecisionRule> sample = new ArrayList<>();
+        try {
+            sample = future.get(timeoutInMinutes, TimeUnit.MINUTES);
+        } catch (TimeoutException e) {
+            System.err.println("Sampling timed out after " + timeoutInMinutes + " minutes.");
+            future.cancel(true);
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } finally {
+            executor.shutdownNow();
         }
+        return sample;
+    }
 
-        writeSampleToCSV(unrestrictedSample, approxScore, filename, samplingIterations, outputDirectory);
+    private static String createFileName(String datasetName, int foldIdx, ISinglevariateFunction scoreFunction,
+            SMAS sampler, CertaintyFunction certaintyFunction) {
+        return String.format("%s_%d_%s_%d_%s",
+                datasetName,
+                foldIdx,
+                scoreFunction.getName(),
+                sampler.getMaximumIterations(),
+                certaintyFunction.getName());
+    }
+
+    private static List<Double> computeApproxScores(List<DecisionRule> sample, ISinglevariateFunction scoreFunction) {
+        return sample.parallelStream()
+                .map(rule -> scoreFunction.computeScore(rule.getAlternative()))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Double> computeValidRuleScores(List<DecisionRule> sample, Dataset dataset,
+            String[] measureNames, ISinglevariateFunction scoreFunction) {
+        return sample.isEmpty()
+                ? new ArrayList<>()
+                : sample.parallelStream()
+                        .map(rule -> getValidRuleScore(rule, dataset, 0.01d, measureNames, scoreFunction))
+                        .collect(Collectors.toList());
     }
 
     private static Set<String> getClassItems(String datasetName) {
@@ -350,7 +396,7 @@ public class SamplingMethodExperiment {
                                 System.out.println(
                                         "Dataset: " + datasetName + " - Iterations: " + samplingIterationsFinal);
                                 runOnFold(dataset, owa_score_function, allMeasureNames, datasetName, foldIdxFinal,
-                                        samplingIterationsFinal, "sampling_experiment/samples/ratio_1to1/");
+                                        samplingIterationsFinal, "results/sampling_experiment/samples/ratio_1to1/");
                             });
                         });
 
