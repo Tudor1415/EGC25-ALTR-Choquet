@@ -347,9 +347,9 @@ public class SamplingMethodExperiment {
     }
 
     public static void runOnFolds() {
-        ExecutorService executor = Executors.newFixedThreadPool(20);
+        ExecutorService executor = Executors.newFixedThreadPool(10);
         try {
-            for (int samplingIterations = 1; samplingIterations < 1_000_001; samplingIterations *= 10) {
+            for (int samplingIterations = 1; samplingIterations < 100_001; samplingIterations *= 10) {
                 for (String datasetName : datasetNames) {
                     final int samplingIterationsFinal = samplingIterations;
                     System.out.println("Dataset: " + datasetName + " - Iterations: " + samplingIterations);
@@ -388,7 +388,7 @@ public class SamplingMethodExperiment {
 
                 // Process sampling iterations in sequential order, but each dataset runs in
                 // parallel
-                for (int samplingIterations = 1; samplingIterations < 1_000_001; samplingIterations *= 10) {
+                for (int samplingIterations = 1; samplingIterations < 100_001; samplingIterations *= 10) {
                     final int samplingIterationsFinal = samplingIterations;
 
                     ExecutorService executor = Executors.newFixedThreadPool(10);

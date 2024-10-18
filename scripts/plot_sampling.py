@@ -162,7 +162,7 @@ def plot_results_and_save(mean_variance_results, grouped_files, output_folder):
         save_horizontal_legend(ax2, output_folder + f"/legend_{datasetName}.pdf", title="")
 
         # Third plot (ax3): Mean cumulative distribution at 1000000 iterations with error bars
-        iteration_target = '1000000'
+        iteration_target = '100000'
         for outRankingCertainty, numIterationDict in outRankingDict.items():
             if iteration_target in numIterationDict:
                 cumulative_values = []
