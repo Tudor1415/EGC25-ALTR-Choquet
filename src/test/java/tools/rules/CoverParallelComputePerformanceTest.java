@@ -21,7 +21,7 @@ public class CoverParallelComputePerformanceTest {
         // Create a large dataset for performance testing
         // For demonstration, we simulate a large dataset
         // In practice, you should load an actual large dataset
-        int numberOfTransactions = 1_000_000;  // Adjust size as needed for testing
+        int numberOfTransactions = 100_000_000;  // Adjust size as needed for testing
         int numberOfItems = 1000;
 
         // Generate synthetic dataset
