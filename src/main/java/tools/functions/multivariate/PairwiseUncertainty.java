@@ -6,7 +6,7 @@ import tools.alternatives.IAlternative;
 import tools.functions.singlevariate.ISinglevariateFunction;
 import tools.rules.DecisionRule;
 
-public class PairwiseUncertainty implements CertaintyFunction{
+public class PairwiseUncertainty implements CertaintyFunction {
     public @Getter @Setter String Name;
 
     // The associated out ranking certainty
@@ -19,22 +19,27 @@ public class PairwiseUncertainty implements CertaintyFunction{
 
     @Override
     public double computeScore(IAlternative[] alternatives) {
-        return 1 - Math.abs(1 - 2*getTheta().computeScore(alternatives));
+        return 1 - Math.abs(1 - 2 * getTheta().computeScore(alternatives));
     }
 
     @Override
     public double computeScore(DecisionRule[] rules) {
-        return 1 - Math.abs(1 - 2*getTheta().computeScore(rules));
+        return 1 - Math.abs(1 - 2 * getTheta().computeScore(rules));
     }
 
     @Override
     public double computeScore(double score0, double score1) {
-        return 1 - Math.abs(1 - 2*getTheta().computeScore(score0, score1));
+        return 1 - Math.abs(1 - 2 * getTheta().computeScore(score0, score1));
     }
 
     @Override
     public void setScoreFunction(ISinglevariateFunction scoreFunction) {
         getTheta().setScoreFunction(scoreFunction);
     }
-    
+
+    @Override
+    public ISinglevariateFunction getScoreFunction() {
+        return getTheta().getScoreFunction();
+    }
+
 }

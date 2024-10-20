@@ -13,7 +13,7 @@ public class BradleyTerry implements CertaintyFunction {
     public @Setter @Getter String name = "BradleyTerryOutRanking";
 
     /** The function of which we want to compute the out-ranking certainty */
-    private @Setter ISinglevariateFunction scoreFunction;
+    private @Setter @Getter ISinglevariateFunction scoreFunction;
 
     public BradleyTerry(ISinglevariateFunction scoreFunction) {
         this.scoreFunction = scoreFunction;
@@ -30,12 +30,12 @@ public class BradleyTerry implements CertaintyFunction {
 
     @Override
     public double computeScore(DecisionRule[] rules) {
-        return computeScore(new IAlternative[] {rules[0].getAlternative(), rules[1].getAlternative()});
+        return computeScore(new IAlternative[] { rules[0].getAlternative(), rules[1].getAlternative() });
     }
 
     @Override
     public double computeScore(double score0, double score1) {
         return Math.exp(score0) / (Math.exp(score0) + Math.exp(score1));
     }
-    
+
 }

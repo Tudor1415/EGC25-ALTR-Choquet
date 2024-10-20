@@ -2,11 +2,9 @@ package tools.functions.multivariate.outRankingCertainties;
 
 import lombok.Getter;
 import lombok.Setter;
-import tools.alternatives.Alternative;
 import tools.alternatives.IAlternative;
 import tools.functions.multivariate.CertaintyFunction;
 import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.normalization.Normalizer.NormalizationMethod;
 import tools.rules.DecisionRule;
 
 public class ScoreDifference implements CertaintyFunction {
@@ -16,8 +14,7 @@ public class ScoreDifference implements CertaintyFunction {
     public @Setter @Getter double eps = 0.001;
 
     /** The function of which we want to compute the out-ranking certainty */
-    private @Setter ISinglevariateFunction scoreFunction;
-
+    private @Setter @Getter ISinglevariateFunction scoreFunction;
 
     public ScoreDifference(ISinglevariateFunction scoreFunction) {
         this.scoreFunction = scoreFunction;
@@ -33,12 +30,12 @@ public class ScoreDifference implements CertaintyFunction {
     }
 
     public double computeScore(DecisionRule[] rules) {
-        return computeScore(new IAlternative[] {rules[0].getAlternative(), rules[1].getAlternative()});
+        return computeScore(new IAlternative[] { rules[0].getAlternative(), rules[1].getAlternative() });
     }
 
     @Override
     public double computeScore(double score0, double score1) {
-        return (1-getEps()) * ((score0 - score1) / 2 + 0.5) + getEps();
+        return (1 - getEps()) * ((score0 - score1) / 2 + 0.5) + getEps();
     }
-    
+
 }

@@ -14,7 +14,7 @@ public class Thurstone implements CertaintyFunction {
     public @Setter @Getter String name = "ThurstoneOutRanking";
 
     /** The function of which we want to compute the out-ranking certainty */
-    private @Setter ISinglevariateFunction scoreFunction;
+    private @Setter @Getter ISinglevariateFunction scoreFunction;
 
     public Thurstone(ISinglevariateFunction scoreFunction) {
         this.scoreFunction = scoreFunction;
