@@ -40,7 +40,8 @@ import tools.utils.RuleUtil;
 
 public class SamplingMethodExperiment {
 
-    private static List<String> datasetNames = Arrays.asList("toms", "bank", "credit", "connect", "mushroom");
+    private static List<String> datasetNames = Arrays.asList("travel-insurance", "skin", "twitter", "weatherAUS");
+    // private static List<String> datasetNames = Arrays.asList("toms", "bank", "credit", "connect", "mushroom");
     private static String[] allMeasureNames = new String[] { "lift", "confidence", "support", "yuleQ", "kruskal",
             "cosine", "phi", "pavillon", "certainty" };
 
@@ -290,6 +291,14 @@ public class SamplingMethodExperiment {
                 return new HashSet<>(Arrays.asList("911", "912"));
             case "mushroom":
                 return new HashSet<>(Arrays.asList("116", "117"));
+            case "travel-insurance":
+                return new HashSet<>(Arrays.asList("212", "213"));
+            case "skin":
+                return new HashSet<>(Arrays.asList("120", "121"));
+            case "twitter":
+                return new HashSet<>(Arrays.asList("1512", "1513"));
+            case "weatherAUS":
+                return new HashSet<>(Arrays.asList("152", "153"));
             default:
                 return null;
         }

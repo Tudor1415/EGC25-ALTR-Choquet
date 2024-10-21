@@ -14,6 +14,7 @@ import tools.functions.multivariate.CertaintyFunction;
 import tools.normalization.Normalizer;
 import tools.normalization.Normalizer.NormalizationMethod;
 import tools.rules.DecisionRule;
+import tools.utils.RuleUtil;
 
 @Getter
 @Setter
@@ -58,7 +59,7 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
         this.seenAlternatives = new HashMap<>();
 
         for (DecisionRule rule : initialRules)
-            addToHistory(rule.getAlternative(), rule);
+            addToHistory(rule);
     }
 
     public List<DecisionRule[]> getTopK(int k) {
@@ -83,14 +84,21 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
         return topKRules;
     }
 
-    public void addToHistory(IAlternative alternative, DecisionRule rule) {
+    public void addToHistory(DecisionRule rule) {
+        DecisionRule copiedRule = RuleUtil.simpleCopy(rule);
+        IAlternative alternative = copiedRule.getAlternative();
+
         // Keep track of the alternatives seen so far
-        seenAlternatives.put(alternative, rule);
+        seenAlternatives.put(alternative, copiedRule);
 
         double score = getScoreFunction().computeScore(alternative);
         scoreAlternatives.add(
                 new AlternativeScore(alternative, score));
 
+        if (scoreAlternatives.size() > 10) {
+            scoreAlternatives.pollLast();
+        }
+        
         // Add each new pair of alternatives to the history
         for (AlternativeScore scoreAlternative : getScoreAlternatives())
             if (!alternative.equals(scoreAlternative.getAlternative())) {
@@ -104,6 +112,7 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
 
     @Override
     public double computeScore(DecisionRule rule) {
+        addToHistory(rule);
         return computeScore(rule.getAlternative());
     }
 
@@ -133,6 +142,7 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
 
     @Override
     public double computeScore(IAlternative alternative, DecisionRule rule) {
+        addToHistory(rule);
         return computeScore(alternative);
     }
 

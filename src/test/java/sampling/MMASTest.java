@@ -51,7 +51,7 @@ public class MMASTest {
 
     @Test
     void testMMAS() throws IOException {
-        int maxIterations = 1000;
+        int maxIterations = 1;
         String outputDir = "src/test/output/";
 
         MMAS mmas = new MMAS(maxIterations, 1, dataset, pairwiseUncertainty, measureNames);

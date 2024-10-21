@@ -32,14 +32,14 @@ public class MMAS {
                 certaintyFunction, dataset.getRandomValidRules(10, 1e-6d, measureNames), 1);
 
         this.measureNames = measureNames;
-        SMAS sampler = new SMAS(10, dataset, getScoringFunction(), measureNames, 1);
+        SMAS sampler = new BatchSampler(1_000_000, dataset, getScoringFunction(), measureNames, 1);
         this.singleVariateSampler = sampler;
     }
 
     public List<DecisionRule[]> sample() {
         for (int i = 0; i < maximumIterations; i++) {
             DecisionRule topRule = getSingleVariateSampler().sample().get(0);
-            getScoringFunction().addToHistory(topRule.getAlternative(), topRule);
+            getScoringFunction().addToHistory(topRule);
         }
 
         return getScoringFunction().getTopK(topK);
