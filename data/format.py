@@ -1,6 +1,9 @@
+import os
 import pandas as pd
 
 def write_list_of_lists_to_file(data, output_file):
+    # Ensure the directory exists before writing the file
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, 'w') as f:
         for inner_list in data:
             f.write(' '.join(map(str, inner_list)) + '\n')
@@ -28,6 +31,7 @@ def reformat(input_file, output_file, mapping_file):
         non_zero_rows.append([item for item in row if item != 0])
 
     # Write column index -> other words mapping to a text file
+    os.makedirs(os.path.dirname(mapping_file), exist_ok=True)
     mapping_df = pd.DataFrame({'Encoding': range(1, len(data.columns) + 1), 'Column_Name': data.columns})
     mapping_df.to_csv(mapping_file, sep='\t', index=False)
 
