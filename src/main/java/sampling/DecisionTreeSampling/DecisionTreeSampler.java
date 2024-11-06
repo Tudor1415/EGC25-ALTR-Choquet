@@ -1,27 +1,33 @@
 package sampling.DecisionTreeSampling;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.zaxxer.sparsebits.SparseBitSet;
 
+import sampling.Sampler;
 import tools.data.Dataset;
 import tools.rules.DecisionRule;
 
-public class DecisionTreeSampler {
+public class DecisionTreeSampler implements Sampler {
 
-    private List<String[]> dataset;
-    private Set<String> items; // Set of all items (attributes)
-    private int classIndex;
+    private Dataset dataset;
+    private Set<String> items;
     private AlgorithmType algorithmType;
     private int maxDepth;
-    private Map<String, SparseBitSet> itemsMap; // Map from item to its cover
-    private int maxItemsetSize; // Maximum size of itemsets considered for splitting
+    private Map<String, SparseBitSet> itemsMap;
+    private int maxItemsetSize;
 
-    public DecisionTreeSampler(List<String[]> dataset, Set<String> items, int classIndex, AlgorithmType algorithmType,
+    public DecisionTreeSampler(Dataset dataset, Set<String> items, AlgorithmType algorithmType,
             int maxDepth, Map<String, SparseBitSet> itemsMap, int maxItemsetSize) {
         this.dataset = dataset;
         this.items = items;
-        this.classIndex = classIndex;
         this.algorithmType = algorithmType;
         this.maxDepth = maxDepth;
         this.itemsMap = itemsMap;
@@ -30,7 +36,7 @@ public class DecisionTreeSampler {
 
     public TreeNode buildTree() {
         SparseBitSet transactionIndices = new SparseBitSet();
-        transactionIndices.set(0, dataset.size());
+        transactionIndices.set(0, dataset.getNbTransactions());
         return buildTreeRecursive(transactionIndices, new HashSet<>(), 0);
     }
 
@@ -146,7 +152,8 @@ public class DecisionTreeSampler {
         String firstClass = null;
         int index = transactionIndices.nextSetBit(0);
         while (index >= 0) {
-            String classLabel = dataset.get(index)[classIndex];
+            String[] transaction = dataset.getTransactions()[index];
+            String classLabel = transaction[transaction.length - 1]; // Use last item as class label
             if (firstClass == null) {
                 firstClass = classLabel;
             } else if (!firstClass.equals(classLabel)) {
@@ -162,7 +169,8 @@ public class DecisionTreeSampler {
         Map<String, Integer> classCounts = new HashMap<>();
         int index = transactionIndices.nextSetBit(0);
         while (index >= 0) {
-            String classLabel = dataset.get(index)[classIndex];
+            String[] transaction = dataset.getTransactions()[index];
+            String classLabel = transaction[transaction.length - 1]; // Use last item as class label
             classCounts.put(classLabel, classCounts.getOrDefault(classLabel, 0) + 1);
             index = transactionIndices.nextSetBit(index + 1);
         }
@@ -175,7 +183,8 @@ public class DecisionTreeSampler {
         int totalInstances = transactionIndices.cardinality();
         int index = transactionIndices.nextSetBit(0);
         while (index >= 0) {
-            String classLabel = dataset.get(index)[classIndex];
+            String[] transaction = dataset.getTransactions()[index];
+            String classLabel = transaction[transaction.length - 1]; // Use last item as class label
             classCounts.put(classLabel, classCounts.getOrDefault(classLabel, 0) + 1);
             index = transactionIndices.nextSetBit(index + 1);
         }
@@ -193,7 +202,8 @@ public class DecisionTreeSampler {
         int totalInstances = transactionIndices.cardinality();
         int index = transactionIndices.nextSetBit(0);
         while (index >= 0) {
-            String classLabel = dataset.get(index)[classIndex];
+            String[] transaction = dataset.getTransactions()[index];
+            String classLabel = transaction[transaction.length - 1]; // Use last item as class label
             classCounts.put(classLabel, classCounts.getOrDefault(classLabel, 0) + 1);
             index = transactionIndices.nextSetBit(index + 1);
         }
@@ -317,4 +327,12 @@ public class DecisionTreeSampler {
         // Optionally note that the itemset is excluded
         extractRulesRecursive(node.excludedChild, excludedConditions, rules, dataset, smoothCounts, measureNames);
     }
+
+    public List<DecisionRule> sample() {
+        TreeNode root = this.buildTree();
+        List<DecisionRule> rules = this.extractRules(root, dataset, 1.0, new String[] { "support", "confidence" });
+
+        return rules;
+    }
+
 }

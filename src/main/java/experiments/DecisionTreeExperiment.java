@@ -32,7 +32,7 @@ public class DecisionTreeExperiment {
     }
 
     public static void runExperiment() throws IOException {
-        List<String> datasetNames = Arrays.asList("adult");
+        List<String> datasetNames = Arrays.asList("bank");
         Map<AlgorithmType, List<Double>> gainsByAlgorithm = new HashMap<>();
 
         // Initialize map for each algorithm type
@@ -43,19 +43,14 @@ public class DecisionTreeExperiment {
         for (String datasetName : datasetNames) {
             List<Dataset> testDatasets = readDatasetsFromFold(datasetName, "test");
             for (Dataset testDataset : testDatasets) {
-                int classIndex = 0; // Ensure this index is correctly set as per your dataset schema
-
-                List<String[]> transactionList = Arrays.asList(testDataset.getTransactions());
-
                 for (AlgorithmType algorithmType : AlgorithmType.values()) {
                     DecisionTreeSampler sampler = new DecisionTreeSampler(
-                            transactionList,
+                            testDataset,
                             testDataset.getAntecedentItemsSet(),
-                            classIndex,
                             algorithmType,
                             10,
                             testDataset.getItemsMap(),
-                            2);
+                            1);
 
                     TreeNode root = sampler.buildTree();
                     List<DecisionRule> rules = sampler.extractRules(root, testDataset, 1.0, new String[] { "support" });
@@ -133,8 +128,7 @@ public class DecisionTreeExperiment {
      */
     public static double calculateInformationGain(DecisionRule rule, Dataset dataset) {
         SparseBitSet allTransactionIndices = new SparseBitSet();
-        allTransactionIndices.set(0, dataset.getNbTransactions()); // Assuming all transactions are indexed from 0 to
-                                                                   // n-1
+        allTransactionIndices.set(0, dataset.getNbTransactions());
 
         // Get the itemset cover for the antecedent from the rule
         SparseBitSet antecedentCover = rule.getCoverX();

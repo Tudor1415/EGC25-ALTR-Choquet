@@ -23,8 +23,10 @@ import java.util.stream.IntStream;
 
 import sampling.BatchSampler;
 import sampling.SMAS;
-import sampling.UnrestrictedSampler;
 import sampling.Sampler;
+import sampling.UnrestrictedSampler;
+import sampling.DecisionTreeSampling.AlgorithmType;
+import sampling.DecisionTreeSampling.DecisionTreeSampler;
 import tools.alternatives.IAlternative;
 import tools.data.Dataset;
 import tools.functions.multivariate.CertaintyFunction;
@@ -32,7 +34,7 @@ import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
 import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
 import tools.functions.multivariate.outRankingCertainties.Thurstone;
 import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.functions.singlevariate.OWA.OWALexmin;
+import tools.functions.singlevariate.LinearScoreFunction;
 import tools.normalization.Normalizer.NormalizationMethod;
 import tools.rules.DecisionRule;
 import tools.utils.AlternativeUtil;
@@ -41,12 +43,11 @@ import tools.utils.RuleUtil;
 public class SamplingMethodExperiment {
 
     private static List<String> datasetNames = Arrays.asList("toms", "bank", "credit", "connect", "mushroom");
-    private static String[] allMeasureNames = new String[] { "lift", "confidence", "support", "yuleQ", "kruskal",
-            "cosine", "phi", "pavillon", "certainty" };
+    private static String[] allMeasureNames = new String[] { "IG" };
 
     private static String dataDirectory = "data/folds/";
 
-    private static ISinglevariateFunction owa_score_function = new OWALexmin(0.01, allMeasureNames.length);
+    private static ISinglevariateFunction score_function = new LinearScoreFunction();
 
     /**
      * Creates the out-ranking certainties using the provided scoring function.
@@ -156,8 +157,9 @@ public class SamplingMethodExperiment {
             String datasetName, int foldIdx, int samplingIterations, String outputDirectory) {
 
         // Process regular SMAS sampling
-        processSamplingForCertainties(dataset, scoreFunction, measureNames, datasetName, foldIdx, samplingIterations,
-                outputDirectory);
+        // processSamplingForCertainties(dataset, scoreFunction, measureNames,
+        // datasetName, foldIdx, samplingIterations,
+        // outputDirectory);
 
         // Process Unrestricted Sampler
         // processUnrestrictedSampling(dataset, scoreFunction, datasetName, foldIdx,
@@ -189,6 +191,31 @@ public class SamplingMethodExperiment {
             // Write the results to CSV
             writeSampleToCSV(sample, approxScores, filename, samplingIterations, outputDirectory);
         }
+    }
+
+    private static void processSamplingWithDecisionTrees(Dataset dataset, ISinglevariateFunction scoreFunction,
+            String datasetName, int foldIdx, String outputDirectory) {
+
+        Sampler DTSampler = new DecisionTreeSampler(
+                dataset,
+                dataset.getAntecedentItemsSet(),
+                AlgorithmType.C45,
+                10,
+                dataset.getItemsMap(),
+                1);
+
+        // Run the sampling with a timeout
+        List<DecisionRule> sample = executeSamplingWithTimeout(DTSampler, 30);
+        List<Double> approxScores = computeApproxScores(sample, scoreFunction);
+
+        // Process the results after sampling
+        String filename = String.format("%s_%d_%s",
+                datasetName,
+                foldIdx,
+                "DT");
+
+        // Write the results to CSV
+        writeSampleToCSV(sample, approxScores, filename, 0, outputDirectory);
     }
 
     private static void processUnrestrictedSampling(Dataset dataset, ISinglevariateFunction scoreFunction,
@@ -360,7 +387,7 @@ public class SamplingMethodExperiment {
                             Dataset testDataset = testDatasets.get(foldIdx);
 
                             try {
-                                runOnFold(testDataset, owa_score_function, allMeasureNames, datasetName, foldIdx,
+                                runOnFold(testDataset, score_function, allMeasureNames, datasetName, foldIdx,
                                         samplingIterationsFinal, "sampling_experiment/samples/ratio_1to10/");
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -402,7 +429,7 @@ public class SamplingMethodExperiment {
                                 executor.submit(() -> {
                                     System.out.println(
                                             "Dataset: " + datasetName + " - Iterations: " + samplingIterationsFinal);
-                                    runOnFold(dataset, owa_score_function, allMeasureNames, datasetName, foldIdxFinal,
+                                    runOnFold(dataset, score_function, allMeasureNames, datasetName, foldIdxFinal,
                                             samplingIterationsFinal, "results/sampling_experiment/samples/ratio_1to1/");
                                 });
                             });
