@@ -36,12 +36,13 @@ public class RuleMeasures {
     public static final String certainty = "certainty";
     public static final String support = "support";
     public static final String revsupport = "revsup";
+    public static final String informationGain = "IG";
 
     public RuleMeasures(IRule rule, int nbTransactions, double smoothCounts) {
         if (rule == null) {
             throw new RuntimeException("Rule must not be null");
         }
-        
+
         n = nbTransactions;
         n11 = rule.getFreqZ();
         n1x = rule.getFreqX();
@@ -78,11 +79,10 @@ public class RuleMeasures {
      */
     private void checkMeasure(double value, double lb, double ub, String measureName) {
         if (value > (ub + epsilon) || value < (lb - epsilon)) {
-            throw new IllegalArgumentException("Illegal value for measure " + measureName + 
-                ": value=" + value + ", should be between " + lb + " and " + ub);
+            throw new IllegalArgumentException("Illegal value for measure " + measureName +
+                    ": value=" + value + ", should be between " + lb + " and " + ub);
         }
     }
-    
 
     /**
      * Computes the confidence measure for the rule.
@@ -90,6 +90,17 @@ public class RuleMeasures {
      * @return The confidence measure.
      */
     private double confidence() {
+        double value = n11 / n1x;
+        checkMeasure(value, 0, 1, confidence);
+        return value;
+    }
+
+    /**
+     * Computes the information gain of the rule.
+     *
+     * @return The information gain measure.
+     */
+    private double informationGain() {
         double value = n11 / n1x;
         checkMeasure(value, 0, 1, confidence);
         return value;
@@ -169,7 +180,7 @@ public class RuleMeasures {
     private double addedValue() {
         double value = n11 / n1x - nx1 / n;
         checkMeasure(value, -0.5, 1, addedValue);
-        return value; 
+        return value;
     }
 
     /**

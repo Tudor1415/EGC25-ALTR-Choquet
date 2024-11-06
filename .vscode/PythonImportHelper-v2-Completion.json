@@ -519,7 +519,7 @@
         "kind": 5,
         "importPath": "scripts.plot_sampling",
         "description": "scripts.plot_sampling",
-        "peekOfCode": "base_folder = \"results/sampling_experiment/samples/ratio_1to1/\"\n# Group files\nnested_grouped_files = group_files_in_nested_dict(base_folder)\n# Compute mean and variance for each numIterations group\nmean_variance_results = compute_mean_variance_for_best_scores(nested_grouped_files)\n# Define the output folder where the plots will be saved\noutput_folder = \"results/sampling_experiment/output_plots/ratio_1to1\"\nos.makedirs(output_folder, exist_ok=True)\n# Call the updated plot function to generate and save the side-by-side plots\nplot_results_and_save(mean_variance_results, nested_grouped_files, output_folder)",
+        "peekOfCode": "base_folder = \"results/sampling_experiment/samples/ratio_1to10/\"\n# Group files\nnested_grouped_files = group_files_in_nested_dict(base_folder)\n# Compute mean and variance for each numIterations group\nmean_variance_results = compute_mean_variance_for_best_scores(nested_grouped_files)\n# Define the output folder where the plots will be saved\noutput_folder = \"results/sampling_experiment/output_plots/ratio_1to10\"\nos.makedirs(output_folder, exist_ok=True)\n# Call the updated plot function to generate and save the side-by-side plots\nplot_results_and_save(mean_variance_results, nested_grouped_files, output_folder)",
         "detail": "scripts.plot_sampling",
         "documentation": {}
     },
@@ -528,7 +528,7 @@
         "kind": 5,
         "importPath": "scripts.plot_sampling",
         "description": "scripts.plot_sampling",
-        "peekOfCode": "nested_grouped_files = group_files_in_nested_dict(base_folder)\n# Compute mean and variance for each numIterations group\nmean_variance_results = compute_mean_variance_for_best_scores(nested_grouped_files)\n# Define the output folder where the plots will be saved\noutput_folder = \"results/sampling_experiment/output_plots/ratio_1to1\"\nos.makedirs(output_folder, exist_ok=True)\n# Call the updated plot function to generate and save the side-by-side plots\nplot_results_and_save(mean_variance_results, nested_grouped_files, output_folder)",
+        "peekOfCode": "nested_grouped_files = group_files_in_nested_dict(base_folder)\n# Compute mean and variance for each numIterations group\nmean_variance_results = compute_mean_variance_for_best_scores(nested_grouped_files)\n# Define the output folder where the plots will be saved\noutput_folder = \"results/sampling_experiment/output_plots/ratio_1to10\"\nos.makedirs(output_folder, exist_ok=True)\n# Call the updated plot function to generate and save the side-by-side plots\nplot_results_and_save(mean_variance_results, nested_grouped_files, output_folder)",
         "detail": "scripts.plot_sampling",
         "documentation": {}
     },
@@ -537,7 +537,7 @@
         "kind": 5,
         "importPath": "scripts.plot_sampling",
         "description": "scripts.plot_sampling",
-        "peekOfCode": "mean_variance_results = compute_mean_variance_for_best_scores(nested_grouped_files)\n# Define the output folder where the plots will be saved\noutput_folder = \"results/sampling_experiment/output_plots/ratio_1to1\"\nos.makedirs(output_folder, exist_ok=True)\n# Call the updated plot function to generate and save the side-by-side plots\nplot_results_and_save(mean_variance_results, nested_grouped_files, output_folder)",
+        "peekOfCode": "mean_variance_results = compute_mean_variance_for_best_scores(nested_grouped_files)\n# Define the output folder where the plots will be saved\noutput_folder = \"results/sampling_experiment/output_plots/ratio_1to10\"\nos.makedirs(output_folder, exist_ok=True)\n# Call the updated plot function to generate and save the side-by-side plots\nplot_results_and_save(mean_variance_results, nested_grouped_files, output_folder)",
         "detail": "scripts.plot_sampling",
         "documentation": {}
     },
@@ -546,7 +546,7 @@
         "kind": 5,
         "importPath": "scripts.plot_sampling",
         "description": "scripts.plot_sampling",
-        "peekOfCode": "output_folder = \"results/sampling_experiment/output_plots/ratio_1to1\"\nos.makedirs(output_folder, exist_ok=True)\n# Call the updated plot function to generate and save the side-by-side plots\nplot_results_and_save(mean_variance_results, nested_grouped_files, output_folder)",
+        "peekOfCode": "output_folder = \"results/sampling_experiment/output_plots/ratio_1to10\"\nos.makedirs(output_folder, exist_ok=True)\n# Call the updated plot function to generate and save the side-by-side plots\nplot_results_and_save(mean_variance_results, nested_grouped_files, output_folder)",
         "detail": "scripts.plot_sampling",
         "documentation": {}
     },

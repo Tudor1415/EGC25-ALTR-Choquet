@@ -202,7 +202,7 @@ def plot_results_and_save(mean_variance_results, grouped_files, output_folder):
         plt.close(fig)
 
 # Replace with your actual path to the data folder
-base_folder = "results/sampling_experiment/samples/ratio_1to1/"
+base_folder = "results/sampling_experiment/samples/ratio_1to10/"
 
 # Group files
 nested_grouped_files = group_files_in_nested_dict(base_folder)
@@ -211,7 +211,7 @@ nested_grouped_files = group_files_in_nested_dict(base_folder)
 mean_variance_results = compute_mean_variance_for_best_scores(nested_grouped_files)
 
 # Define the output folder where the plots will be saved
-output_folder = "results/sampling_experiment/output_plots/ratio_1to1"
+output_folder = "results/sampling_experiment/output_plots/ratio_1to10"
 os.makedirs(output_folder, exist_ok=True)
 
 # Call the updated plot function to generate and save the side-by-side plots

@@ -43,7 +43,7 @@ import tools.utils.RuleUtil;
 public class SamplingMethodExperiment {
 
     private static List<String> datasetNames = Arrays.asList("toms", "bank", "credit", "connect", "mushroom");
-    private static String[] allMeasureNames = new String[] { "IG" };
+    private static String[] allMeasureNames = new String[] { "phi" };
 
     private static String dataDirectory = "data/folds/";
 
@@ -166,10 +166,13 @@ public class SamplingMethodExperiment {
         // samplingIterations, outputDirectory,
         // measureNames);
 
+        // Process Decision Tree Sampler
+        processSamplingWithDecisionTrees(dataset, scoreFunction, datasetName, foldIdx, samplingIterations,
+                outputDirectory);
+
         // Process Batch Sampler
         processBatchSamplingForCertainties(dataset, scoreFunction, measureNames, datasetName, foldIdx,
-                samplingIterations,
-                outputDirectory);
+                samplingIterations, outputDirectory);
     }
 
     private static void processSamplingForCertainties(Dataset dataset, ISinglevariateFunction scoreFunction,
@@ -194,7 +197,7 @@ public class SamplingMethodExperiment {
     }
 
     private static void processSamplingWithDecisionTrees(Dataset dataset, ISinglevariateFunction scoreFunction,
-            String datasetName, int foldIdx, String outputDirectory) {
+            String datasetName, int foldIdx, int samplingIterations, String outputDirectory) {
 
         Sampler DTSampler = new DecisionTreeSampler(
                 dataset,
@@ -202,20 +205,23 @@ public class SamplingMethodExperiment {
                 AlgorithmType.C45,
                 10,
                 dataset.getItemsMap(),
-                1);
+                1,
+                allMeasureNames);
 
         // Run the sampling with a timeout
         List<DecisionRule> sample = executeSamplingWithTimeout(DTSampler, 30);
         List<Double> approxScores = computeApproxScores(sample, scoreFunction);
 
         // Process the results after sampling
-        String filename = String.format("%s_%d_%s",
+        String filename = String.format("%s_%d_%s_%d_%s",
                 datasetName,
                 foldIdx,
+                scoreFunction.getName(),
+                1,
                 "DT");
 
         // Write the results to CSV
-        writeSampleToCSV(sample, approxScores, filename, 0, outputDirectory);
+        writeSampleToCSV(sample, approxScores, filename, samplingIterations, outputDirectory);
     }
 
     private static void processUnrestrictedSampling(Dataset dataset, ISinglevariateFunction scoreFunction,
@@ -388,7 +394,7 @@ public class SamplingMethodExperiment {
 
                             try {
                                 runOnFold(testDataset, score_function, allMeasureNames, datasetName, foldIdx,
-                                        samplingIterationsFinal, "sampling_experiment/samples/ratio_1to10/");
+                                        samplingIterationsFinal, "results/sampling_experiment/samples/ratio_1to10/");
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -458,6 +464,6 @@ public class SamplingMethodExperiment {
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
-        runOnDataset();
+        runOnFolds();
     }
 }

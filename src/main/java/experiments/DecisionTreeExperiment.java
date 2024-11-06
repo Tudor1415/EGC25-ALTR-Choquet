@@ -50,7 +50,8 @@ public class DecisionTreeExperiment {
                             algorithmType,
                             10,
                             testDataset.getItemsMap(),
-                            1);
+                            1,
+                            new String[] { "support" });
 
                     TreeNode root = sampler.buildTree();
                     List<DecisionRule> rules = sampler.extractRules(root, testDataset, 1.0, new String[] { "support" });

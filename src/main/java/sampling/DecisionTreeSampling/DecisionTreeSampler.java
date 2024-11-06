@@ -23,15 +23,17 @@ public class DecisionTreeSampler implements Sampler {
     private int maxDepth;
     private Map<String, SparseBitSet> itemsMap;
     private int maxItemsetSize;
+    private String[] allMeasureNames;
 
     public DecisionTreeSampler(Dataset dataset, Set<String> items, AlgorithmType algorithmType,
-            int maxDepth, Map<String, SparseBitSet> itemsMap, int maxItemsetSize) {
+            int maxDepth, Map<String, SparseBitSet> itemsMap, int maxItemsetSize, String[] allMeasureNames) {
         this.dataset = dataset;
         this.items = items;
         this.algorithmType = algorithmType;
         this.maxDepth = maxDepth;
         this.itemsMap = itemsMap;
         this.maxItemsetSize = maxItemsetSize;
+        this.allMeasureNames = allMeasureNames;
     }
 
     public TreeNode buildTree() {
@@ -330,7 +332,7 @@ public class DecisionTreeSampler implements Sampler {
 
     public List<DecisionRule> sample() {
         TreeNode root = this.buildTree();
-        List<DecisionRule> rules = this.extractRules(root, dataset, 1.0, new String[] { "support", "confidence" });
+        List<DecisionRule> rules = this.extractRules(root, dataset, 1.0, allMeasureNames);
 
         return rules;
     }
