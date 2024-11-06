@@ -32,43 +32,52 @@ public class DecisionTreeExperiment {
     }
 
     public static void runExperiment() throws IOException {
-        List<String> datasetNames = Arrays.asList("bank");
-        List<Double> allGains = new ArrayList<>();
+        List<String> datasetNames = Arrays.asList("adult");
+        Map<AlgorithmType, List<Double>> gainsByAlgorithm = new HashMap<>();
+
+        // Initialize map for each algorithm type
+        for (AlgorithmType algorithmType : AlgorithmType.values()) {
+            gainsByAlgorithm.put(algorithmType, new ArrayList<>());
+        }
 
         for (String datasetName : datasetNames) {
-            List<Dataset> testDatasets = readDatasetsFromFold(datasetName, "Test");
+            List<Dataset> testDatasets = readDatasetsFromFold(datasetName, "test");
             for (Dataset testDataset : testDatasets) {
                 int classIndex = 0; // Ensure this index is correctly set as per your dataset schema
 
-                // Convert the array of arrays to a list of arrays
                 List<String[]> transactionList = Arrays.asList(testDataset.getTransactions());
 
-                DecisionTreeSampler sampler = new DecisionTreeSampler(
-                        transactionList,
-                        testDataset.getAntecedentItemsSet(),
-                        classIndex,
-                        AlgorithmType.ID3,
-                        10,
-                        testDataset.getItemsMap(),
-                        2);
+                for (AlgorithmType algorithmType : AlgorithmType.values()) {
+                    DecisionTreeSampler sampler = new DecisionTreeSampler(
+                            transactionList,
+                            testDataset.getAntecedentItemsSet(),
+                            classIndex,
+                            algorithmType,
+                            10,
+                            testDataset.getItemsMap(),
+                            2);
 
-                TreeNode root = sampler.buildTree();
-                List<DecisionRule> rules = sampler.extractRules(root, testDataset, 1.0,
-                        new String[] { "measure1", "measure2" });
-                double maxGain = rules.stream()
-                        .mapToDouble(rule -> calculateInformationGain(rule, testDataset))
-                        .max()
-                        .orElse(0);
-                allGains.add(maxGain);
+                    TreeNode root = sampler.buildTree();
+                    List<DecisionRule> rules = sampler.extractRules(root, testDataset, 1.0, new String[] { "support" });
+                    double maxGain = rules.stream()
+                            .mapToDouble(rule -> calculateInformationGain(rule, testDataset))
+                            .max()
+                            .orElse(0);
+
+                    gainsByAlgorithm.get(algorithmType).add(maxGain);
+                }
             }
         }
 
-        double averageGain = allGains.stream().mapToDouble(Double::doubleValue).average().orElse(0);
-        System.out.println("Average Information Gain across all datasets and folds: " + averageGain);
+        // Calculate and print average gains for each algorithm
+        for (Map.Entry<AlgorithmType, List<Double>> entry : gainsByAlgorithm.entrySet()) {
+            double averageGain = entry.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(0);
+            System.out.println("Average Information Gain for " + entry.getKey() + ": " + averageGain);
+        }
     }
 
     private static List<Dataset> readDatasetsFromFold(String datasetName, String trainOrTest) throws IOException {
-        String folderPath = dataDirectory + datasetName + "/" + trainOrTest;
+        String folderPath = dataDirectory + datasetName + "/" + trainOrTest + "/";
         File folder = new File(folderPath);
 
         List<Dataset> datasets = new ArrayList<>();
@@ -79,7 +88,7 @@ public class DecisionTreeExperiment {
             if (files != null) {
                 for (File file : files) {
                     if (file.isFile()) {
-                        Dataset dataset = new Dataset(file.getPath(), folderPath, getClassItems(datasetName));
+                        Dataset dataset = new Dataset(file.getName(), folderPath, getClassItems(datasetName));
                         datasets.add(dataset);
                     }
                 }
