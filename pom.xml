@@ -12,6 +12,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -24,11 +25,6 @@
       <artifactId>junit-jupiter-api</artifactId>
       <version>5.8.2</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-math3</artifactId>
-      <version>3.6.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
@@ -68,4 +64,27 @@
       <version>8.5.9</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Dependency Plugin for generating classpath -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>build-classpath</id>
+            <goals>
+              <goal>build-classpath</goal>
+            </goals>
+            <phase>validate</phase>
+            <configuration>
+              <outputFile>${project.build.directory}/classpath.txt</outputFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
