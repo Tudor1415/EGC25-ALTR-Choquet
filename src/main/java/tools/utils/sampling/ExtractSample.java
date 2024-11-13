@@ -161,7 +161,7 @@ public class ExtractSample {
         String datasetNameWithoutExtension = datasetName.replaceFirst("[.][^.]+$", "");
 
         BatchSampler batchSampler = new BatchSampler(nbSamples, dataset, scoreFunction, measureNames,
-                nbSamples);
+                10);
 
         batchSampler.setScoringFunction(scoreFunction);
         batchSampler.setNormalizationTechnique(NormalizationMethod.NO_NORMALIZATION);

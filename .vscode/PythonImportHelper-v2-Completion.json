@@ -258,7 +258,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "parser = argparse.ArgumentParser(description='Run ExtractSample Java program on datasets.')\nparser.add_argument('--nb_samples', type=int, default=1000, help='Number of samples to generate')\nargs = parser.parse_args()\nnb_samples = args.nb_samples\n# Paths relative to the scripts folder\nscripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')",
+        "peekOfCode": "parser = argparse.ArgumentParser(description='Run ExtractSample Java program on datasets.')\nparser.add_argument('--nb_samples', type=int, default=100_000, help='Number of samples to generate')\nargs = parser.parse_args()\nnb_samples = args.nb_samples\n# Paths relative to the scripts folder\nscripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -285,7 +285,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "scripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'confidence,support'",
+        "peekOfCode": "scripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'phi'",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -294,7 +294,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "project_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'confidence,support'\nweights = '0.5,0.5'",
+        "peekOfCode": "project_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'phi'\nweights = '1'",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -303,7 +303,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "dataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'confidence,support'\nweights = '0.5,0.5'\n# Step 1: Get the classpath of the project including dependencies",
+        "peekOfCode": "dataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'phi'\nweights = '1'\n# Step 1: Get the classpath of the project including dependencies",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -312,7 +312,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "target_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'confidence,support'\nweights = '0.5,0.5'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")",
+        "peekOfCode": "target_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'phi'\nweights = '1'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -321,7 +321,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "class_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'confidence,support'\nweights = '0.5,0.5'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")\nmvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']",
+        "peekOfCode": "class_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'phi'\nweights = '1'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")\nmvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -330,7 +330,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "output_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'confidence,support'\nweights = '0.5,0.5'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")\nmvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']\n# Run this instead: mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt  ",
+        "peekOfCode": "output_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'phi'\nweights = '1'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")\nmvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']\n# Run this instead: mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt  ",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -339,7 +339,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "timeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'confidence,support'\nweights = '0.5,0.5'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")\nmvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']\n# Run this instead: mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt  \n# Read the classpath from the generated file\nclasspath_file = os.path.join(project_root, 'classpath.txt')",
+        "peekOfCode": "timeout_minutes = 30\n# Measure names and weights (can be adjusted as needed)\nmeasure_names = 'phi'\nweights = '1'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")\nmvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']\n# Run this instead: mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt  \n# Read the classpath from the generated file\nclasspath_file = os.path.join(project_root, 'classpath.txt')",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -348,7 +348,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "measure_names = 'confidence,support'\nweights = '0.5,0.5'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")\nmvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']\n# Run this instead: mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt  \n# Read the classpath from the generated file\nclasspath_file = os.path.join(project_root, 'classpath.txt')\nif not os.path.exists(classpath_file):\n    print(\"Failed to generate classpath using Maven.\")",
+        "peekOfCode": "measure_names = 'phi'\nweights = '1'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")\nmvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']\n# Run this instead: mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt  \n# Read the classpath from the generated file\nclasspath_file = os.path.join(project_root, 'classpath.txt')\nif not os.path.exists(classpath_file):\n    print(\"Failed to generate classpath using Maven.\")",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -357,7 +357,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "weights = '0.5,0.5'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")\nmvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']\n# Run this instead: mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt  \n# Read the classpath from the generated file\nclasspath_file = os.path.join(project_root, 'classpath.txt')\nif not os.path.exists(classpath_file):\n    print(\"Failed to generate classpath using Maven.\")\n    sys.exit(1)",
+        "peekOfCode": "weights = '1'\n# Step 1: Get the classpath of the project including dependencies\nprint(\"Getting classpath from Maven...\")\nmvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']\n# Run this instead: mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt  \n# Read the classpath from the generated file\nclasspath_file = os.path.join(project_root, 'classpath.txt')\nif not os.path.exists(classpath_file):\n    print(\"Failed to generate classpath using Maven.\")\n    sys.exit(1)",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -375,7 +375,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "classpath_file = os.path.join(project_root, 'classpath.txt')\nif not os.path.exists(classpath_file):\n    print(\"Failed to generate classpath using Maven.\")\n    sys.exit(1)\nwith open(classpath_file, 'r') as f:\n    maven_classpath = f.read().strip()\n# Combine the Maven classpath with the compiled classes in target/classes\nexecution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\n# for dataset_file in os.listdir(dataset_folder):",
+        "peekOfCode": "classpath_file = os.path.join(project_root, 'classpath.txt')\nif not os.path.exists(classpath_file):\n    print(\"Failed to generate classpath using Maven.\")\n    sys.exit(1)\nwith open(classpath_file, 'r') as f:\n    maven_classpath = f.read().strip()\n# Combine the Maven classpath with the compiled classes in target/classes\nexecution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\nfor dataset_file in os.listdir(dataset_folder):",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -384,7 +384,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "execution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\n# for dataset_file in os.listdir(dataset_folder):\n#     if os.path.isfile(os.path.join(dataset_folder, dataset_file)):\n#         dataset_name = dataset_file\n#         # Construct the output directory\n#         dataset_name_without_extension = os.path.splitext(dataset_name)[0]\n#         output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples')\n#         # Ensure the output directory exists\n#         os.makedirs(output_directory, exist_ok=True)",
+        "peekOfCode": "execution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\nfor dataset_file in os.listdir(dataset_folder):\n    if os.path.isfile(os.path.join(dataset_folder, dataset_file)):\n        dataset_name = dataset_file\n        # Construct the output directory\n        dataset_name_without_extension = os.path.splitext(dataset_name)[0]\n        output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples')\n        # Ensure the output directory exists\n        os.makedirs(output_directory, exist_ok=True)",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
