@@ -63,12 +63,35 @@
         "documentation": {}
     },
     {
-        "label": "seaborn",
-        "kind": 6,
+        "label": "KFold",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
         "isExtraImport": true,
-        "importPath": "seaborn",
-        "description": "seaborn",
-        "detail": "seaborn",
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "KFold",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "RandomForestClassifier",
+        "importPath": "sklearn.ensemble",
+        "description": "sklearn.ensemble",
+        "isExtraImport": true,
+        "detail": "sklearn.ensemble",
+        "documentation": {}
+    },
+    {
+        "label": "accuracy_score",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
         "documentation": {}
     },
     {
@@ -78,6 +101,15 @@
         "importPath": "matplotlib.pyplot",
         "description": "matplotlib.pyplot",
         "detail": "matplotlib.pyplot",
+        "documentation": {}
+    },
+    {
+        "label": "seaborn",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "seaborn",
+        "description": "seaborn",
+        "detail": "seaborn",
         "documentation": {}
     },
     {
@@ -147,14 +179,6 @@
         "documentation": {}
     },
     {
-        "label": "KFold",
-        "importPath": "sklearn.model_selection",
-        "description": "sklearn.model_selection",
-        "isExtraImport": true,
-        "detail": "sklearn.model_selection",
-        "documentation": {}
-    },
-    {
         "label": "write_list_of_lists_to_file",
         "kind": 2,
         "importPath": "data.scripts.format",
@@ -245,11 +269,11 @@
         "documentation": {}
     },
     {
-        "label": "add_rule_columns",
+        "label": "load_dataset",
         "kind": 2,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "def add_rule_columns(df, rules_df):\n    # Get the max value in the entire DataFrame\n    last_item = df.max().max()\n    # Process each of the top 10 rules\n    for index, row in rules_df.head(10).iterrows(): # Only top 10 rules\n        rule = row['Rule']\n        rule_index = index + 1\n        column_name = f\"Rule_{rule_index}\"\n        # Parse rule to separate antecedent and consequent elements\n        antecedent, consequent = rule.split(' => ')",
+        "peekOfCode": "def load_dataset(dataset_file, class_items):\n    data = []\n    with open(dataset_file, 'r') as f:\n        for line in f:\n            items = line.strip().split()\n            data.append([int(item) for item in items])\n    # Collect all items\n    all_items = set()\n    for transaction in data:\n        all_items.update(transaction)",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -258,7 +282,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "parser = argparse.ArgumentParser(description='Run ExtractSample Java program on datasets.')\nparser.add_argument('--nb_samples', type=int, default=100_000, help='Number of samples to generate')\nargs = parser.parse_args()\nnb_samples = args.nb_samples\n# Paths relative to the scripts folder\nscripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')",
+        "peekOfCode": "parser = argparse.ArgumentParser(description='Run ExtractSample Java program on datasets.')\nparser.add_argument('--nb_samples', type=int, default=100_000, help='Number of samples to generate')\nargs = parser.parse_args()\nnb_samples = args.nb_samples\nnb_folds = 5\n# Paths relative to the scripts folder\nscripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -267,7 +291,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "args = parser.parse_args()\nnb_samples = args.nb_samples\n# Paths relative to the scripts folder\nscripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes",
+        "peekOfCode": "args = parser.parse_args()\nnb_samples = args.nb_samples\nnb_folds = 5\n# Paths relative to the scripts folder\nscripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -276,7 +300,16 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "nb_samples = args.nb_samples\n# Paths relative to the scripts folder\nscripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30",
+        "peekOfCode": "nb_samples = args.nb_samples\nnb_folds = 5\n# Paths relative to the scripts folder\nscripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes",
+        "detail": "scripts.augmented_data_experiment",
+        "documentation": {}
+    },
+    {
+        "label": "nb_folds",
+        "kind": 5,
+        "importPath": "scripts.augmented_data_experiment",
+        "description": "scripts.augmented_data_experiment",
+        "peekOfCode": "nb_folds = 5\n# Paths relative to the scripts folder\nscripts_dir = os.path.dirname(os.path.abspath(__file__))\nproject_root = os.path.abspath(os.path.join(scripts_dir, '..'))\ndataset_folder = os.path.join(project_root, 'data', 'dat-files') + \"\\\\\"\ntarget_dir = os.path.join(project_root, 'target')\nclass_output_dir = os.path.join(target_dir, 'classes')\noutput_base = os.path.join(project_root, 'results', 'augmented_data_exp')\n# Timeout in minutes\ntimeout_minutes = 30",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -375,7 +408,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "classpath_file = os.path.join(project_root, 'classpath.txt')\nif not os.path.exists(classpath_file):\n    print(\"Failed to generate classpath using Maven.\")\n    sys.exit(1)\nwith open(classpath_file, 'r') as f:\n    maven_classpath = f.read().strip()\n# Combine the Maven classpath with the compiled classes in target/classes\nexecution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\nfor dataset_file in os.listdir(dataset_folder):",
+        "peekOfCode": "classpath_file = os.path.join(project_root, 'classpath.txt')\nif not os.path.exists(classpath_file):\n    print(\"Failed to generate classpath using Maven.\")\n    sys.exit(1)\nwith open(classpath_file, 'r') as f:\n    maven_classpath = f.read().strip()\n# Combine the Maven classpath with the compiled classes in target/classes\nexecution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\n# for dataset_file in os.listdir(dataset_folder):",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -384,7 +417,70 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "execution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\nfor dataset_file in os.listdir(dataset_folder):\n    if os.path.isfile(os.path.join(dataset_folder, dataset_file)):\n        dataset_name = dataset_file\n        # Construct the output directory\n        dataset_name_without_extension = os.path.splitext(dataset_name)[0]\n        output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples')\n        # Ensure the output directory exists\n        os.makedirs(output_directory, exist_ok=True)",
+        "peekOfCode": "execution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\n# for dataset_file in os.listdir(dataset_folder):\n#     if os.path.isfile(os.path.join(dataset_folder, dataset_file)):\n#         dataset_name = dataset_file\n#         # Construct the output directory\n#         dataset_name_without_extension = os.path.splitext(dataset_name)[0]\n#         output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples')\n#         # Ensure the output directory exists\n#         os.makedirs(output_directory, exist_ok=True)",
+        "detail": "scripts.augmented_data_experiment",
+        "documentation": {}
+    },
+    {
+        "label": "class_items_dict",
+        "kind": 5,
+        "importPath": "scripts.augmented_data_experiment",
+        "description": "scripts.augmented_data_experiment",
+        "peekOfCode": "class_items_dict = {\n    'adult': ['145', '146'],\n    'bank': ['89', '90'],\n    'connect': ['127', '128'],\n    'credit': ['111', '112'],\n    'dota': ['346', '347'],\n    'toms': ['911', '912'],\n    'mushroom': ['116', '117']\n}\n# Function to load dataset and return feature matrix X and labels y",
+        "detail": "scripts.augmented_data_experiment",
+        "documentation": {}
+    },
+    {
+        "label": "results",
+        "kind": 5,
+        "importPath": "scripts.augmented_data_experiment",
+        "description": "scripts.augmented_data_experiment",
+        "peekOfCode": "results = {}\nfor dataset_file in os.listdir(dataset_folder):\n    if dataset_file.endswith('.dat'):\n        dataset_name = os.path.splitext(dataset_file)[0]\n        if dataset_name not in class_items_dict:\n            print(f\"Class items not defined for dataset {dataset_name}, skipping.\")\n            continue\n        print(f\"Processing dataset {dataset_name}...\")\n        # Read class items\n        class_items = [int(item) for item in class_items_dict[dataset_name]]",
+        "detail": "scripts.augmented_data_experiment",
+        "documentation": {}
+    },
+    {
+        "label": "plot_data",
+        "kind": 5,
+        "importPath": "scripts.augmented_data_experiment",
+        "description": "scripts.augmented_data_experiment",
+        "peekOfCode": "plot_data = []\nfor dataset_name in results.keys():\n    acc_orig = results[dataset_name]['Original']\n    acc_aug = results[dataset_name]['Augmented']\n    # Skip datasets without valid results\n    if not acc_orig and not acc_aug:\n        print(f\"No valid results for dataset {dataset_name}, skipping.\")\n        continue\n    # Add original accuracies to the plot data\n    if acc_orig:",
+        "detail": "scripts.augmented_data_experiment",
+        "documentation": {}
+    },
+    {
+        "label": "df_plot",
+        "kind": 5,
+        "importPath": "scripts.augmented_data_experiment",
+        "description": "scripts.augmented_data_experiment",
+        "peekOfCode": "df_plot = pd.DataFrame(plot_data)\n# Prepare data for matplotlib boxplot\ndata_to_plot = []\nlabels = []\nfor dataset_type in df_plot['Dataset_Type'].unique():\n    data_to_plot.append(df_plot[df_plot['Dataset_Type'] == dataset_type]['Accuracy'].values)\n    labels.append(dataset_type)\n# Create the figure\nplt.figure(figsize=(12, 6))\n# Create the boxplot",
+        "detail": "scripts.augmented_data_experiment",
+        "documentation": {}
+    },
+    {
+        "label": "data_to_plot",
+        "kind": 5,
+        "importPath": "scripts.augmented_data_experiment",
+        "description": "scripts.augmented_data_experiment",
+        "peekOfCode": "data_to_plot = []\nlabels = []\nfor dataset_type in df_plot['Dataset_Type'].unique():\n    data_to_plot.append(df_plot[df_plot['Dataset_Type'] == dataset_type]['Accuracy'].values)\n    labels.append(dataset_type)\n# Create the figure\nplt.figure(figsize=(12, 6))\n# Create the boxplot\nbp = plt.boxplot(\n    data_to_plot,",
+        "detail": "scripts.augmented_data_experiment",
+        "documentation": {}
+    },
+    {
+        "label": "labels",
+        "kind": 5,
+        "importPath": "scripts.augmented_data_experiment",
+        "description": "scripts.augmented_data_experiment",
+        "peekOfCode": "labels = []\nfor dataset_type in df_plot['Dataset_Type'].unique():\n    data_to_plot.append(df_plot[df_plot['Dataset_Type'] == dataset_type]['Accuracy'].values)\n    labels.append(dataset_type)\n# Create the figure\nplt.figure(figsize=(12, 6))\n# Create the boxplot\nbp = plt.boxplot(\n    data_to_plot,\n    labels=labels,",
+        "detail": "scripts.augmented_data_experiment",
+        "documentation": {}
+    },
+    {
+        "label": "bp",
+        "kind": 5,
+        "importPath": "scripts.augmented_data_experiment",
+        "description": "scripts.augmented_data_experiment",
+        "peekOfCode": "bp = plt.boxplot(\n    data_to_plot,\n    labels=labels,\n    patch_artist=True,\n    showmeans=True,\n    meanprops={\n        \"marker\": \"D\",\n        \"markerfacecolor\": \"orange\",\n        \"markeredgecolor\": \"black\"\n    }",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
