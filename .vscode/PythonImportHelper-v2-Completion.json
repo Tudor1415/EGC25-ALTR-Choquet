@@ -1,29 +1,20 @@
 [
     {
-        "label": "pandas",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "pandas",
-        "description": "pandas",
-        "detail": "pandas",
-        "documentation": {}
-    },
-    {
-        "label": "sys",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "sys",
-        "description": "sys",
-        "detail": "sys",
-        "documentation": {}
-    },
-    {
         "label": "os",
         "kind": 6,
         "isExtraImport": true,
         "importPath": "os",
         "description": "os",
         "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
         "documentation": {}
     },
     {
@@ -36,21 +27,12 @@
         "documentation": {}
     },
     {
-        "label": "argparse",
+        "label": "sys",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "argparse",
-        "description": "argparse",
-        "detail": "argparse",
-        "documentation": {}
-    },
-    {
-        "label": "re",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "re",
-        "description": "re",
-        "detail": "re",
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
         "documentation": {}
     },
     {
@@ -79,11 +61,35 @@
         "documentation": {}
     },
     {
+        "label": "KFold",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
         "label": "RandomForestClassifier",
         "importPath": "sklearn.ensemble",
         "description": "sklearn.ensemble",
         "isExtraImport": true,
         "detail": "sklearn.ensemble",
+        "documentation": {}
+    },
+    {
+        "label": "RandomForestClassifier",
+        "importPath": "sklearn.ensemble",
+        "description": "sklearn.ensemble",
+        "isExtraImport": true,
+        "detail": "sklearn.ensemble",
+        "documentation": {}
+    },
+    {
+        "label": "accuracy_score",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
         "documentation": {}
     },
     {
@@ -101,6 +107,24 @@
         "importPath": "matplotlib.pyplot",
         "description": "matplotlib.pyplot",
         "detail": "matplotlib.pyplot",
+        "documentation": {}
+    },
+    {
+        "label": "argparse",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "argparse",
+        "description": "argparse",
+        "detail": "argparse",
+        "documentation": {}
+    },
+    {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
         "documentation": {}
     },
     {
@@ -179,6 +203,87 @@
         "documentation": {}
     },
     {
+        "label": "add_rule_columns",
+        "kind": 2,
+        "importPath": "augmented_data_exp.data_processing",
+        "description": "augmented_data_exp.data_processing",
+        "peekOfCode": "def add_rule_columns(df, rules_df):\n    # Get the max value in the entire DataFrame\n    last_item = df.max().max()\n    # Process each of the top 10 rules\n    for index, row in rules_df.head(10).iterrows(): # Only top 10 rules\n        rule = row['Rule']\n        rule_index = index + 1\n        column_name = f\"Rule_{rule_index}\"\n        # Parse rule to separate antecedent and consequent elements\n        antecedent, consequent = rule.split(' => ')",
+        "detail": "augmented_data_exp.data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "process_datasets",
+        "kind": 2,
+        "importPath": "augmented_data_exp.data_processing",
+        "description": "augmented_data_exp.data_processing",
+        "peekOfCode": "def process_datasets(dat_file_folder, output_base):\n    # Iterate over each dataset directory\n    for dataset_name in os.listdir(dat_file_folder):\n        dataset_name = dataset_name.split(\".\")[0]\n        rules_path = os.path.join(output_base, dataset_name, \"samples\")\n        # Check if the dataset directory has any files\n        if os.path.isdir(rules_path):\n            # Find the first CSV file in the samples folder\n            first_file = next((f for f in os.listdir(rules_path) if f.endswith('.csv')), None)\n            if first_file:",
+        "detail": "augmented_data_exp.data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "run_extract_sample",
+        "kind": 2,
+        "importPath": "augmented_data_exp.java_runner",
+        "description": "augmented_data_exp.java_runner",
+        "peekOfCode": "def run_extract_sample(dataset_name, dataset_folder, output_directory, nb_samples, timeout_minutes, measure_names, weights, execution_classpath, project_root):\n    command = [\n        'java',\n        '-cp',\n        execution_classpath,\n        'tools.utils.sampling.ExtractSample',\n        dataset_name,\n        dataset_folder,\n        output_directory,\n        str(nb_samples),",
+        "detail": "augmented_data_exp.java_runner",
+        "documentation": {}
+    },
+    {
+        "label": "get_maven_classpath",
+        "kind": 2,
+        "importPath": "augmented_data_exp.maven_utils",
+        "description": "augmented_data_exp.maven_utils",
+        "peekOfCode": "def get_maven_classpath(project_root):\n    print(\"Getting classpath from Maven...\")\n    mvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']\n    try:\n        subprocess.run(mvn_dependency_command, check=True, cwd=project_root)\n    except subprocess.CalledProcessError as e:\n        print(f\"Failed to generate classpath using Maven: {e}\")\n        sys.exit(1)\n    classpath_file = os.path.join(project_root, 'classpath.txt')\n    if not os.path.exists(classpath_file):",
+        "detail": "augmented_data_exp.maven_utils",
+        "documentation": {}
+    },
+    {
+        "label": "load_dataset",
+        "kind": 2,
+        "importPath": "augmented_data_exp.model_evaluation",
+        "description": "augmented_data_exp.model_evaluation",
+        "peekOfCode": "def load_dataset(dataset_file, class_items):\n    data = []\n    with open(dataset_file, 'r') as f:\n        for line in f:\n            items = line.strip().split()\n            data.append([int(item) for item in items])\n    # Collect all items\n    all_items = set()\n    for transaction in data:\n        all_items.update(transaction)",
+        "detail": "augmented_data_exp.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "evaluate_model",
+        "kind": 2,
+        "importPath": "augmented_data_exp.model_evaluation",
+        "description": "augmented_data_exp.model_evaluation",
+        "peekOfCode": "def evaluate_model(X, y, n_splits=5):\n    accuracies = []\n    kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)\n    for train_index, test_index in kf.split(X):\n        X_train, X_test = X[train_index], X[test_index]\n        y_train, y_test = y[train_index], y[test_index]\n        # Train Random Forest\n        clf = RandomForestClassifier(random_state=42)\n        clf.fit(X_train, y_train)\n        # Predict on test set",
+        "detail": "augmented_data_exp.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "evaluate_datasets",
+        "kind": 2,
+        "importPath": "augmented_data_exp.model_evaluation",
+        "description": "augmented_data_exp.model_evaluation",
+        "peekOfCode": "def evaluate_datasets(dataset_folder, output_base, nb_folds=5):\n    results = {}\n    for dataset_file in os.listdir(dataset_folder):\n        if dataset_file.endswith('.dat'):\n            dataset_name = os.path.splitext(dataset_file)[0]\n            if dataset_name not in class_items_dict:\n                print(f\"Class items not defined for dataset {dataset_name}, skipping.\")\n                continue\n            print(f\"Processing dataset {dataset_name}...\")\n            # Read class items",
+        "detail": "augmented_data_exp.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "class_items_dict",
+        "kind": 5,
+        "importPath": "augmented_data_exp.model_evaluation",
+        "description": "augmented_data_exp.model_evaluation",
+        "peekOfCode": "class_items_dict = {\n    'adult': ['145', '146'],\n    'bank': ['89', '90'],\n    'connect': ['127', '128'],\n    'credit': ['111', '112'],\n    'dota': ['346', '347'],\n    'toms': ['911', '912'],\n    'mushroom': ['116', '117']\n}\ndef load_dataset(dataset_file, class_items):",
+        "detail": "augmented_data_exp.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "plot_results",
+        "kind": 2,
+        "importPath": "augmented_data_exp.plotting",
+        "description": "augmented_data_exp.plotting",
+        "peekOfCode": "def plot_results(results, output_base):\n    plot_data = []\n    for dataset_name in results.keys():\n        acc_orig = results[dataset_name]['Original']\n        acc_aug = results[dataset_name]['Augmented']\n        # Skip datasets without valid results\n        if not acc_orig and not acc_aug:\n            print(f\"No valid results for dataset {dataset_name}, skipping.\")\n            continue\n        # Add original accuracies to the plot data",
+        "detail": "augmented_data_exp.plotting",
+        "documentation": {}
+    },
+    {
         "label": "write_list_of_lists_to_file",
         "kind": 2,
         "importPath": "data.scripts.format",
@@ -266,6 +371,15 @@
         "description": "data.format",
         "peekOfCode": "mapping_file = sys.argv[3]\n# Call the function to convert CSV to DAT\nreformat(input_csv_file, output_dat_file, mapping_file)",
         "detail": "data.format",
+        "documentation": {}
+    },
+    {
+        "label": "add_rule_columns",
+        "kind": 2,
+        "importPath": "scripts.augmented_data_experiment",
+        "description": "scripts.augmented_data_experiment",
+        "peekOfCode": "def add_rule_columns(df, rules_df):\n    # Get the max value in the entire DataFrame\n    last_item = df.max().max()\n    # Process each of the top 10 rules\n    for index, row in rules_df.head(10).iterrows(): # Only top 10 rules\n        rule = row['Rule']\n        rule_index = index + 1\n        column_name = f\"Rule_{rule_index}\"\n        # Parse rule to separate antecedent and consequent elements\n        antecedent, consequent = rule.split(' => ')",
+        "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
     {
@@ -408,7 +522,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "classpath_file = os.path.join(project_root, 'classpath.txt')\nif not os.path.exists(classpath_file):\n    print(\"Failed to generate classpath using Maven.\")\n    sys.exit(1)\nwith open(classpath_file, 'r') as f:\n    maven_classpath = f.read().strip()\n# Combine the Maven classpath with the compiled classes in target/classes\nexecution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\n# for dataset_file in os.listdir(dataset_folder):",
+        "peekOfCode": "classpath_file = os.path.join(project_root, 'classpath.txt')\nif not os.path.exists(classpath_file):\n    print(\"Failed to generate classpath using Maven.\")\n    sys.exit(1)\nwith open(classpath_file, 'r') as f:\n    maven_classpath = f.read().strip()\n# Combine the Maven classpath with the compiled classes in target/classes\nexecution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\nfor dataset_file in os.listdir(dataset_folder):",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
@@ -417,7 +531,7 @@
         "kind": 5,
         "importPath": "scripts.augmented_data_experiment",
         "description": "scripts.augmented_data_experiment",
-        "peekOfCode": "execution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\n# for dataset_file in os.listdir(dataset_folder):\n#     if os.path.isfile(os.path.join(dataset_folder, dataset_file)):\n#         dataset_name = dataset_file\n#         # Construct the output directory\n#         dataset_name_without_extension = os.path.splitext(dataset_name)[0]\n#         output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples')\n#         # Ensure the output directory exists\n#         os.makedirs(output_directory, exist_ok=True)",
+        "peekOfCode": "execution_classpath = os.pathsep.join([class_output_dir, maven_classpath])\n# Step 2: Iterate over all dataset files in the dataset folder\nfor dataset_file in os.listdir(dataset_folder):\n    if os.path.isfile(os.path.join(dataset_folder, dataset_file)):\n        dataset_name = dataset_file\n        # Construct the output directory\n        dataset_name_without_extension = os.path.splitext(dataset_name)[0]\n        output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples')\n        # Ensure the output directory exists\n        os.makedirs(output_directory, exist_ok=True)",
         "detail": "scripts.augmented_data_experiment",
         "documentation": {}
     },
