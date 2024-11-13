@@ -67,10 +67,65 @@ def evaluate_model(X, y, model, n_splits=5):
         accuracies.append(acc)
     return accuracies
 
-def evaluate_datasets(dataset_folder, output_base, models, nb_folds=5):
+def evaluate_datasets(dataset_names, dataset_folder, output_base, models, nb_folds=5):
     results = {}
     
-    for dataset_file in os.listdir(dataset_folder):
+    for dataset_name in dataset_names:
+        if dataset_name not in class_items_dict:
+                print(f"Class items not defined for dataset {dataset_name}, skipping.")
+                continue
+
+        print(f"Processing dataset {dataset_name}...")
+
+        # Read class items
+        class_items = class_items_dict[dataset_name]
+
+        # Load original dataset
+        dataset_path = os.path.join(dataset_folder, dataset_name + ".csv")
+        X_orig, y_orig = load_dataset(dataset_path, class_items)
+
+        # Load augmented dataset
+        aug_dataset_file = os.path.join(output_base, dataset_name, "aug", dataset_name + "_processed_disc.dat")
+        if not os.path.exists(aug_dataset_file):
+            print(f"Augmented dataset not found for {dataset_name}, skipping augmented dataset.")
+            X_aug, y_aug = None, None
+        else:
+            X_aug, y_aug = load_dataset(aug_dataset_file, class_items)
+
+        # Evaluate on original dataset
+        if len(np.unique(y_orig)) < 2:
+            print(f"Not enough classes in original dataset {dataset_name}, skipping.")
+            continue
+
+        acc_orig = {}
+        acc_aug = {}
+
+        for model_name, model in models.items():
+            print(f"Evaluating Original dataset with {model_name}...")
+            acc = evaluate_model(X_orig, y_orig, model, n_splits=nb_folds)
+            acc_orig[model_name] = acc
+
+            if X_aug is not None and y_aug is not None:
+                if len(np.unique(y_aug)) < 2:
+                    print(f"Not enough classes in augmented dataset {dataset_name}, skipping augmented dataset.")
+                    acc_aug[model_name] = None
+                else:
+                    print(f"Evaluating Augmented dataset with {model_name}...")
+                    acc = evaluate_model(X_aug, y_aug, model, n_splits=nb_folds)
+                    acc_aug[model_name] = acc
+            else:
+                acc_aug[model_name] = None
+
+        # Store results
+        results[dataset_name] = {'Original': acc_orig, 'Augmented': acc_aug}
+    
+    return results
+
+
+def evaluate_dat_files(dat_files_folder, output_base, models, nb_folds=5):
+    results = {}
+    
+    for dataset_file in os.listdir(dat_files_folder):
         if dataset_file.endswith('.dat'):
             dataset_name = os.path.splitext(dataset_file)[0]
             if dataset_name not in class_items_dict:
@@ -83,7 +138,7 @@ def evaluate_datasets(dataset_folder, output_base, models, nb_folds=5):
             class_items = class_items_dict[dataset_name]
 
             # Load original dataset
-            dataset_path = os.path.join(dataset_folder, dataset_file)
+            dataset_path = os.path.join(dat_files_folder, dataset_file)
             X_orig, y_orig = load_dataset(dataset_path, class_items)
 
             # Load augmented dataset

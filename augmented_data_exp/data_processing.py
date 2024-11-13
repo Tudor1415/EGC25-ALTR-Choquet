@@ -93,6 +93,7 @@ def process_dat_files(dat_file_folder, output_base):
 def process_datasets(dataset_names, dataset_folder, output_base, mapping_folder):
     # Iterate over each dataset directory
     for dataset_name in dataset_names:
+        print()
         mapping_file_path = os.path.join(mapping_folder, dataset_name + ".map")
         mapping = create_conditions_dict(mapping_file_path)
         
@@ -111,7 +112,7 @@ def process_datasets(dataset_names, dataset_folder, output_base, mapping_folder)
                     # Add rule columns to this dataset
                     df = pd.read_csv(dataset_folder + dataset_name + "csv", delimiter=';')
                     df = add_rule_columns(df, rules_df, mapping)
-
+                    print(df.head())
                     aug_directory = os.path.join(output_base, dataset_name, "aug")
 
                     os.makedirs(aug_directory, exist_ok=True)

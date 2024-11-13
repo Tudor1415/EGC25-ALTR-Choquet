@@ -44,28 +44,28 @@ def main():
     execution_classpath = os.pathsep.join([class_output_dir, maven_classpath])
 
     # Step 2: Iterate over all dataset files in the dataset folder and run Java program
-    for dataset_file in os.listdir(dat_file_folder):
-        if os.path.isfile(os.path.join(dat_file_folder, dataset_file)):
-            dataset_name = dataset_file
-            # Construct the output directory
-            dataset_name_without_extension = os.path.splitext(dataset_name)[0]
-            output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples')
+    # for dataset_file in os.listdir(dat_file_folder):
+        # if os.path.isfile(os.path.join(dat_file_folder, dataset_file)):
+        #     dataset_name = dataset_file
+        #     # Construct the output directory
+        #     dataset_name_without_extension = os.path.splitext(dataset_name)[0]
+        #     output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples')
 
-            # Ensure the output directory exists
-            os.makedirs(output_directory, exist_ok=True)
+        #     # Ensure the output directory exists
+        #     os.makedirs(output_directory, exist_ok=True)
 
-            # Run the Java program
-            run_extract_sample(
-                dataset_name,
-                dat_file_folder,
-                output_directory,
-                nb_samples,
-                timeout_minutes,
-                measure_names,
-                weights,
-                execution_classpath,
-                project_root
-            )
+        #     # Run the Java program
+        #     run_extract_sample(
+        #         dataset_name,
+        #         dat_file_folder,
+        #         output_directory,
+        #         nb_samples,
+        #         timeout_minutes,
+        #         measure_names,
+        #         weights,
+        #         execution_classpath,
+        #         project_root
+        #     )
 
     # Process datasets to add rule columns
     process_datasets(["mushroom"], dataset_folder, output_base, mapping_file_folder)
