@@ -2,7 +2,6 @@
 import os
 import numpy as np
 from sklearn.model_selection import KFold
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
 class_items_dict = {
@@ -43,7 +42,7 @@ def load_dataset(dataset_file, class_items):
 
         # Assign labels
         for label, class_item in enumerate(class_items):
-            if class_item in items_in_transaction:
+            if int(class_item) in items_in_transaction:
                 y[i] = label
                 break
 
@@ -54,23 +53,21 @@ def load_dataset(dataset_file, class_items):
 
     return X, y
 
-def evaluate_model(X, y, n_splits=5):
+def evaluate_model(X, y, model, n_splits=5):
     accuracies = []
     kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
     for train_index, test_index in kf.split(X):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
-        # Train Random Forest
-        clf = RandomForestClassifier(random_state=42)
+        # Clone the model to ensure a fresh model for each fold
+        clf = model.__class__(**model.get_params())
         clf.fit(X_train, y_train)
-        # Predict on test set
         y_pred = clf.predict(X_test)
-        # Compute accuracy
         acc = accuracy_score(y_test, y_pred)
         accuracies.append(acc)
     return accuracies
 
-def evaluate_datasets(dataset_folder, output_base, nb_folds=5):
+def evaluate_datasets(dataset_folder, output_base, models, nb_folds=5):
     results = {}
     
     for dataset_file in os.listdir(dataset_folder):
@@ -83,14 +80,14 @@ def evaluate_datasets(dataset_folder, output_base, nb_folds=5):
             print(f"Processing dataset {dataset_name}...")
 
             # Read class items
-            class_items = [int(item) for item in class_items_dict[dataset_name]]
+            class_items = class_items_dict[dataset_name]
 
             # Load original dataset
             dataset_path = os.path.join(dataset_folder, dataset_file)
             X_orig, y_orig = load_dataset(dataset_path, class_items)
 
             # Load augmented dataset
-            aug_dataset_file = os.path.join(output_base, dataset_name, "aug", dataset_name + "_processed.dat")
+            aug_dataset_file = os.path.join(output_base, dataset_name, "aug", dataset_name + "_processed_disc.dat")
             if not os.path.exists(aug_dataset_file):
                 print(f"Augmented dataset not found for {dataset_name}, skipping augmented dataset.")
                 X_aug, y_aug = None, None
@@ -101,17 +98,25 @@ def evaluate_datasets(dataset_folder, output_base, nb_folds=5):
             if len(np.unique(y_orig)) < 2:
                 print(f"Not enough classes in original dataset {dataset_name}, skipping.")
                 continue
-            acc_orig = evaluate_model(X_orig, y_orig, n_splits=nb_folds)
 
-            # Evaluate on augmented dataset if available
-            if X_aug is not None and y_aug is not None:
-                if len(np.unique(y_aug)) < 2:
-                    print(f"Not enough classes in augmented dataset {dataset_name}, skipping augmented dataset.")
-                    acc_aug = None
+            acc_orig = {}
+            acc_aug = {}
+
+            for model_name, model in models.items():
+                print(f"Evaluating Original dataset with {model_name}...")
+                acc = evaluate_model(X_orig, y_orig, model, n_splits=nb_folds)
+                acc_orig[model_name] = acc
+
+                if X_aug is not None and y_aug is not None:
+                    if len(np.unique(y_aug)) < 2:
+                        print(f"Not enough classes in augmented dataset {dataset_name}, skipping augmented dataset.")
+                        acc_aug[model_name] = None
+                    else:
+                        print(f"Evaluating Augmented dataset with {model_name}...")
+                        acc = evaluate_model(X_aug, y_aug, model, n_splits=nb_folds)
+                        acc_aug[model_name] = acc
                 else:
-                    acc_aug = evaluate_model(X_aug, y_aug, n_splits=nb_folds)
-            else:
-                acc_aug = None
+                    acc_aug[model_name] = None
 
             # Store results
             results[dataset_name] = {'Original': acc_orig, 'Augmented': acc_aug}
