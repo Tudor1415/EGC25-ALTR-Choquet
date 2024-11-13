@@ -127,8 +127,8 @@ def process_datasets(dat_file_folder, dataset_folder, output_base, mapping):
 
 def create_conditions_dict(map_df):
     conditions_dict = {}
-
-    # Mapping of operators to functions
+    
+    # Define operator mappings
     operators = {
         '<': operator.lt,
         '<=': operator.le,
@@ -136,55 +136,36 @@ def create_conditions_dict(map_df):
         '>=': operator.ge,
         '>': operator.gt
     }
-
+    
+    # Process each row in the DataFrame
     for _, row in map_df.iterrows():
         encoding = int(row['Encoding'])
         condition_str = row['Column_Name'].strip()
 
-        # Parse the condition
         # Match patterns like 'variable < value', 'variable >= value', 'variable = value', 'variable = (value1 - value2)'
         match = re.match(r'(\w[\w\-]*)\s*(<|<=|=|>=|>)\s*(.+)', condition_str)
         if match:
             variable, op_str, value = match.groups()
-            variable = variable.strip()
             op_func = operators[op_str.strip()]
-            value = value.strip()
+            value = value.strip().replace('(', '').replace(')', '')
 
-            # Remove parentheses
-            value = value.replace('(', '').replace(')', '')
-
-            if '-' in value and op_str == '=':
-                # Range condition
+            # Check for range conditions (e.g., "Amount_of_given_credit_card = (45000 - 145000)")
+            if ' - ' in value and op_str == '=':
                 low, high = map(float, value.split('-'))
                 conditions_dict[encoding] = lambda var_name, var_value, var=variable, low=low, high=high: var_name == var and low <= float(var_value) <= high
             else:
-                # Simple condition
-                if value.replace('.', '', 1).isdigit():
-                    # Numeric value
-                    val = float(value)
-                    conditions_dict[encoding] = lambda var_name, var_value, var=variable, op=op_func, val=val: var_name == var and op(float(var_value), val)
-                else:
-                    # Categorical value
-                    val = value.strip()
-                    conditions_dict[encoding] = lambda var_name, var_value, var=variable, op=op_func, val=val: var_name == var and op(var_value, val)
+                # Handle simple conditions with numeric or categorical values
+                val = float(value) if value.replace('.', '', 1).isdigit() else value
+                conditions_dict[encoding] = lambda var_name, var_value, var=variable, op=op_func, val=val: var_name == var and op(float(var_value), val) if isinstance(val, (int, float)) else var_name == var and op(var_value, val)
         else:
-            # Handle cases without an operator, e.g., 'workclass = Private'
+            # Handle conditions without operators (e.g., "Gender = 1")
             if '=' in condition_str:
                 variable, value = condition_str.split('=')
-                variable = variable.strip()
                 value = value.strip().replace('(', '').replace(')', '')
-                conditions_dict[encoding] = lambda var_name, var_value, var=variable, val=value: var_name == var and var_value == val
+                conditions_dict[encoding] = lambda var_name, var_value, var=variable.strip(), val=value: var_name == var and str(var_value) == val
             else:
-                # Direct categorical value without '='
-                variable_value = condition_str.split()
-                if len(variable_value) == 2:
-                    variable, value = variable_value
-                    variable = variable.strip()
-                    value = value.strip()
-                    conditions_dict[encoding] = lambda var_name, var_value, var=variable, val=value: var_name == var and var_value == val
-                else:
-                    # Handle special cases like 'class_0' and 'class_1'
-                    variable = condition_str.strip()
-                    conditions_dict[encoding] = lambda var_name, var_value, var=variable: var_name == var and var_value == '1'
-
+                # Handle direct categorical values without '=' (e.g., "class_0" and "class_1")
+                variable = condition_str.strip()
+                conditions_dict[encoding] = lambda var_name, var_value, var=variable: var_name == var and str(var_value) == '1'
+    
     return conditions_dict

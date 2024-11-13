@@ -14,7 +14,7 @@ from sklearn.linear_model import LogisticRegression
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Run ExtractSample Java program on datasets.')
-    parser.add_argument('--nb_samples', type=int, default=100_000, help='Number of samples to generate')
+    parser.add_argument('--nb_samples', type=int, default=1_000_000, help='Number of samples to generate')
     args = parser.parse_args()
 
     nb_samples = args.nb_samples
@@ -24,7 +24,7 @@ def main():
     exp_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(exp_dir, '..'))
     dataset_folder = os.path.join(project_root, 'data', 'datasets')
-    dat_file_folder = os.path.join(project_root, 'data', 'dat-files') + "\\"
+    dat_file_folder = os.path.join(project_root, 'data', 'dat-files') + "/"
     mapping_file_folder = os.path.join(project_root, 'data', 'mapping-files')
     target_dir = os.path.join(project_root, 'target')
     class_output_dir = os.path.join(target_dir, 'classes')
@@ -44,28 +44,28 @@ def main():
     execution_classpath = os.pathsep.join([class_output_dir, maven_classpath])
 
     # Step 2: Iterate over all dataset files in the dataset folder and run Java program
-    # for dataset_file in os.listdir(dat_file_folder):
-    #     if os.path.isfile(os.path.join(dat_file_folder, dataset_file)):
-    #         dataset_name = dataset_file
-    #         # Construct the output directory
-    #         dataset_name_without_extension = os.path.splitext(dataset_name)[0]
-    #         output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples')
+    for dataset_file in os.listdir(dat_file_folder):
+        if os.path.isfile(os.path.join(dat_file_folder, dataset_file)):
+            dataset_name = dataset_file
+            # Construct the output directory
+            dataset_name_without_extension = os.path.splitext(dataset_name)[0]
+            output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples')
 
-    #         # Ensure the output directory exists
-    #         os.makedirs(output_directory, exist_ok=True)
+            # Ensure the output directory exists
+            os.makedirs(output_directory, exist_ok=True)
 
-    #         # Run the Java program
-    #         run_extract_sample(
-    #             dataset_name,
-    #             dat_file_folder,
-    #             output_directory,
-    #             nb_samples,
-    #             timeout_minutes,
-    #             measure_names,
-    #             weights,
-    #             execution_classpath,
-    #             project_root
-    #         )
+            # Run the Java program
+            run_extract_sample(
+                dataset_name,
+                dat_file_folder,
+                output_directory,
+                nb_samples,
+                timeout_minutes,
+                measure_names,
+                weights,
+                execution_classpath,
+                project_root
+            )
 
     # Process datasets to add rule columns
     process_dat_files(dat_file_folder, output_base)
