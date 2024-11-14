@@ -44,9 +44,9 @@ public class RuleMeasures {
         }
 
         n = nbTransactions;
-        n11 = rule.getFreqZ();
-        n1x = rule.getFreqX();
-        nx1 = rule.getFreqY();
+        n11 = rule.getFreqZ(); // Pattern frequency X \cup Y
+        n1x = rule.getFreqX(); // Antecedent frequency
+        nx1 = rule.getFreqY(); // Consequent frequency
         n0x = n - n1x; // Frequency of transactions without antecedent (X)
         nx0 = n - nx1; // Frequency of transactions without consequent (Y)
         n10 = n1x - n11; // Frequency of transactions with antecedent but without consequent
@@ -101,11 +101,11 @@ public class RuleMeasures {
      * @return The information gain measure.
      */
     private double informationGain() {
-        double H_D = entropy(nx0, nx1);
+        double H_D = entropy(nx0, nx1, n);
         double freq_D_F = n11;
-        double H_D_F = entropy(0, n11);
+        double H_D_F = entropy(0, n11, n11);
         double freq_bar_D_F = n - n11;
-        double H_D_bar_F = entropy(n00, n01);
+        double H_D_bar_F = entropy(n00, n01, n0x);
 
         double value = H_D - freq_D_F * H_D_F - freq_bar_D_F * H_D_bar_F;
         checkMeasure(value, 0, 1, informationGain);
@@ -119,9 +119,10 @@ public class RuleMeasures {
      *            value.
      * @param nx1 The number of transactions where the class has the
      *            desired value.
+     * @param n   The total number of transactions.
      * @return The dataset's entropy.
      */
-    private double entropy(double nx0, double nx1) {
+    private double entropy(double nx0, double nx1, double n) {
         double positive = nx1 / n * Math.log(nx1 / n);
         double negative = nx0 / n * Math.log(nx0 / n);
         return -(positive + negative);
