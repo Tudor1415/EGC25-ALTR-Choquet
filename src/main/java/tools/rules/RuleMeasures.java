@@ -297,6 +297,8 @@ public class RuleMeasures {
             return support();
         if (measureName.equals(revsupport))
             return revsupport();
+        if (measureName.equals(informationGain))
+            return informationGain();
         throw new RuntimeException("This measure doesn't exist : " + measureName);
     }
 
