@@ -101,9 +101,30 @@ public class RuleMeasures {
      * @return The information gain measure.
      */
     private double informationGain() {
-        double value = n11 / n1x;
-        checkMeasure(value, 0, 1, confidence);
+        double H_D = entropy(nx0, nx1);
+        double freq_D_F = n11;
+        double H_D_F = entropy(0, n11);
+        double freq_bar_D_F = n - n11;
+        double H_D_bar_F = entropy(n00, n01);
+
+        double value = H_D - freq_D_F * H_D_F - freq_bar_D_F * H_D_bar_F;
+        checkMeasure(value, 0, 1, informationGain);
         return value;
+    }
+
+    /**
+     * Computes the entropy of a subset of transactions.
+     * 
+     * @param nx0 The number of transactions where the class does not the desired
+     *            value.
+     * @param nx1 The number of transactions where the class has the
+     *            desired value.
+     * @return The dataset's entropy.
+     */
+    private double entropy(double nx0, double nx1) {
+        double positive = nx1 / n * Math.log(nx1 / n);
+        double negative = nx0 / n * Math.log(nx0 / n);
+        return -(positive + negative);
     }
 
     /**
