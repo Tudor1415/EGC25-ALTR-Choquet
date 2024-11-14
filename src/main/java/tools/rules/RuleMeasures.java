@@ -123,8 +123,20 @@ public class RuleMeasures {
      * @return The dataset's entropy.
      */
     private double entropy(double nx0, double nx1, double n) {
-        double positive = nx1 / n * Math.log(nx1 / n);
-        double negative = nx0 / n * Math.log(nx0 / n);
+        if (nx0 == 0 || nx1 == 0) {
+            return 0;
+        }
+
+        double positive = 0;
+        if (nx1 > 0) {
+            positive = (nx1 / n) * Math.log(nx1 / n) / Math.log(2);
+        }
+
+        double negative = 0;
+        if (nx0 > 0) {
+            negative = (nx0 / n) * Math.log(nx0 / n) / Math.log(2);
+        }
+
         return -(positive + negative);
     }
 
