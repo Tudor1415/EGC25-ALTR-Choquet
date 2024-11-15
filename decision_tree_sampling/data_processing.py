@@ -123,11 +123,11 @@ def freqZ(X, y, rules, class_values):
 
     return rule_counts
 
-def get_rule_stats(X, y, rules):
+def get_rule_stats(X, y, rules, class_values):
   n = len(X)
   allFreqX = freqX(X, rules)
-  allFreqY = freqY(y, rules, [116, 117])
-  allFreqZ = freqZ(X, y, rules, [116, 117])
+  allFreqY = freqY(y, rules, class_values)
+  allFreqZ = freqZ(X, y, rules, class_values)
 
   rule_stats = {}
   for rule in rules:

@@ -17,7 +17,7 @@ def run_extract_sample(dataset_name, dataset_folder, output_directory, nb_sample
         weights
     ]
 
-    print(f"Processing dataset {dataset_name} with {nb_samples} samples...")
+    print(f"Extracting {nb_samples} samples from dataset {dataset_name}...")
     # Call the Java program
     try:
         subprocess.run(command, check=True, cwd=project_root)

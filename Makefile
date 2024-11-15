@@ -1,4 +1,4 @@
-DATASETS = bank credit toms connect mushroom adult twitter weatherAUS
+DATASETS = bank credit dota toms connect mushroom adult
 exp_active = results/active_learning
 exp_norm = results/active_normalization
 exp_sample = results/sampling_experiment

@@ -4,16 +4,16 @@ import pandas as pd
 from measures import information_gain, phi
 from data_processing import extract_decision_tree_rules, get_rule_stats
 
-def evaluate_tree_on_dataset(X, y, depth_range=10, repetitions=5, measure='IG'):
+def evaluate_tree_on_dataset(X, y, class_values, measure, depth_range=10, repetitions=5):
     max_values = []
 
     for depth in range(1, depth_range + 1):
         for _ in range(repetitions):
-            # Extract decision tree rules (assuming `extract_decision_tree_rules` exists)
+            # Extract decision tree rules 
             rules = extract_decision_tree_rules(X, y, max_depth=depth)
 
-            # Get rule statistics (assuming `get_rule_stats` exists)
-            stats = get_rule_stats(X, y, rules)
+            # Get rule statistics 
+            stats = get_rule_stats(X, y, rules, class_values)
 
             measure_values = []
             for rule in stats:
@@ -55,6 +55,16 @@ def load_dataset(dataset_file):
     return X, y
 
 def evaluate_datasets(dat_files_folder, output_base, measure):
+    class_items_dict = {
+        'adult': [145, 146],
+        'bank': [89, 90],
+        'connect': [127, 128],
+        'credit': [111, 112],
+        'dota': [346, 347],
+        'toms': [911, 912],
+        'mushroom': [116, 117]
+    }
+
     results = {}
     
     for dataset_file in os.listdir(dat_files_folder):
@@ -71,8 +81,8 @@ def evaluate_datasets(dat_files_folder, output_base, measure):
                 print(f"Not enough classes in original dataset {dataset_name}, skipping.")
                 continue
             
-            best_score_tree = evaluate_tree_on_dataset(X, y, measure=measure)
-            
+            best_score_tree = evaluate_tree_on_dataset(X, y, class_items_dict[dataset_name], measure)
+
             sample_path = os.path.join(output_base, dataset_name, 'samples', measure)
             
             csv_files = [f for f in os.listdir(sample_path) if f.endswith('.csv')]
