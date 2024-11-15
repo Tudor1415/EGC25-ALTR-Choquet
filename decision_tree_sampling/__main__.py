@@ -20,9 +20,7 @@ def main():
     # Paths relative to the scripts folder
     exp_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(exp_dir, '..'))
-    dataset_folder = os.path.join(project_root, 'data', 'raw_datasets')
     dat_file_folder = os.path.join(project_root, 'data', 'dat-files') + "/"
-    mapping_file_folder = os.path.join(project_root, 'data', 'mapping-files')
     target_dir = os.path.join(project_root, 'target')
     class_output_dir = os.path.join(target_dir, 'classes')
     output_base = os.path.join(project_root, 'results', 'decision_tree_sampling')
