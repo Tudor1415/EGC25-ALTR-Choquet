@@ -29,7 +29,7 @@ def main():
     timeout_minutes = 30
 
     # Measure names and weights (can be adjusted as needed)
-    measure_names = ['IG']
+    measure_names = ['IG', 'phi']
     weights = '1'
 
     # Step 1: Get the classpath of the project including dependencies
@@ -45,11 +45,10 @@ def main():
                 dataset_name = dataset_file
                 # Construct the output directory
                 dataset_name_without_extension = os.path.splitext(dataset_name)[0]
-                output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples', measure)
+                output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples', measure) + "/"
 
                 # Ensure the output directory exists
                 os.makedirs(output_directory, exist_ok=True)
-
                 # Run the Java program
                 run_extract_sample(
                     dataset_name,
@@ -66,7 +65,7 @@ def main():
         results = evaluate_datasets(dat_file_folder, output_base, measure)
 
         # Plot results
-        plot_results(results, output_base)
+        plot_results(results, output_base, measure)
 
     print("Processing complete.")
 

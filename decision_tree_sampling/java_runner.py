@@ -7,7 +7,7 @@ def run_extract_sample(dataset_name, dataset_folder, output_directory, nb_sample
         'java',
         '-cp',
         execution_classpath,
-        'tools.utils.sampling.ExtractSample',
+        'tools.utils.ExtractSample',
         dataset_name,
         dataset_folder,
         output_directory,

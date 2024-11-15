@@ -25,3 +25,14 @@ def information_gain(nx0, nx1, n11, n00, n01, n0x, n):
 
     value = H_D - freq_D_F * H_D_F - freq_bar_D_F * H_D_bar_F
     return value
+
+def phi(n, n11, n1x, nx1, n0x, nx0):
+    """Calculates the phi measure (φ) from a 2x2 contingency table."""
+    
+    numerator = n * n11 - n1x * nx1
+    denominator = math.sqrt(n1x * nx1 * n0x * nx0)
+    
+    if denominator == 0: 
+        return 0.0
+    
+    return numerator / denominator
