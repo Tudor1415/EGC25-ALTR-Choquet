@@ -31,6 +31,7 @@ public class ExtractSample {
     public static final String CERTAINTY = "certainty";
     public static final String SUPPORT = "support";
     public static final String REVSUPPORT = "revsup";
+    public static final String IG = "IG";
 
     private static String ruleToString(DecisionRule rule) {
         Set<String> antecedentValues = rule.getItemsInX();
@@ -206,7 +207,7 @@ public class ExtractSample {
             System.out.println("Usage: java ExtractSample <datasetName> <folderPath> <outputDirectory> "
                     + "<nbSamples> <timeoutInMinutes> <measureNames> <weights>");
             System.out.println("Possible measureNames (comma-separated): confidence, lift, cosine, phi, "
-                    + "kruskal, yuleQ, pavillon, certainty, support, revsup");
+                    + "kruskal, yuleQ, pavillon, certainty, support, revsup, IG");
             System.out.println("Weights should be a comma-separated list of doubles, matching the measureNames order");
             return;
         }

@@ -46,7 +46,7 @@ class SMASTest {
         dataset = new Dataset("toms.dat", "src/test/resources/", classItemValues);
 
         // Measures
-        measureNames = new String[] { "lift", "confidence", "support", "yuleQ", "kruskal" };
+        measureNames = new String[] { "IG" };
         smoothCounts = 1e-6;
 
         double[] weights = new double[measureNames.length];

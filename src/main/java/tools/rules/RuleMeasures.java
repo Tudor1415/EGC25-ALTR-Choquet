@@ -102,9 +102,9 @@ public class RuleMeasures {
      */
     private double informationGain() {
         double H_D = entropy(nx0, nx1, n);
-        double freq_D_F = n11;
+        double freq_D_F = n11 / n;
         double H_D_F = entropy(0, n11, n11);
-        double freq_bar_D_F = n - n11;
+        double freq_bar_D_F = (n - n11) / n;
         double H_D_bar_F = entropy(n00, n01, n0x);
 
         double value = H_D - freq_D_F * H_D_F - freq_bar_D_F * H_D_bar_F;
