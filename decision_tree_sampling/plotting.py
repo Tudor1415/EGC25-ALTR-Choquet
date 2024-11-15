@@ -27,7 +27,7 @@ def plot_results(results, output_base, measure):
     ax.set_xticklabels(dataset_names, rotation=90)
     ax.set_xlabel('Dataset')
     ax.set_ylabel('Score')
-    ax.set_title('Dataset Evaluation Results')
+    ax.set_title(f'Dataset Evaluation Results {measure}')
     ax.legend()
 
     plt.tight_layout()

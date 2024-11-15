@@ -29,7 +29,7 @@ def main():
     timeout_minutes = 30
 
     # Measure names and weights (can be adjusted as needed)
-    measure_names = ['IG', 'phi']
+    measure_names = ['phi']
     weights = '1'
 
     # Step 1: Get the classpath of the project including dependencies
@@ -40,27 +40,27 @@ def main():
 
     # Step 2: Iterate over all dataset files in the dataset folder and run Java program
     for measure in measure_names:
-        # for dataset_file in os.listdir(dat_file_folder):
-        #     if os.path.isfile(os.path.join(dat_file_folder, dataset_file)):
-        #         dataset_name = dataset_file
-        #         # Construct the output directory
-        #         dataset_name_without_extension = os.path.splitext(dataset_name)[0]
-        #         output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples', measure) + "/"
+        for dataset_file in os.listdir(dat_file_folder):
+            if os.path.isfile(os.path.join(dat_file_folder, dataset_file)):
+                dataset_name = dataset_file
+                # Construct the output directory
+                dataset_name_without_extension = os.path.splitext(dataset_name)[0]
+                output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples', measure) + "/"
 
-        #         # Ensure the output directory exists
-        #         os.makedirs(output_directory, exist_ok=True)
-        #         # Run the Java program
-        #         run_extract_sample(
-        #             dataset_name,
-        #             dat_file_folder,
-        #             output_directory,
-        #             nb_samples,
-        #             timeout_minutes,
-        #             measure,
-        #             weights,
-        #             execution_classpath,
-        #             project_root
-        #         )
+                # Ensure the output directory exists
+                os.makedirs(output_directory, exist_ok=True)
+                # Run the Java program
+                run_extract_sample(
+                    dataset_name,
+                    dat_file_folder,
+                    output_directory,
+                    nb_samples,
+                    timeout_minutes,
+                    measure,
+                    weights,
+                    execution_classpath,
+                    project_root
+                )
 
         results = evaluate_datasets(dat_file_folder, output_base, measure)
 
