@@ -3,7 +3,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-def plot_results(results, output_base, measure):
+def plot_results(results, output_base, measure, top_k):
     """
     Visualize the results of dataset evaluations as paired bar plots.
     
@@ -27,7 +27,7 @@ def plot_results(results, output_base, measure):
     ax.set_xticklabels(dataset_names, rotation=90)
     ax.set_xlabel('Dataset')
     ax.set_ylabel('Score')
-    ax.set_title(f'Dataset Evaluation Results {measure}')
+    ax.set_title(f'Dataset Evaluation Results {measure} for Top {top_k} Samples')
     ax.legend()
 
     plt.tight_layout()

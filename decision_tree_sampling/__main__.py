@@ -13,9 +13,11 @@ def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Run ExtractSample Java program on datasets.')
     parser.add_argument('--nb_samples', type=int, default=1_000_000, help='Number of samples to generate')
+    parser.add_argument('--top_k', type=int, default=10, help='Top samples to compute the metrics on')
     args = parser.parse_args()
 
     nb_samples = args.nb_samples
+    top_k = args.top_k
 
     # Paths relative to the scripts folder
     exp_dir = os.path.dirname(os.path.abspath(__file__))
@@ -62,10 +64,10 @@ def main():
                     project_root
                 )
 
-        results = evaluate_datasets(dat_file_folder, output_base, measure)
+        results = evaluate_datasets(dat_file_folder, output_base, measure, top_k=top_k)
 
         # Plot results
-        plot_results(results, output_base, measure)
+        plot_results(results, output_base, measure, top_k)
 
     print("Processing complete.")
 

@@ -1,44 +1,42 @@
 package experiments;
 
 import java.io.File;
+import java.util.Set;
+import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 import java.util.stream.IntStream;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.ExecutionException;
 
-import sampling.BatchSampler;
 import sampling.SMAS;
 import sampling.Sampler;
-import sampling.UnrestrictedSampler;
-import sampling.DecisionTreeSampling.AlgorithmType;
-import sampling.DecisionTreeSampling.DecisionTreeSampler;
-import tools.alternatives.IAlternative;
 import tools.data.Dataset;
-import tools.functions.multivariate.CertaintyFunction;
-import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
-import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
-import tools.functions.multivariate.outRankingCertainties.Thurstone;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.functions.singlevariate.LinearScoreFunction;
-import tools.normalization.Normalizer.NormalizationMethod;
+import tools.utils.RuleUtil;
+import sampling.BatchSampler;
 import tools.rules.DecisionRule;
 import tools.utils.AlternativeUtil;
-import tools.utils.RuleUtil;
+import sampling.UnrestrictedSampler;
+import tools.alternatives.IAlternative;
+import tools.functions.multivariate.CertaintyFunction;
+import tools.functions.singlevariate.LinearScoreFunction;
+import tools.normalization.Normalizer.NormalizationMethod;
+import tools.functions.singlevariate.ISinglevariateFunction;
+import tools.functions.multivariate.outRankingCertainties.Thurstone;
+import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
+import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
 
 public class SamplingMethodExperiment {
 
@@ -166,10 +164,6 @@ public class SamplingMethodExperiment {
         // samplingIterations, outputDirectory,
         // measureNames);
 
-        // Process Decision Tree Sampler
-        processSamplingWithDecisionTrees(dataset, scoreFunction, datasetName, foldIdx, samplingIterations,
-                outputDirectory);
-
         // Process Batch Sampler
         processBatchSamplingForCertainties(dataset, scoreFunction, measureNames, datasetName, foldIdx,
                 samplingIterations, outputDirectory);
@@ -194,34 +188,6 @@ public class SamplingMethodExperiment {
             // Write the results to CSV
             writeSampleToCSV(sample, approxScores, filename, samplingIterations, outputDirectory);
         }
-    }
-
-    private static void processSamplingWithDecisionTrees(Dataset dataset, ISinglevariateFunction scoreFunction,
-            String datasetName, int foldIdx, int samplingIterations, String outputDirectory) {
-
-        Sampler DTSampler = new DecisionTreeSampler(
-                dataset,
-                dataset.getAntecedentItemsSet(),
-                AlgorithmType.C45,
-                10,
-                dataset.getItemsMap(),
-                1,
-                allMeasureNames);
-
-        // Run the sampling with a timeout
-        List<DecisionRule> sample = executeSamplingWithTimeout(DTSampler, 30);
-        List<Double> approxScores = computeApproxScores(sample, scoreFunction);
-
-        // Process the results after sampling
-        String filename = String.format("%s_%d_%s_%d_%s",
-                datasetName,
-                foldIdx,
-                scoreFunction.getName(),
-                1,
-                "DT");
-
-        // Write the results to CSV
-        writeSampleToCSV(sample, approxScores, filename, samplingIterations, outputDirectory);
     }
 
     private static void processUnrestrictedSampling(Dataset dataset, ISinglevariateFunction scoreFunction,
