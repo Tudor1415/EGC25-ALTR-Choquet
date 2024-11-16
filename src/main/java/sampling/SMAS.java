@@ -1,26 +1,26 @@
 package sampling;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 import lombok.Getter;
 import lombok.Setter;
-import tools.alternatives.Alternative;
-import tools.alternatives.IAlternative;
 import tools.data.Dataset;
-import tools.functions.multivariate.CertaintyFunction;
-import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.normalization.Normalizer;
-import tools.normalization.Normalizer.NormalizationMethod;
-import tools.rules.DecisionRule;
-import tools.utils.RandomUtil;
 import tools.utils.RuleUtil;
+import tools.utils.RandomUtil;
+import tools.rules.DecisionRule;
+import tools.alternatives.Alternative;
+import tools.normalization.Normalizer;
+import tools.alternatives.IAlternative;
+import tools.functions.multivariate.CertaintyFunction;
+import tools.normalization.Normalizer.NormalizationMethod;
+import tools.functions.singlevariate.ISinglevariateFunction;
+import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
 
 public class SMAS implements ISampler {
-    protected static final double DEFAULT_SMOOTH_COUNTS = 1e-6d;
+    protected static final double DEFAULT_SMOOTH_COUNTS = 0.0d;
 
     protected @Getter @Setter int maximumIterations;
     protected @Getter @Setter int topK = 1;
@@ -30,7 +30,7 @@ public class SMAS implements ISampler {
     protected @Getter @Setter CertaintyFunction outRankingCertainty;
     protected @Getter ISinglevariateFunction scoringFunction;
     protected @Getter @Setter String[] measureNames;
-    protected @Getter @Setter double smoothCounts = 1e-6d;
+    protected @Getter @Setter double smoothCounts = DEFAULT_SMOOTH_COUNTS;
     protected @Getter RandomUtil random = new RandomUtil();
     protected @Getter List<Double> scoreHistory = new ArrayList<>();
     protected @Getter @Setter Normalizer.NormalizationMethod normalizationTechnique = NormalizationMethod.MIN_MAX_SCALING;

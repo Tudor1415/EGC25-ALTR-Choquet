@@ -29,7 +29,7 @@ def main():
     timeout_minutes = 30
 
     # Measure names and weights (can be adjusted as needed)
-    measure_names = ['phi']
+    measure_names = ['phi', 'IG']
     weights = '1'
 
     # Step 1: Get the classpath of the project including dependencies

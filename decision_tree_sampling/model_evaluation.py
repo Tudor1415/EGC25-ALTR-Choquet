@@ -4,8 +4,9 @@ import pandas as pd
 from measures import information_gain, phi
 from data_processing import extract_decision_tree_rules, get_rule_stats
 
-def evaluate_tree_on_dataset(X, y, class_values, measure, depth_range=10, repetitions=5):
-    max_values = []
+def evaluate_tree_on_dataset(X, y, class_values, measure, depth_range=10, repetitions=5, top_k=10):
+    all_measure_values = []
+    seen_rules = set() 
 
     for depth in range(1, depth_range + 1):
         for _ in range(repetitions):
@@ -15,37 +16,41 @@ def evaluate_tree_on_dataset(X, y, class_values, measure, depth_range=10, repeti
             # Get rule statistics 
             stats = get_rule_stats(X, y, rules, class_values)
 
-            measure_values = []
             for rule in stats:
-                # Extract statistics for current rule
-                nx0 = stats[rule]['nx0']
-                nx1 = stats[rule]['nx1']
-                n11 = stats[rule]['n11']
-                n00 = stats[rule]['n00']
-                n01 = stats[rule]['n01']
-                n0x = stats[rule]['n0x']
-                n1x = stats[rule]['n1x']
-                
-                # Get total number of samples
-                n = len(X)
+                rule_hash = hash(tuple(rule))
 
-                # Compute the score based on the chosen measure
-                if measure == 'IG':
-                    value = information_gain(nx0, nx1, n11, n00, n01, n0x, n)
-                elif measure == 'phi':
-                    # Compute the phi score using `phi()` function
-                    value = phi(n, n11, n1x, nx1, n0x, nx0)
-                else:
-                    raise ValueError("Invalid measure. Choose either 'IG' or 'phi'.")
+                if rule_hash not in seen_rules:
+                    seen_rules.add(rule_hash)
 
-                measure_values.append(value)
+                    # Extract statistics for current rule
+                    nx0 = stats[rule]['nx0']
+                    nx1 = stats[rule]['nx1']
+                    n11 = stats[rule]['n11']
+                    n00 = stats[rule]['n00']
+                    n01 = stats[rule]['n01']
+                    n0x = stats[rule]['n0x']
+                    n1x = stats[rule]['n1x']
 
-            # Append the maximum value for the current depth and repetition
-            max_values.append(max(measure_values))
+                    # Get total number of samples
+                    n = len(X)
 
-    # Return the overall maximum measure value
-    return max(max_values)
+                    # Compute the score based on the chosen measure
+                    if measure == 'IG':
+                        value = information_gain(nx0, nx1, n11, n00, n01, n0x, n)
+                    elif measure == 'phi':
+                        value = phi(n, n11, n1x, nx1, n0x, nx0)
+                    else:
+                        raise ValueError("Invalid measure. Choose either 'IG' or 'phi'.")
 
+                    all_measure_values.append(value)
+
+    if len(all_measure_values) < top_k:
+        raise ValueError("Not enough scores computed. Increase depth_range or repetitions, or reduce top_k.")
+
+    top_k_values = sorted(all_measure_values, reverse=True)[:top_k]
+    mean_top_k = np.mean(top_k_values)
+
+    return mean_top_k
 
 def load_dataset(dataset_file):
     df = pd.read_csv(dataset_file, sep=" ", header=None)  
@@ -54,7 +59,7 @@ def load_dataset(dataset_file):
 
     return X, y
 
-def evaluate_datasets(dat_files_folder, output_base, measure):
+def evaluate_datasets(dat_files_folder, output_base, measure, top_k = 10):
     class_items_dict = {
         'adult': [145, 146],
         'bank': [89, 90],
@@ -81,7 +86,7 @@ def evaluate_datasets(dat_files_folder, output_base, measure):
                 print(f"Not enough classes in original dataset {dataset_name}, skipping.")
                 continue
             
-            best_score_tree = evaluate_tree_on_dataset(X, y, class_items_dict[dataset_name], measure)
+            top_k_mean_tree = evaluate_tree_on_dataset(X, y, class_items_dict[dataset_name], measure, top_k = top_k)
 
             sample_path = os.path.join(output_base, dataset_name, 'samples', measure)
             
@@ -94,8 +99,10 @@ def evaluate_datasets(dat_files_folder, output_base, measure):
             else:
                 print(f"No CSV files found in directory: {sample_path}")
             
-            best_score_sample = sampled_rules[measure].max()
+            sorted_sample = sampled_rules.sort_values(by=measure, ascending=False)
+            top_k_mean_sample = sorted_sample[measure].head(top_k).mean()
+
             
-            results[dataset_name] = (best_score_tree, best_score_sample)
+            results[dataset_name] = (top_k_mean_tree, top_k_mean_sample)
     
     return results

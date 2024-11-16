@@ -1,15 +1,15 @@
 package sampling;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import tools.data.Dataset;
-import tools.functions.singlevariate.ISinglevariateFunction;
 import tools.rules.DecisionRule;
+import tools.functions.singlevariate.ISinglevariateFunction;
 
 public class BatchSampler extends SMAS {
 
@@ -20,11 +20,10 @@ public class BatchSampler extends SMAS {
 
     @Override
     protected void processAntecedents(DecisionRule rule, String[] antecedentItems, int[] antecedentShuffle) {
-
-        // Random skip to half the rule
-        skipToHalf(rule);
-
         for (int i = 0; i < antecedentShuffle.length; ++i) {
+            if (i % 5 == 0)
+                skipToHalf(rule);
+                
             updateNormalization(rule);
 
             double originalScore = getValidRuleScore(rule);
