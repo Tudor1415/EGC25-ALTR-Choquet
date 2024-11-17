@@ -1,22 +1,89 @@
 package tools.utils;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.io.BufferedReader;
 
+import com.zaxxer.sparsebits.SparseBitSet;
 import com.google.gson.annotations.SerializedName;
 
 import lombok.Getter;
+import tools.rules.IRule;
 import tools.data.Dataset;
 import tools.rules.DecisionRule;
-import tools.rules.IRule;
 
 public class RuleUtil {
+
+    public static void printDistanceMatrix(double[][] distances, String outputPath) {
+        try (PrintWriter out = new PrintWriter(new FileWriter(outputPath))) {
+            for (double[] row : distances) {
+                for (int j = 0; j < row.length; j++) {
+                    out.print(row[j]);
+                    if (j < row.length - 1) {
+                        out.print(","); // CSV separator
+                    }
+                }
+                out.println(); // New line at the end of each row
+            }
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Computes the Jaccard distance matrix for a set of decision rules.
+     * The matrix is returned as a 2D array representing the upper triangular part
+     * of the symmetric matrix.
+     *
+     * @param rules The array of decision rules.
+     * @return The 2D array containing the upper triangular matrix of Jaccard
+     *         distances.
+     */
+    public static double[][] computeJaccardDistance(List<DecisionRule> rules) {
+        int n = rules.size();
+        double[][] distances = new double[n][n];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                double jaccardDistance = calculateJaccardDistance(rules.get(i).getCoverZ(), rules.get(j).getCoverZ());
+                distances[i][j] = jaccardDistance;
+                distances[j][i] = jaccardDistance; // Since the distance matrix is symmetric
+            }
+            distances[i][i] = 0; // Distance with itself is zero
+        }
+
+        return distances;
+    }
+
+    /**
+     * Calculates the Jaccard distance between two SparseBitSets.
+     *
+     * @param coverA The cover of the first rule as a SparseBitSet.
+     * @param coverB The cover of the second rule as a SparseBitSet.
+     * @return The Jaccard distance between the two covers.
+     */
+    private static double calculateJaccardDistance(SparseBitSet coverA, SparseBitSet coverB) {
+        SparseBitSet intersection = (SparseBitSet) coverA.clone();
+        intersection.and(coverB);
+        SparseBitSet union = (SparseBitSet) coverA.clone();
+        union.or(coverB);
+
+        int intersectionSize = intersection.cardinality();
+        int unionSize = union.cardinality();
+
+        if (unionSize == 0)
+            return 0.0; // Return 0.0 if both sets are empty
+
+        return 1.0 - ((double) intersectionSize / (double) unionSize);
+    }
+
     /**
      * Saves a copy with critical info only.
      *
@@ -189,6 +256,7 @@ public class RuleUtil {
 
         return decisionRules.toArray(new DecisionRule[0]);
     }
+
     /**
      * Adds an item to the antecedent or consequent of a rule.
      * 

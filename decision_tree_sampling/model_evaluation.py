@@ -59,6 +59,69 @@ def load_dataset(dataset_file):
 
     return X, y
 
+def compute_redundancy_score(top_k_sample, distance_matrix) :
+    score = top_k_sample[0]
+    
+    for i in range(1, len(top_k_sample)):
+        min_distance = min([distance_matrix[i][k] for k in range(0, i)])
+        score += min_distance * top_k_sample[i]
+
+    return score
+
+def fetch_first_csv(sample_path, keyword='jaccard', exclude=False):
+    """
+    Fetch the first CSV file from a directory that contains or excludes a specific keyword in its filename.
+
+    Args:
+    sample_path (str): The directory path where the files are located.
+    keyword (str): Keyword to include or exclude in the file names.
+    exclude (bool): If True, exclude files containing the keyword; if False, include them.
+
+    Returns:
+    str: The full path to the first matched CSV file or None if no file is found.
+    """
+    try:
+        # List all CSV files and filter them based on the presence of the keyword
+        csv_files = [f for f in os.listdir(sample_path)
+                     if f.endswith('.csv') and ((keyword.lower() in f.lower()) != exclude)]
+
+        # Check if any suitable files were found
+        if csv_files:
+            first_csv_file = csv_files[0]
+            first_csv_path = os.path.join(sample_path, first_csv_file)
+            return first_csv_path 
+        else:
+            print(f"No suitable CSV files found in directory: {sample_path}")
+            return None
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+    
+def load_distance_matrix(filepath):
+    """
+    Load a Jaccard distance matrix from a CSV file and convert it to a Numpy matrix.
+
+    Args:
+    filepath (str): Full path to the CSV file containing the distance matrix.
+
+    Returns:
+    np.ndarray: A 2D Numpy array representing the Jaccard distance matrix.
+    """
+    if filepath is None:
+        return None
+
+    try:
+        # Read the CSV file into a DataFrame
+        df = pd.read_csv(filepath, header=None)  # Assuming no header in the distance matrix CSV
+
+        # Convert the DataFrame to a Numpy array
+        matrix = df.values
+
+        return matrix
+    except Exception as e:
+        print(f"An error occurred while loading the distance matrix: {e}")
+        return None
+    
 def evaluate_datasets(dat_files_folder, output_base, measure, top_k = 10):
     class_items_dict = {
         'adult': [145, 146],
@@ -86,23 +149,18 @@ def evaluate_datasets(dat_files_folder, output_base, measure, top_k = 10):
                 print(f"Not enough classes in original dataset {dataset_name}, skipping.")
                 continue
             
-            top_k_mean_tree = evaluate_tree_on_dataset(X, y, class_items_dict[dataset_name], measure, top_k = top_k)
+            top_k_tree = evaluate_tree_on_dataset(X, y, class_items_dict[dataset_name], measure, top_k = top_k)
 
             sample_path = os.path.join(output_base, dataset_name, 'samples', measure)
+            sampled_rules_path = fetch_first_csv(sample_path, keyword='jaccard', exclude=True)
+            sampled_rules = pd.read_csv(sampled_rules_path)
+            distance_matrix_path = fetch_first_csv(sample_path)
+            distance_matrix = load_distance_matrix(distance_matrix_path)
+            top_k_sample = sampled_rules[measure].head(top_k)
             
-            csv_files = [f for f in os.listdir(sample_path) if f.endswith('.csv')]
-
-            if csv_files:
-                first_csv_file = csv_files[0]
-                first_csv_path = os.path.join(sample_path, first_csv_file)
-                sampled_rules = pd.read_csv(first_csv_path)
-            else:
-                print(f"No CSV files found in directory: {sample_path}")
-            
-            sorted_sample = sampled_rules.sort_values(by=measure, ascending=False)
-            top_k_mean_sample = sorted_sample[measure].head(top_k).mean()
+            score = compute_redundancy_score(top_k_sample, distance_matrix)
 
             
-            results[dataset_name] = (top_k_mean_tree, top_k_mean_sample)
+            results[dataset_name] = (top_k_tree, score)
     
     return results

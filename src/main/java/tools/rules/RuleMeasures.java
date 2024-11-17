@@ -115,7 +115,7 @@ public class RuleMeasures {
     /**
      * Computes the entropy of a subset of transactions.
      * 
-     * @param nx0 The number of transactions where the class does not the desired
+     * @param nx0 The number of transactions where the class does not have the desired
      *            value.
      * @param nx1 The number of transactions where the class has the
      *            desired value.

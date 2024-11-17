@@ -1,22 +1,22 @@
 package tools.functions.singlevariate;
 
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
+import java.util.TreeSet;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeSet;
 
 import lombok.Getter;
 import lombok.Setter;
+import tools.rules.DecisionRule;
 import tools.alternatives.Alternative;
+import tools.normalization.Normalizer;
 import tools.alternatives.IAlternative;
 import tools.functions.multivariate.IMultivariateFunction;
-import tools.normalization.Normalizer;
 import tools.normalization.Normalizer.NormalizationMethod;
-import tools.rules.DecisionRule;
 
 public class MultivariateToSinglevariate implements ISinglevariateFunction {
     public @Getter @Setter String Name;
@@ -27,16 +27,16 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
 
     private @Getter LinkedHashMap<IAlternative, DecisionRule> scoreAlternatives;
 
-    private IMultivariateFunction pairwiseUncertainty;
+    private IMultivariateFunction multivariateFunction;
 
     private @Getter Normalizer normalizer = new Normalizer();
 
     private @Getter @Setter int maxHistSize = 1000;
 
-    public MultivariateToSinglevariate(String name, IMultivariateFunction pairwiseUncertainty,
+    public MultivariateToSinglevariate(String name, IMultivariateFunction multivariateFunction,
             List<DecisionRule> initialRules, int maxHistSize) {
         this.Name = name;
-        this.pairwiseUncertainty = pairwiseUncertainty;
+        this.multivariateFunction = multivariateFunction;
         this.maxHistSize = maxHistSize;
 
         this.history = new TreeSet<>(Comparator.comparingDouble(this::getAlternativeScore).reversed()
@@ -133,6 +133,6 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
         double[] normVector1 = getNormalizer().normalize(unNormVector1, NormalizationMethod.MIN_MAX_SCALING, false);
         IAlternative normAlternative1 = new Alternative(normVector1);
 
-        return pairwiseUncertainty.computeScore(new IAlternative[] { normAlternative0, normAlternative1 });
+        return multivariateFunction.computeScore(new IAlternative[] { normAlternative0, normAlternative1 });
     }
 }

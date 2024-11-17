@@ -1,22 +1,22 @@
 package tools.utils;
 
+import java.util.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.concurrent.*;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
 
-import sampling.BatchSampler;
 import sampling.Sampler;
 import tools.data.Dataset;
+import sampling.BatchSampler;
+import tools.rules.DecisionRule;
 import tools.functions.singlevariate.*;
 import tools.normalization.Normalizer.NormalizationMethod;
-import tools.rules.DecisionRule;
 
 public class ExtractSample {
 
@@ -46,7 +46,11 @@ public class ExtractSample {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String directoryPath = outputDirectory + "/";
         String filePath = directoryPath + fileName + "_" + timestamp + ".csv";
+        String filePathDistanceMatrix = directoryPath + fileName + "_jaccard_" + timestamp + ".csv";
 
+        double[][] distanceMatrix = RuleUtil.computeJaccardDistance(rules);
+        RuleUtil.printDistanceMatrix(distanceMatrix, filePathDistanceMatrix);
+        
         try {
             // Ensure the directory exists or create it
             Files.createDirectories(Paths.get(directoryPath));
@@ -62,11 +66,6 @@ public class ExtractSample {
                     }
                     writer.append("scoreApprox,\n"); // End with "scoreApprox"
                 } else {
-                    // If no rules are available, write a default header
-                    writer.append("Rule,confidence,support,scoreApprox,\n");
-                }
-
-                if (rules.isEmpty()) {
                     System.out.println("No rules available, writing empty CSV with header only.");
                     return; // Exit after writing the header
                 }
@@ -162,7 +161,7 @@ public class ExtractSample {
         String datasetNameWithoutExtension = datasetName.replaceFirst("[.][^.]+$", "");
 
         BatchSampler batchSampler = new BatchSampler(nbSamples, dataset, scoreFunction, measureNames,
-                10);
+                500);
 
         batchSampler.setScoringFunction(scoreFunction);
         batchSampler.setNormalizationTechnique(NormalizationMethod.NO_NORMALIZATION);
