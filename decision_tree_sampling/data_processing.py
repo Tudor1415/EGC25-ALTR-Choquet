@@ -1,5 +1,6 @@
 from collections import Counter
 from sklearn.tree import DecisionTreeClassifier
+import numpy as np
 
 def extract_decision_tree_rules(X, y, max_depth = 5):
     """
@@ -121,13 +122,13 @@ def freqZ(X, y, rules, class_values):
                 mask &= X[feature] > threshold
         rule_counts[tuple(rule)] = mask.sum()
 
-    return rule_counts
+    return rule_counts, mask
 
 def get_rule_stats(X, y, rules, class_values):
   n = len(X)
   allFreqX = freqX(X, rules)
   allFreqY = freqY(y, rules, class_values)
-  allFreqZ = freqZ(X, y, rules, class_values)
+  allFreqZ, cover = freqZ(X, y, rules, class_values)
 
   rule_stats = {}
   for rule in rules:
@@ -145,5 +146,53 @@ def get_rule_stats(X, y, rules, class_values):
       n01 = nx1 - n11
       rule_stats[tuple(rule)]['n01'] = n01 
       rule_stats[tuple(rule)]['n00'] = n0x - n01
+      rule_stats[tuple(rule)]['cover'] = cover
   
   return rule_stats
+
+def jaccard_distance(cover1, cover2):
+    """
+    Calculate the Jaccard distance between two covers.
+
+    Args:
+    cover1 (array-like): Boolean array indicating the coverage of the first rule.
+    cover2 (array-like): Boolean array indicating the coverage of the second rule.
+
+    Returns:
+    float: Jaccard distance between the two covers.
+    """
+    # Ensure input is in numpy array format
+    cover1 = np.asarray(cover1)
+    cover2 = np.asarray(cover2)
+
+    # Calculate the intersection and union
+    intersection = np.logical_and(cover1, cover2).sum()
+    union = np.logical_or(cover1, cover2).sum()
+
+    # Handle case where union is zero to avoid division by zero
+    if union == 0:
+        return 1.0  # Maximum distance if both sets are empty
+
+    # Compute Jaccard distance
+    return 1 - intersection / union
+
+def compute_jaccard_distance_matrix(covers):
+    """
+    Compute the Jaccard distance matrix for a set of rule covers.
+
+    Args:
+    covers (list of array-like): A list where each element is a boolean array indicating the cover of a rule.
+
+    Returns:
+    np.ndarray: A 2D Numpy array representing the Jaccard distance matrix.
+    """
+    n = len(covers)
+    distance_matrix = np.zeros((n, n))  # Initialize a square matrix
+
+    for i in range(n):
+        for j in range(i + 1, n):  # Only compute the upper triangle
+            distance = jaccard_distance(covers[i], covers[j])
+            distance_matrix[i][j] = distance
+            distance_matrix[j][i] = distance  # Mirror the distance since the matrix is symmetric
+
+    return distance_matrix
