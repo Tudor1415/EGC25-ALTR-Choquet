@@ -30,7 +30,13 @@ def phi(n, n11, n1x, nx1, n0x, nx0):
     """Calculates the phi measure (φ) from a 2x2 contingency table."""
     
     numerator = n * n11 - n1x * nx1
-    denominator = math.sqrt(n1x * nx1 * n0x * nx0)
+    try:
+        # To avoid overflow
+        log_product = math.log(n1x) + math.log(nx1) + math.log(n0x) + math.log(nx0)
+        denominator = math.sqrt(math.exp(log_product))
+    except ValueError:
+        print("One of the values is negative or zero, cannot compute.")
+        denominator = float('inf')
     
     if denominator == 0: 
         return 0.0

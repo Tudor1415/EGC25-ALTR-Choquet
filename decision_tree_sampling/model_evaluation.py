@@ -188,14 +188,29 @@ def evaluate_datasets(dat_files_folder, output_base, measure, top_k):
         tuple: results, tree_data_per_dataset, sample_data_per_dataset
     """
     class_items_dict = {
-        'adult': [145, 146],
-        'bank': [89, 90],
-        'connect': [127, 128],
-        'credit': [111, 112],
-        'dota': [346, 347],
-        'toms': [911, 912],
-        'mushroom': [116, 117],
-        # Add other datasets and their class values here
+        "adult": [145, 146],
+        "bank": [89, 90],
+        "connect": [127, 128],
+        "credit": [111, 112],
+        "dota": [346, 347],
+        "toms": [911, 912],
+        "mushroom": [116, 117],
+        "banknote": [17, 18],
+        "heart": [32, 33],
+        "ionosphere": [145, 146],
+        "ilpd": [15, 16],
+        "magic": [80, 81],
+        "medical_kaggle": [126, 127],
+        "parkinsons": [52, 53],
+        "pima": [31, 32],
+        "skin": [120, 121],
+        "tictactoe": [28, 29],
+        "transfusion": [7, 8],
+        "travel-insurance": [212, 213],
+        "twitter": [1512, 1513],
+        "wdbc": [89, 90],
+        "weatherAUS": [152, 153],
+        "iris": [12, 13]
     }
 
     results = {}
