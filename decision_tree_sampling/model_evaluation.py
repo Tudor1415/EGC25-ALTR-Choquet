@@ -1,11 +1,9 @@
 import os
 import numpy as np
 import pandas as pd
-
-# Assuming these modules are provided elsewhere in your project
+import matplotlib.pyplot as plt
 from measures import information_gain, phi
 from data_processing import extract_decision_tree_rules, get_rule_stats, compute_jaccard_distance_matrix
-
 
 # --------------------------------------
 # Data Loading Functions
@@ -25,7 +23,6 @@ def load_dataset(dataset_file):
     X = df.iloc[:, :-1]  # Features (all columns except the last one)
     y = df.iloc[:, -1]   # Target variable (the last column)
     return X, y
-
 
 def fetch_first_csv(sample_path, keyword='jaccard', exclude=False):
     """
@@ -58,7 +55,6 @@ def fetch_first_csv(sample_path, keyword='jaccard', exclude=False):
         print(f"An error occurred: {e}")
         return None
 
-
 def load_distance_matrix(filepath):
     """
     Load a distance matrix from a CSV file and convert it to a Numpy array.
@@ -82,7 +78,6 @@ def load_distance_matrix(filepath):
     except Exception as e:
         print(f"An error occurred while loading the distance matrix: {e}")
         return None
-
 
 # --------------------------------------
 # Evaluation Functions
@@ -117,24 +112,33 @@ def compute_rule_measure(rule_stats, measure, n):
 
     return value
 
-
-def evaluate_tree_on_dataset(X, y, class_values, measure, top_k, depth_range=10, repetitions=5):
+def compute_redundancy_score(top_k_values, distance_matrix):
     """
-    Evaluate decision tree rules on the dataset, compute the mean of the top_k measure values,
-    and compute the Jaccard distance matrix for the rules corresponding to these top_k values.
+    Compute the redundancy score using the top_k_values and distance_matrix.
 
     Args:
-        X (pd.DataFrame): Feature matrix.
-        y (pd.Series): Target variable.
-        class_values (list): List of class values.
-        measure (str): The measure to compute ('IG' or 'phi').
-        depth_range (int): The maximum depth of the tree.
-        repetitions (int): Number of repetitions for tree extraction.
-        top_k (int): Number of top measure values to consider.
+        top_k_values (pd.Series or list): Series of top_k measure values.
+        distance_matrix (np.ndarray): Distance matrix.
 
     Returns:
-        float: Mean of the top_k measure values.
-        np.ndarray: Jaccard distance matrix for top_k rules.
+        float: Redundancy score.
+    """
+    score = top_k_values[0]
+
+    for i in range(1, len(top_k_values)):
+        min_distance = min([distance_matrix[i][k] for k in range(0, i)])
+        score += min_distance * top_k_values[i]
+
+    return score
+
+# Modified function
+def evaluate_tree_on_dataset(X, y, class_values, measure, top_k, depth_range=10, repetitions=5):
+    """
+    Evaluate decision tree rules on the dataset, compute the redundancy score,
+    and return the top_k measure values and covers.
+
+    Returns:
+        tuple: redundancy_score, top_k_values, top_k_covers, actual_k
     """
     measure_values_with_covers = []
     seen_rules = set()
@@ -156,54 +160,32 @@ def evaluate_tree_on_dataset(X, y, class_values, measure, top_k, depth_range=10,
                     n = len(X)
                     rule_stats = stats[rule]
                     value = compute_rule_measure(rule_stats, measure, n)
-                    measure_values_with_covers.append((value, rule_stats['cover']))
+                    cover = rule_stats['cover']
+                    measure_values_with_covers.append((value, cover))
 
-    # If not enough values were collected
-    if len(measure_values_with_covers) < top_k:
-        raise ValueError(f"Not enough scores computed, {len(measure_values_with_covers)} < {top_k}. Increase depth_range or repetitions, or reduce top_k.")
+    # Adjust top_k to be the minimum of desired top_k and number of rules collected
+    actual_k = min(top_k, len(measure_values_with_covers))
+    if actual_k == 0:
+        raise ValueError(f"No rules extracted for dataset. Cannot evaluate.")
 
-    # Select the top k measure values and corresponding covers
-    top_k_values_with_covers = sorted(measure_values_with_covers, key=lambda x: x[0], reverse=True)[:top_k]
+    # Select the top actual_k measure values and corresponding covers
+    top_k_values_with_covers = sorted(measure_values_with_covers, key=lambda x: x[0], reverse=True)[:actual_k]
     top_k_values, top_k_covers = zip(*top_k_values_with_covers)
 
     # Compute the Jaccard distance matrix for the top k covers
     distance_matrix = compute_jaccard_distance_matrix(list(top_k_covers))
 
-    return compute_redundancy_score(top_k_values, distance_matrix)
+    redundancy_score = compute_redundancy_score(top_k_values, distance_matrix)
 
+    return redundancy_score, top_k_values, top_k_covers, actual_k
 
-def compute_redundancy_score(top_k_values, distance_matrix):
-    """
-    Compute the redundancy score using the top_k_values and distance_matrix.
-
-    Args:
-        top_k_values (pd.Series or list): Series of top_k measure values.
-        distance_matrix (np.ndarray): Distance matrix.
-
-    Returns:
-        float: Redundancy score.
-    """
-    score = top_k_values[0]
-
-    for i in range(1, len(top_k_values)):
-        min_distance = min([distance_matrix[i][k] for k in range(0, i)])
-        score += min_distance * top_k_values[i]
-
-    return score
-
-
+# Modified function
 def evaluate_datasets(dat_files_folder, output_base, measure, top_k):
     """
-    Evaluate datasets by computing the mean of top_k measure values and redundancy score.
-
-    Args:
-        dat_files_folder (str): Directory containing .dat dataset files.
-        output_base (str): Base directory for output files.
-        measure (str): The measure to compute ('IG' or 'phi').
-        top_k (int): Number of top measure values to consider.
+    Evaluate datasets by computing redundancy scores and collecting rule data.
 
     Returns:
-        dict: Dictionary of dataset names and their corresponding scores.
+        tuple: results, tree_data_per_dataset, sample_data_per_dataset
     """
     class_items_dict = {
         'adult': [145, 146],
@@ -212,22 +194,25 @@ def evaluate_datasets(dat_files_folder, output_base, measure, top_k):
         'credit': [111, 112],
         'dota': [346, 347],
         'toms': [911, 912],
-        'mushroom': [116, 117]
+        'mushroom': [116, 117],
+        # Add other datasets and their class values here
     }
 
     results = {}
+    tree_data_per_dataset = {}
+    sample_data_per_dataset = {}
 
     for dataset_file in os.listdir(dat_files_folder):
         if dataset_file.endswith('.dat'):
             dataset_name = os.path.splitext(dataset_file)[0]
-            print(f"Processing the top {top_k} samples on dataset {dataset_name}...")
+            print(f"Processing dataset {dataset_name}...")
 
             # Load dataset
             dataset_path = os.path.join(dat_files_folder, dataset_file)
             X, y = load_dataset(dataset_path)
 
             if len(np.unique(y)) < 2:
-                print(f"Not enough classes in original dataset {dataset_name}, skipping.")
+                print(f"Not enough classes in dataset {dataset_name}, skipping.")
                 continue
 
             # Evaluate tree on dataset
@@ -236,25 +221,139 @@ def evaluate_datasets(dat_files_folder, output_base, measure, top_k):
                 print(f"No class values found for dataset {dataset_name}, skipping.")
                 continue
 
-            tree_score = evaluate_tree_on_dataset(
-                X, y, class_values, measure, top_k
-            )
+            try:
+                tree_score, top_k_values, top_k_covers, actual_k = evaluate_tree_on_dataset(
+                    X, y, class_values, measure, top_k
+                )
+            except ValueError as e:
+                print(str(e))
+                continue
+
+            # Adjust top_k for sampling method as well
+            adjusted_k = actual_k  # Number of rules actually used
+
+            # Store the extracted data for tree method
+            tree_data_per_dataset[dataset_name] = {
+                'values': top_k_values,
+                'covers': top_k_covers,
+                'distance_matrix': None,  # Will compute when needed
+                'mean_distances': None,
+                'actual_k': adjusted_k
+            }
 
             # Load sampled rules and distance matrix
             sample_path = os.path.join(output_base, dataset_name, 'samples', measure)
             sampled_rules_path = fetch_first_csv(sample_path, keyword='jaccard', exclude=True)
             if sampled_rules_path is None:
+                print(f"No sampled rules CSV found for dataset {dataset_name}, skipping.")
                 continue
 
             sampled_rules = pd.read_csv(sampled_rules_path)
             distance_matrix_path = fetch_first_csv(sample_path)
             distance_matrix = load_distance_matrix(distance_matrix_path)
             if distance_matrix is None:
+                print(f"No distance matrix found for dataset {dataset_name}, skipping.")
                 continue
 
-            top_k_sample = sampled_rules[measure].head(top_k).values
-            sample_score = compute_redundancy_score(top_k_sample, distance_matrix)
+            # Adjust top_k if necessary
+            if len(sampled_rules) < adjusted_k:
+                adjusted_k = len(sampled_rules)
+                print(f"Adjusted top_k to {adjusted_k} for dataset {dataset_name} due to insufficient sampled rules.")
+
+            top_k_sample = sampled_rules[measure].head(adjusted_k).values
+            sample_distance_matrix = distance_matrix[:adjusted_k, :adjusted_k]
+            sample_score = compute_redundancy_score(top_k_sample, sample_distance_matrix)
+
+            # Store the extracted data for sample method
+            sample_data_per_dataset[dataset_name] = {
+                'values': top_k_sample,
+                'distance_matrix': sample_distance_matrix,
+                'mean_distances': None,
+                'actual_k': adjusted_k
+            }
 
             results[dataset_name] = (tree_score, sample_score)
 
-    return results
+    return results, tree_data_per_dataset, sample_data_per_dataset
+
+# Modified function
+def plot_mean_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, output_base, measure):
+    """
+    Plot two CDFs on the same plot, one for each method (sampling and tree), using the pre-extracted data.
+    """
+    mean_distances_tree = []
+    mean_distances_sample = []
+
+    for dataset_name in tree_data_per_dataset.keys():
+        tree_data = tree_data_per_dataset[dataset_name]
+        sample_data = sample_data_per_dataset.get(dataset_name)
+
+        if not sample_data:
+            continue  # Skip if sample data is not available
+
+        # Use the actual_k value for consistency
+        adjusted_k = tree_data['actual_k']
+
+        # Compute mean distances for tree method if not already computed
+        if tree_data['mean_distances'] is None:
+            if tree_data['distance_matrix'] is None:
+                # Compute distance matrix
+                distance_matrix = compute_jaccard_distance_matrix(list(tree_data['covers']))
+                tree_data['distance_matrix'] = distance_matrix
+            else:
+                distance_matrix = tree_data['distance_matrix']
+            mean_distances = []
+            for i in range(adjusted_k):
+                distances = np.delete(distance_matrix[i][:adjusted_k], i)
+                mean_distance = np.mean(distances)
+                mean_distances.append(mean_distance)
+            tree_data['mean_distances'] = mean_distances
+        mean_distances_tree.extend(tree_data['mean_distances'])
+
+        # Similarly for sample method
+        if sample_data['mean_distances'] is None:
+            distance_matrix = sample_data['distance_matrix']
+            mean_distances = []
+            for i in range(adjusted_k):
+                distances = np.delete(distance_matrix[i], i)
+                mean_distance = np.mean(distances)
+                mean_distances.append(mean_distance)
+            sample_data['mean_distances'] = mean_distances
+        mean_distances_sample.extend(sample_data['mean_distances'])
+
+    # Ensure that we have data to plot
+    if not mean_distances_tree or not mean_distances_sample:
+        print("No data available to plot.")
+        return
+
+    # Get the number of data points for each method
+    num_points_tree = len(mean_distances_tree)
+    num_points_sample = len(mean_distances_sample)
+
+    # Compute CDFs
+    sorted_tree_distances = np.sort(mean_distances_tree)
+    sorted_sample_distances = np.sort(mean_distances_sample)
+
+    cdf_tree = np.arange(1, len(sorted_tree_distances)+1) / len(sorted_tree_distances)
+    cdf_sample = np.arange(1, len(sorted_sample_distances)+1) / len(sorted_sample_distances)
+
+    # Plot the CDFs
+    plt.figure(figsize=(10, 6))
+    plt.plot(sorted_tree_distances, cdf_tree, label='Tree Method')
+    plt.plot(sorted_sample_distances, cdf_sample, label='Sampling Method')
+
+    plt.xlabel('Mean Distance to Other Rules')
+    plt.ylabel('Cumulative Distribution Function (CDF)')
+    plt.title(f'CDF of Mean Distances for {measure} Across Datasets\n'
+              f'Number of Data Points - Tree: {num_points_tree}, Sampling: {num_points_sample}')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+
+    # Save the plot
+    plot_filename = f'mean_distance_cdf_{measure}.png'
+    plot_path = os.path.join(output_base, plot_filename)
+    plt.savefig(plot_path)
+    plt.close()
+
+    print(f"CDF plot saved at {plot_path}.")

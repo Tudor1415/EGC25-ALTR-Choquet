@@ -109,11 +109,43 @@ public class ExtractSample {
                 return new HashSet<>(Arrays.asList("911", "912"));
             case "mushroom":
                 return new HashSet<>(Arrays.asList("116", "117"));
+            case "banknote":
+                return new HashSet<>(Arrays.asList("17", "18"));
+            case "heart":
+                return new HashSet<>(Arrays.asList("32", "33"));
+            case "ionosphere":
+                return new HashSet<>(Arrays.asList("145", "146"));
+            case "ilpd":
+                return new HashSet<>(Arrays.asList("15", "16"));
+            case "magic":
+                return new HashSet<>(Arrays.asList("80", "81"));
+            case "medical_kaggle":
+                return new HashSet<>(Arrays.asList("126", "127"));
+            case "parkinsons":
+                return new HashSet<>(Arrays.asList("52", "53"));
+            case "pima":
+                return new HashSet<>(Arrays.asList("31", "32"));
+            case "skin":
+                return new HashSet<>(Arrays.asList("120", "121"));
+            case "tictactoe":
+                return new HashSet<>(Arrays.asList("28", "29"));
+            case "transfusion":
+                return new HashSet<>(Arrays.asList("7", "8"));
+            case "travel-insurance":
+                return new HashSet<>(Arrays.asList("212", "213"));
+            case "twitter":
+                return new HashSet<>(Arrays.asList("1512", "1513"));
+            case "wdbc":
+                return new HashSet<>(Arrays.asList("89", "90"));
+            case "weatherAUS":
+                return new HashSet<>(Arrays.asList("152", "153"));
+            case "iris":
+                return new HashSet<>(Arrays.asList("12", "13"));
             default:
                 return null;
         }
     }
-
+    
     /**
      * Reads a dataset from the specified folder.
      * 
