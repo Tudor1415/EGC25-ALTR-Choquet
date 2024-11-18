@@ -36,16 +36,17 @@ public class RuleMeasures {
     public static final String certainty = "certainty";
     public static final String support = "support";
     public static final String revsupport = "revsup";
+    public static final String informationGain = "IG";
 
     public RuleMeasures(IRule rule, int nbTransactions, double smoothCounts) {
         if (rule == null) {
             throw new RuntimeException("Rule must not be null");
         }
-        
+
         n = nbTransactions;
-        n11 = rule.getFreqZ();
-        n1x = rule.getFreqX();
-        nx1 = rule.getFreqY();
+        n11 = rule.getFreqZ(); // Pattern frequency X \cup Y
+        n1x = rule.getFreqX(); // Antecedent frequency
+        nx1 = rule.getFreqY(); // Consequent frequency
         n0x = n - n1x; // Frequency of transactions without antecedent (X)
         nx0 = n - nx1; // Frequency of transactions without consequent (Y)
         n10 = n1x - n11; // Frequency of transactions with antecedent but without consequent
@@ -78,11 +79,10 @@ public class RuleMeasures {
      */
     private void checkMeasure(double value, double lb, double ub, String measureName) {
         if (value > (ub + epsilon) || value < (lb - epsilon)) {
-            throw new IllegalArgumentException("Illegal value for measure " + measureName + 
-                ": value=" + value + ", should be between " + lb + " and " + ub);
+            throw new IllegalArgumentException("Illegal value for measure " + measureName +
+                    ": value=" + value + ", should be between " + lb + " and " + ub);
         }
     }
-    
 
     /**
      * Computes the confidence measure for the rule.
@@ -93,6 +93,51 @@ public class RuleMeasures {
         double value = n11 / n1x;
         checkMeasure(value, 0, 1, confidence);
         return value;
+    }
+
+    /**
+     * Computes the information gain of the rule.
+     *
+     * @return The information gain measure.
+     */
+    private double informationGain() {
+        double H_D = entropy(nx0, nx1, n);
+        double freq_D_F = n11 / n;
+        double H_D_F = entropy(0, n11, n11);
+        double freq_bar_D_F = (n - n11) / n;
+        double H_D_bar_F = entropy(n00, n01, n0x);
+
+        double value = H_D - freq_D_F * H_D_F - freq_bar_D_F * H_D_bar_F;
+        checkMeasure(value, 0, 1, informationGain);
+        return value;
+    }
+
+    /**
+     * Computes the entropy of a subset of transactions.
+     * 
+     * @param nx0 The number of transactions where the class does not have the desired
+     *            value.
+     * @param nx1 The number of transactions where the class has the
+     *            desired value.
+     * @param n   The total number of transactions.
+     * @return The dataset's entropy.
+     */
+    private double entropy(double nx0, double nx1, double n) {
+        if (nx0 == 0 || nx1 == 0) {
+            return 0;
+        }
+
+        double positive = 0;
+        if (nx1 > 0) {
+            positive = (nx1 / n) * Math.log(nx1 / n) / Math.log(2);
+        }
+
+        double negative = 0;
+        if (nx0 > 0) {
+            negative = (nx0 / n) * Math.log(nx0 / n) / Math.log(2);
+        }
+
+        return -(positive + negative);
     }
 
     /**
@@ -169,7 +214,7 @@ public class RuleMeasures {
     private double addedValue() {
         double value = n11 / n1x - nx1 / n;
         checkMeasure(value, -0.5, 1, addedValue);
-        return value; 
+        return value;
     }
 
     /**
@@ -252,6 +297,8 @@ public class RuleMeasures {
             return support();
         if (measureName.equals(revsupport))
             return revsupport();
+        if (measureName.equals(informationGain))
+            return informationGain();
         throw new RuntimeException("This measure doesn't exist : " + measureName);
     }
 

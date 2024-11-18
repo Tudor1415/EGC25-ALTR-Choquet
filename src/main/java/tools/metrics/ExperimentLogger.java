@@ -1,28 +1,28 @@
 package tools.metrics;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Set;
+import java.util.List;
 import java.io.FileWriter;
 import java.io.IOException;
-import tools.normalization.Normalizer;
+import java.util.ArrayList;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
+import java.beans.PropertyChangeEvent;
+import tools.normalization.Normalizer;
+import java.beans.PropertyChangeListener;
+import java.time.format.DateTimeFormatter;
 
-import tools.alternatives.Alternative;
-import tools.alternatives.IAlternative;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.normalization.Normalizer.NormalizationMethod;
-import tools.oracles.ArtificialOracle;
 import tools.rules.DecisionRule;
+import tools.alternatives.Alternative;
+import tools.oracles.ArtificialOracle;
+import tools.alternatives.IAlternative;
+import tools.normalization.Normalizer.NormalizationMethod;
+import tools.functions.singlevariate.ISinglevariateFunction;
 
 /**
- * Dashboard for computing ranking metrics based on predicted rankings compared
- * to a reference ranking.
- * It listens for property change events and computes metrics accordingly.
+ * ExperimentLogger modified to compute and log the time it takes to finish
+ * each learning iteration.
  */
 public class ExperimentLogger implements PropertyChangeListener {
 
@@ -33,6 +33,10 @@ public class ExperimentLogger implements PropertyChangeListener {
     private NormalizationMethod normMethod;
     private Normalizer normalizer;
     private int iteration = 0;
+
+    // Variables to store iteration times
+    private List<Long> perIterationTimes = new ArrayList<>();
+    private long lastUpdateTime;
 
     public ExperimentLogger(ArtificialOracle oracle, String learningAlgName, String loggingPath, String datasetName,
             int foldIdx,
@@ -53,25 +57,27 @@ public class ExperimentLogger implements PropertyChangeListener {
             } else {
                 System.err.println("Failed to create logging path: " + loggingPath);
             }
-        } else {
-            // System.out.println("Logging path already exists: " + loggingPath);
         }
 
         this.normalizer = new Normalizer();
         initNormalization();
+
+        // Initialize lastUpdateTime
+        this.lastUpdateTime = System.currentTimeMillis();
     }
 
     private void initNormalization() {
         for (DecisionRule rule : testRuleSet)
             this.normalizer.normalize(rule.getAlternative().getVector(), NormalizationMethod.NO_NORMALIZATION, true);
-
     }
 
     /**
      * Writes a list of alternatives to a CSV file.
      *
-     * @param alternatives The list of alternatives to write to the CSV file.
-     * @param scoresList   The list of scores associated with each alternative.
+     * @param rules        The list of decision rules to write to the CSV file.
+     * @param scoresApprox The list of approximate scores associated with each rule.
+     * @param scoresOracle The list of oracle scores associated with each rule.
+     * @param fileName     The name of the file to write.
      */
     public void writeSampleToCSV(List<DecisionRule> rules, List<Double> scoresApprox, List<Double> scoresOracle,
             String fileName) {
@@ -105,8 +111,6 @@ public class ExperimentLogger implements PropertyChangeListener {
                 writer.append("\n");
             }
 
-            // System.out.println("CSV file has been created successfully!");
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -120,6 +124,12 @@ public class ExperimentLogger implements PropertyChangeListener {
      */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        // Record the current time and compute the time since the last update
+        long currentTime = System.currentTimeMillis();
+        long iterationTime = currentTime - lastUpdateTime;
+        perIterationTimes.add(iterationTime);
+        lastUpdateTime = currentTime;
+
         // Retrieve the last available approximation function.
         ISinglevariateFunction func = (ISinglevariateFunction) evt.getNewValue();
 
@@ -152,5 +162,20 @@ public class ExperimentLogger implements PropertyChangeListener {
 
         return "[" + String.join("; ", antecedentValues) + "]" + " => " + "[" + String.join("; ", consequentValues)
                 + "]";
+    }
+
+    /**
+     * Writes the iteration times to a CSV file.
+     */
+    public void writeIterationTimes() {
+        String filename = loggingPath + learningAlgName + "_times_fold" + foldIdx + ".csv";
+        try (FileWriter writer = new FileWriter(filename)) {
+            writer.write("Iteration,Time(ms)\n");
+            for (int i = 0; i < perIterationTimes.size(); i++) {
+                writer.write((i + 1) + "," + perIterationTimes.get(i) + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -1,39 +1,44 @@
 package experiments;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.List;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
-import sampling.RandomSampler;
 import tools.data.Dataset;
-import tools.functions.singlevariate.FunctionParameters;
-import tools.functions.singlevariate.LinearScoreFunction;
+import tools.utils.RuleUtil;
+import sampling.RandomSampler;
+import tools.rules.DecisionRule;
+import tools.rules.DRMiningChoco;
 import tools.metrics.ExperimentLogger;
-import tools.normalization.Normalizer.NormalizationMethod;
 import tools.oracles.ArtificialOracle;
 import tools.oracles.ChiSquaredOracle;
-import tools.oracles.OWAOracle;
-import tools.ranking.heuristics.MinGapsRankingsProvider;
-import tools.ranking.heuristics.TopTwoRules;
-import tools.ranking.heuristics.UncertaintySampling;
-import tools.rules.DecisionRule;
 import tools.train.IterativeRankingLearn;
+import tools.oracles.InformationGainOracle;
+import tools.ranking.heuristics.TopTwoRules;
 import tools.train.iterative.KappalabIterative;
-import tools.utils.RuleUtil;
+import tools.ranking.heuristics.UncertaintySampling;
+import tools.functions.singlevariate.FunctionParameters;
+import tools.ranking.heuristics.MinGapsRankingsProvider;
+import tools.functions.singlevariate.LinearScoreFunction;
+import tools.normalization.Normalizer.NormalizationMethod;
 
 public class ExperimentActiveLearning {
     public static final String dataDirectory = "data/folds/";
     public static final String expDirectory = "results/active_learning/samples/";
 
-    // public static final List<String> datasetNames = Arrays.asList("adult",
-    // "bank", "connect", "credit", "dota", "toms");
-    public static final List<String> datasetNames = Arrays.asList("bank", "credit", "connect");
+    public static final List<String> datasetNames = Arrays.asList(
+        "bank", "credit", "dota", "toms", "connect", "mushroom", "adult", 
+        "banknote", "heart", "ionosphere", "ilpd", "magic", "medical_kaggle", 
+        "parkinsons", "pima", "skin", "tictactoe", "transfusion", 
+        "travel-insurance", "twitter", "wdbc", "weatherAUS"
+    );    
 
     public static final @Getter String[] measureNames = { "yuleQ", "cosine", "kruskal", "pavillon", "certainty" };
 
@@ -48,15 +53,40 @@ public class ExperimentActiveLearning {
     private List<ArtificialOracle> getOracles(int nbTransactions) {
         List<ArtificialOracle> oracleList = new ArrayList<>();
 
-        ArtificialOracle OWAOracle = new OWAOracle(0.01, measureNames.length);
+        ArtificialOracle InformationGain = new InformationGainOracle(nbTransactions);
         ArtificialOracle ChiSquared = new ChiSquaredOracle(nbTransactions);
 
         oracleList.add(ChiSquared);
-        oracleList.add(OWAOracle);
+        oracleList.add(InformationGain);
 
         return oracleList;
     }
 
+    private void mineRulesForFold(String dataPath, Set<String> classItems, String outputCsvPath) throws Exception {
+        // Convert the classItems to a set of integers
+        Set<Integer> classItemsInt = classItems.stream()
+                .map(Integer::parseInt)
+                .collect(Collectors.toSet());
+    
+        // Mining function with minConf = 90 (for 90%) and minSup = 1
+        int minConf = 90;
+        int minSup = 1;
+    
+        // Perform the mining using DRMiningChoco
+        DRMiningChoco.mine(dataPath, classItemsInt, outputCsvPath, minSup, minConf);
+    
+        // Print the output path after mining
+        System.out.println("Mined rules have been saved to: " + outputCsvPath);
+        
+        // Optional: Verify if the file exists and print a confirmation message
+        File minedRulesFile = new File(outputCsvPath);
+        if (minedRulesFile.exists()) {
+            System.out.println("Successfully created the mined rules file at: " + minedRulesFile.getAbsolutePath());
+        } else {
+            System.err.println("Failed to create the mined rules file at: " + outputCsvPath);
+        }
+    }
+    
     /**
      * Retrieves a list of ranking learning algorithms for experimentation.
      *
@@ -76,18 +106,22 @@ public class ExperimentActiveLearning {
         topTwoRules.setTimeLimit(3600);
         learningAlgorithms.add(topTwoRules);
 
-        KappalabIterative uncertaintySamplingSD = new KappalabIterative(nbLearningIterations,
-                new UncertaintySampling(oracle, dataset, measureNames), new LinearScoreFunction(), measureNames.length);
-        uncertaintySamplingSD.setName("ScoreDifference-" + noise);
-        uncertaintySamplingSD.setTimeLimit(3600);
-        learningAlgorithms.add(uncertaintySamplingSD);
+        // KappalabIterative uncertaintySamplingSD = new
+        // KappalabIterative(nbLearningIterations,
+        // new UncertaintySampling(oracle, dataset, measureNames), new
+        // LinearScoreFunction(), measureNames.length);
+        // uncertaintySamplingSD.setName("ScoreDifference-" + noise);
+        // uncertaintySamplingSD.setTimeLimit(3600);
+        // learningAlgorithms.add(uncertaintySamplingSD);
 
-        KappalabIterative uncertaintySamplingBT = new KappalabIterative(nbLearningIterations,
-                new UncertaintySampling(oracle, dataset, measureNames, "BradleyTerry"), new LinearScoreFunction(),
-                measureNames.length);
-        uncertaintySamplingBT.setName("BradleyTerry-" + noise);
-        uncertaintySamplingBT.setTimeLimit(3600);
-        learningAlgorithms.add(uncertaintySamplingBT);
+        // KappalabIterative uncertaintySamplingBT = new
+        // KappalabIterative(nbLearningIterations,
+        // new UncertaintySampling(oracle, dataset, measureNames, "BradleyTerry"), new
+        // LinearScoreFunction(),
+        // measureNames.length);
+        // uncertaintySamplingBT.setName("BradleyTerry-" + noise);
+        // uncertaintySamplingBT.setTimeLimit(3600);
+        // learningAlgorithms.add(uncertaintySamplingBT);
 
         KappalabIterative uncertaintySamplingTh = new KappalabIterative(nbLearningIterations,
                 new UncertaintySampling(oracle, dataset, measureNames, "Thurstone"), new LinearScoreFunction(),
@@ -113,7 +147,7 @@ public class ExperimentActiveLearning {
      * @param datasetName The name of the dataset.
      * @return A set of class items.
      */
-    private Set<String> getClassItems(String datasetName) {
+    public static Set<String> getClassItems(String datasetName) {
         switch (datasetName) {
             case "adult":
                 return new HashSet<>(Arrays.asList("145", "146"));
@@ -129,6 +163,38 @@ public class ExperimentActiveLearning {
                 return new HashSet<>(Arrays.asList("911", "912"));
             case "mushroom":
                 return new HashSet<>(Arrays.asList("116", "117"));
+            case "banknote":
+                return new HashSet<>(Arrays.asList("17", "18"));
+            case "heart":
+                return new HashSet<>(Arrays.asList("32", "33"));
+            case "ionosphere":
+                return new HashSet<>(Arrays.asList("145", "146"));
+            case "ilpd":
+                return new HashSet<>(Arrays.asList("15", "16"));
+            case "magic":
+                return new HashSet<>(Arrays.asList("80", "81"));
+            case "medical_kaggle":
+                return new HashSet<>(Arrays.asList("126", "127"));
+            case "parkinsons":
+                return new HashSet<>(Arrays.asList("52", "53"));
+            case "pima":
+                return new HashSet<>(Arrays.asList("31", "32"));
+            case "skin":
+                return new HashSet<>(Arrays.asList("120", "121"));
+            case "tictactoe":
+                return new HashSet<>(Arrays.asList("28", "29"));
+            case "transfusion":
+                return new HashSet<>(Arrays.asList("7", "8"));
+            case "travel-insurance":
+                return new HashSet<>(Arrays.asList("212", "213"));
+            case "twitter":
+                return new HashSet<>(Arrays.asList("1512", "1513"));
+            case "wdbc":
+                return new HashSet<>(Arrays.asList("89", "90"));
+            case "weatherAUS":
+                return new HashSet<>(Arrays.asList("152", "153"));
+            case "iris":
+                return new HashSet<>(Arrays.asList("12", "13"));
             default:
                 return null;
         }
@@ -176,7 +242,12 @@ public class ExperimentActiveLearning {
             String datasetName, int foldIdx, NormalizationMethod normMethod, List<DecisionRule> testRuleList)
             throws Exception {
 
+        // Paths for Choco miner
         String chocoRulesPath = dataDirectory + datasetName + "/train/train_rules_" + foldIdx + ".csv";
+        String foldPath = dataDirectory + datasetName + "/train/train_" + foldIdx + ".dat";
+        
+        // Mine the rules for the current fold
+        mineRulesForFold(foldPath, getClassItems(datasetName), chocoRulesPath);
 
         List<IterativeRankingLearn> learningAlgorithms = getLearningAlgorithms(trainOracle,
                 trainDataset, chocoRulesPath);

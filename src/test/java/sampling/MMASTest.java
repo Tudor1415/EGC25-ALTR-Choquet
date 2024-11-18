@@ -1,25 +1,24 @@
 package sampling;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
+import java.io.FileWriter;
+import java.io.IOException;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
-import tools.alternatives.IAlternative;
 import tools.data.Dataset;
-import tools.functions.multivariate.CertaintyFunction;
-import tools.functions.multivariate.IMultivariateFunction;
-import tools.functions.multivariate.PairwiseUncertainty;
-import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.functions.singlevariate.MinGapsScoreFunction;
-import tools.functions.singlevariate.OWA.OWAScoreFunction;
 import tools.rules.DecisionRule;
 import tools.utils.AlternativeUtil;
+import tools.alternatives.IAlternative;
+import tools.functions.multivariate.CertaintyFunction;
+import tools.functions.multivariate.PairwiseUncertainty;
+import tools.functions.singlevariate.OWA.OWAScoreFunction;
+import tools.functions.singlevariate.ISinglevariateFunction;
+import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
+import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
 
 public class MMASTest {
     private static Dataset dataset;
@@ -46,9 +45,9 @@ public class MMASTest {
         Arrays.fill(weights, 1.0 / measureNames.length);
         scoringFunction = new OWAScoreFunction(weights);
 
-        outRankingCertainty = new ScoreDifference(scoringFunction);
+        outRankingCertainty = new BradleyTerry(scoringFunction);
 
-        pairwiseUncertainty = new PairwiseUncertainty("ScoreDifferencePairwise", outRankingCertainty);
+        pairwiseUncertainty = new PairwiseUncertainty("BradleyTerryPairUncertainty", outRankingCertainty);
     }
 
     @Test

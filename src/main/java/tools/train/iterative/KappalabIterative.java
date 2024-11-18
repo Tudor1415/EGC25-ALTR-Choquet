@@ -2,25 +2,25 @@ package tools.train.iterative;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 
 import lombok.Setter;
+import tools.ranking.Ranking;
+import tools.utils.FunctionUtil;
+import tools.ranking.RankingsProvider;
 import tools.alternatives.IAlternative;
+import tools.train.IterativeRankingLearn;
+import tools.utils.kappalab.KappalabInput;
+import tools.utils.kappalab.KappalabUtils;
+import tools.utils.kappalab.KappalabOutput;
+import tools.utils.kappalab.KappalabRScriptCaller;
 import tools.functions.singlevariate.FunctionParameters;
 import tools.functions.singlevariate.ISinglevariateFunction;
 import tools.functions.singlevariate.Choquet.ChoquetMobiusScoreFunction;
-import tools.ranking.Ranking;
-import tools.ranking.RankingsProvider;
-import tools.train.IterativeRankingLearn;
-import tools.utils.FunctionUtil;
-import tools.utils.kappalab.KappalabInput;
-import tools.utils.kappalab.KappalabOutput;
-import tools.utils.kappalab.KappalabRScriptCaller;
-import tools.utils.kappalab.KappalabUtils;
 
 /**
  * Kappalab Iterative is a learning class that communicates with an R script

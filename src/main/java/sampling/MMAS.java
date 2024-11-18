@@ -5,12 +5,12 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import tools.data.Dataset;
+import tools.rules.DecisionRule;
+import tools.normalization.Normalizer;
 import tools.functions.multivariate.CertaintyFunction;
+import tools.normalization.Normalizer.NormalizationMethod;
 import tools.functions.singlevariate.ISinglevariateFunction;
 import tools.functions.singlevariate.MultivariateToSinglevariate;
-import tools.normalization.Normalizer;
-import tools.normalization.Normalizer.NormalizationMethod;
-import tools.rules.DecisionRule;
 
 public class MMAS {
     // The square root of the maximum iterations
@@ -32,7 +32,7 @@ public class MMAS {
                 certaintyFunction, dataset.getRandomValidRules(10, 1e-6d, measureNames), 1);
 
         this.measureNames = measureNames;
-        SMAS sampler = new SMAS(10, dataset, getScoringFunction(), measureNames, 1);
+        BatchSampler sampler = new BatchSampler(10, dataset, getScoringFunction(), measureNames, 1);
         this.singleVariateSampler = sampler;
     }
 
