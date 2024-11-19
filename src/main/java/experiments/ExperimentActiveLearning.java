@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.stream.IntStream;
 import java.util.stream.Collectors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
@@ -22,7 +21,6 @@ import tools.rules.DRMiningChoco;
 import tools.metrics.ExperimentLogger;
 import tools.oracles.ArtificialOracle;
 import tools.oracles.ChiSquaredOracle;
-import tools.train.IterativeRankingLearn;
 import tools.oracles.InformationGainOracle;
 import tools.ranking.heuristics.TopTwoRules;
 import tools.train.iterative.KappalabIterative;
@@ -44,7 +42,7 @@ public class ExperimentActiveLearning {
 
     public static final @Getter String[] measureNames = { "yuleQ", "cosine", "kruskal", "pavillon", "certainty" };
 
-    public static final int nbLearningIterations = 100;
+    public static final int nbLearningIterations = 1;
 
     /**
      * Generates a list of oracles for the experiment.
@@ -97,10 +95,10 @@ public class ExperimentActiveLearning {
      * @return List of ranking learning algorithms.
      * @throws IOException
      */
-    private List<IterativeRankingLearn> getLearningAlgorithms(ArtificialOracle oracle, Dataset dataset,
+    private List<KappalabIterative> getLearningAlgorithms(ArtificialOracle oracle, Dataset dataset,
             String chocoRulesPath) throws IOException {
         double noise = 0.0d;
-        List<IterativeRankingLearn> learningAlgorithms = new ArrayList<>();
+        List<KappalabIterative> learningAlgorithms = new ArrayList<>();
 
         KappalabIterative topTwoRules = new KappalabIterative(nbLearningIterations,
                 new TopTwoRules(oracle, dataset, measureNames, noise), new LinearScoreFunction(), measureNames.length);
@@ -251,7 +249,7 @@ public class ExperimentActiveLearning {
         // Mine the rules for the current fold
         mineRulesForFold(foldPath, getClassItems(datasetName), chocoRulesPath);
 
-        List<IterativeRankingLearn> learningAlgorithms = getLearningAlgorithms(trainOracle,
+        List<KappalabIterative> learningAlgorithms = getLearningAlgorithms(trainOracle,
                 trainDataset, chocoRulesPath);
 
         learningAlgorithms.parallelStream().forEach(algorithm -> {
@@ -268,6 +266,10 @@ public class ExperimentActiveLearning {
                 FunctionParameters func = algorithm.learn();
 
                 logger.writeIterationTimes();
+
+                String directoryPath = loggingPath + "input/";
+                String filename = directoryPath + algorithm.getName() + "_input_fold" + foldIdx + ".json";
+                algorithm.logCurrentKappalabInput(foldPath);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -294,10 +296,10 @@ public class ExperimentActiveLearning {
                 String chocoRulesPath = dataDirectory + datasetName + "/train/train_rules_" + foldIdx + ".csv";
 
                 for (int oracle_id = 0; oracle_id < trainOracles.size(); oracle_id++) {
-                    List<IterativeRankingLearn> learningAlgorithms = getLearningAlgorithms(trainOracles.get(oracle_id),
+                    List<KappalabIterative> learningAlgorithms = getLearningAlgorithms(trainOracles.get(oracle_id),
                             trainDataset, chocoRulesPath);
 
-                    for (IterativeRankingLearn algorithm : learningAlgorithms) {
+                    for (KappalabIterative algorithm : learningAlgorithms) {
                         System.out
                                 .println("Dataset: " + datasetName + " oracle: " + trainOracles.get(oracle_id).getTYPE()
                                         + " fold: " + foldIdx + " algorithm: " + algorithm.getName());

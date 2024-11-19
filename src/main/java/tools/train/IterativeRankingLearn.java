@@ -4,12 +4,12 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import tools.ranking.Ranking;
+import tools.utils.FunctionUtil;
+import tools.ranking.RankingsProvider;
 import tools.alternatives.IAlternative;
 import tools.functions.singlevariate.FunctionParameters;
 import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.ranking.Ranking;
-import tools.ranking.RankingsProvider;
-import tools.utils.FunctionUtil;
 
 /**
  * Abstract class representing an iterative ranking learning strategy.
