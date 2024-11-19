@@ -27,6 +27,139 @@
         "documentation": {}
     },
     {
+        "label": "Counter",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "DecisionTreeClassifier",
+        "importPath": "sklearn.tree",
+        "description": "sklearn.tree",
+        "isExtraImport": true,
+        "detail": "sklearn.tree",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "RandomForestClassifier",
+        "importPath": "sklearn.ensemble",
+        "description": "sklearn.ensemble",
+        "isExtraImport": true,
+        "detail": "sklearn.ensemble",
+        "documentation": {}
+    },
+    {
+        "label": "subprocess",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "subprocess",
+        "description": "subprocess",
+        "detail": "subprocess",
+        "documentation": {}
+    },
+    {
+        "label": "math",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "math",
+        "description": "math",
+        "detail": "math",
+        "documentation": {}
+    },
+    {
+        "label": "matplotlib.pyplot",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "matplotlib.pyplot",
+        "description": "matplotlib.pyplot",
+        "detail": "matplotlib.pyplot",
+        "documentation": {}
+    },
+    {
+        "label": "information_gain",
+        "importPath": "measures",
+        "description": "measures",
+        "isExtraImport": true,
+        "detail": "measures",
+        "documentation": {}
+    },
+    {
+        "label": "phi",
+        "importPath": "measures",
+        "description": "measures",
+        "isExtraImport": true,
+        "detail": "measures",
+        "documentation": {}
+    },
+    {
+        "label": "extract_random_forest_rules",
+        "importPath": "data_processing",
+        "description": "data_processing",
+        "isExtraImport": true,
+        "detail": "data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "get_rule_stats",
+        "importPath": "data_processing",
+        "description": "data_processing",
+        "isExtraImport": true,
+        "detail": "data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "compute_jaccard_distance_matrix",
+        "importPath": "data_processing",
+        "description": "data_processing",
+        "isExtraImport": true,
+        "detail": "data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "seaborn",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "seaborn",
+        "description": "seaborn",
+        "detail": "seaborn",
+        "documentation": {}
+    },
+    {
         "label": "re",
         "kind": 6,
         "isExtraImport": true,
@@ -42,57 +175,6 @@
         "importPath": "argparse",
         "description": "argparse",
         "detail": "argparse",
-        "documentation": {}
-    },
-    {
-        "label": "numpy",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "numpy",
-        "description": "numpy",
-        "detail": "numpy",
-        "documentation": {}
-    },
-    {
-        "label": "seaborn",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "seaborn",
-        "description": "seaborn",
-        "detail": "seaborn",
-        "documentation": {}
-    },
-    {
-        "label": "matplotlib.pyplot",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "matplotlib.pyplot",
-        "description": "matplotlib.pyplot",
-        "detail": "matplotlib.pyplot",
-        "documentation": {}
-    },
-    {
-        "label": "defaultdict",
-        "importPath": "collections",
-        "description": "collections",
-        "isExtraImport": true,
-        "detail": "collections",
-        "documentation": {}
-    },
-    {
-        "label": "defaultdict",
-        "importPath": "collections",
-        "description": "collections",
-        "isExtraImport": true,
-        "detail": "collections",
-        "documentation": {}
-    },
-    {
-        "label": "defaultdict",
-        "importPath": "collections",
-        "description": "collections",
-        "isExtraImport": true,
-        "detail": "collections",
         "documentation": {}
     },
     {
@@ -233,6 +315,213 @@
         "description": "data.format",
         "peekOfCode": "mapping_file = sys.argv[3]\n# Call the function to convert CSV to DAT\nreformat(input_csv_file, output_dat_file, mapping_file)",
         "detail": "data.format",
+        "documentation": {}
+    },
+    {
+        "label": "extract_random_forest_rules",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.data_processing",
+        "description": "decision_tree_sampling.data_processing",
+        "peekOfCode": "def extract_random_forest_rules(X, y, n_estimators=100, max_depth=5):\n    \"\"\"\n    Fit a Random Forest classifier and extract all decision rules from all trees in the forest.\n    Parameters:\n    X (numpy.ndarray or pandas.DataFrame): Feature data\n    y (numpy.ndarray or pandas.Series): Target data\n    Returns:\n    list: A list of decision rules from all trees. Each rule is a list of (feature, operator, threshold, class_label) tuples.\n    \"\"\"\n    # Fit the Random Forest",
+        "detail": "decision_tree_sampling.data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "extract_decision_tree_rules",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.data_processing",
+        "description": "decision_tree_sampling.data_processing",
+        "peekOfCode": "def extract_decision_tree_rules(X, y, max_depth = 5):\n    \"\"\"\n    Fit a decision tree classifier and extract all decision rules as paths from root to leaf, including class labels.\n    Parameters:\n    X (numpy.ndarray or pandas.DataFrame): Feature data\n    y (numpy.ndarray or pandas.DataFrame): Target data\n    Returns:\n    list: A list of decision rules, where each rule is a list of (feature, operator, threshold, class_label) tuples.\n    \"\"\"\n    # Fit the decision tree",
+        "detail": "decision_tree_sampling.data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "freqX",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.data_processing",
+        "description": "decision_tree_sampling.data_processing",
+        "peekOfCode": "def freqX(X, rules):\n    \"\"\"\n    Count the number of transactions in X that satisfy all conditions in each decision tree rule.\n    Parameters:\n    X (numpy.ndarray or pandas.DataFrame): Feature data\n    rules (list): A list of decision rules, where each rule is a list of (feature, operator, threshold, class_label) tuples.\n    Returns:\n    dict: A dictionary where the keys are the rules and the values are the counts of transactions satisfying each rule.\n    \"\"\"\n    rule_counts = {}",
+        "detail": "decision_tree_sampling.data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "freqY",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.data_processing",
+        "description": "decision_tree_sampling.data_processing",
+        "peekOfCode": "def freqY(y, rules, class_values):\n    \"\"\"\n    Count the number of times each class label appears in the target variable y.\n    Parameters:\n    y (numpy.ndarray or pandas.Series): Target data\n    Returns:\n    dict: A dictionary where the keys are the class labels and the values are the counts.\n    \"\"\"\n    rule_counts = {}\n    for rule in rules:",
+        "detail": "decision_tree_sampling.data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "freqZ",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.data_processing",
+        "description": "decision_tree_sampling.data_processing",
+        "peekOfCode": "def freqZ(X, y, rules, class_values):\n    \"\"\"\n    Count the number of times each class label appears in the target variable y.\n    Parameters:\n    y (numpy.ndarray or pandas.Series): Target data\n    Returns:\n    dict: A dictionary where the keys are the class labels and the values are the counts.\n    \"\"\"\n    rule_counts = {}\n    for rule in rules:",
+        "detail": "decision_tree_sampling.data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "get_rule_stats",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.data_processing",
+        "description": "decision_tree_sampling.data_processing",
+        "peekOfCode": "def get_rule_stats(X, y, rules, class_values):\n  n = len(X)\n  allFreqX = freqX(X, rules)\n  allFreqY = freqY(y, rules, class_values)\n  allFreqZ, cover = freqZ(X, y, rules, class_values)\n  rule_stats = {}\n  for rule in rules:\n      rule_stats[tuple(rule)] = {}\n      n1x = allFreqX[tuple(rule)]\n      rule_stats[tuple(rule)]['n1x'] = n1x ",
+        "detail": "decision_tree_sampling.data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "jaccard_distance",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.data_processing",
+        "description": "decision_tree_sampling.data_processing",
+        "peekOfCode": "def jaccard_distance(cover1, cover2):\n    \"\"\"\n    Calculate the Jaccard distance between two covers.\n    Args:\n    cover1 (array-like): Boolean array indicating the coverage of the first rule.\n    cover2 (array-like): Boolean array indicating the coverage of the second rule.\n    Returns:\n    float: Jaccard distance between the two covers.\n    \"\"\"\n    # Ensure input is in numpy array format",
+        "detail": "decision_tree_sampling.data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "compute_jaccard_distance_matrix",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.data_processing",
+        "description": "decision_tree_sampling.data_processing",
+        "peekOfCode": "def compute_jaccard_distance_matrix(covers):\n    \"\"\"\n    Compute the Jaccard distance matrix for a set of rule covers.\n    Args:\n    covers (list of array-like): A list where each element is a boolean array indicating the cover of a rule.\n    Returns:\n    np.ndarray: A 2D Numpy array representing the Jaccard distance matrix.\n    \"\"\"\n    n = len(covers)\n    distance_matrix = np.zeros((n, n))  # Initialize a square matrix",
+        "detail": "decision_tree_sampling.data_processing",
+        "documentation": {}
+    },
+    {
+        "label": "run_extract_sample",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.java_runner",
+        "description": "decision_tree_sampling.java_runner",
+        "peekOfCode": "def run_extract_sample(dataset_name, dataset_folder, output_directory, nb_samples, timeout_minutes, measure_names, weights, execution_classpath, project_root):\n    command = [\n        'java',\n        '-cp',\n        execution_classpath,\n        'tools.utils.ExtractSample',\n        dataset_name,\n        dataset_folder,\n        output_directory,\n        str(nb_samples),",
+        "detail": "decision_tree_sampling.java_runner",
+        "documentation": {}
+    },
+    {
+        "label": "get_maven_classpath",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.maven_utils",
+        "description": "decision_tree_sampling.maven_utils",
+        "peekOfCode": "def get_maven_classpath(project_root):\n    print(\"Getting classpath from Maven...\")\n    mvn_dependency_command = ['mvn', 'dependency:build-classpath', '-Dmdep.outputFile=classpath.txt']\n    # try:\n    #     subprocess.run(mvn_dependency_command, check=True, cwd=project_root)\n    # except subprocess.CalledProcessError as e:\n    #     print(f\"Failed to generate classpath using Maven: {e}\")\n    #     sys.exit(1)\n    classpath_file = os.path.join(project_root, 'classpath.txt')\n    if not os.path.exists(classpath_file):",
+        "detail": "decision_tree_sampling.maven_utils",
+        "documentation": {}
+    },
+    {
+        "label": "entropy",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.measures",
+        "description": "decision_tree_sampling.measures",
+        "peekOfCode": "def entropy(nx0, nx1, n):\n    \"\"\"Calculates entropy.\"\"\"\n    if nx0 == 0 or nx1 == 0:\n        return 0\n    positive = 0\n    if nx1 > 0:\n        positive = (nx1 / n) * math.log(nx1 / n, 2)  # Log base 2 for entropy\n    negative = 0\n    if nx0 > 0:\n        negative = (nx0 / n) * math.log(nx0 / n, 2)  # Log base 2 for entropy",
+        "detail": "decision_tree_sampling.measures",
+        "documentation": {}
+    },
+    {
+        "label": "information_gain",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.measures",
+        "description": "decision_tree_sampling.measures",
+        "peekOfCode": "def information_gain(nx0, nx1, n11, n00, n01, n0x, n):\n    \"\"\"Calculates information gain.\"\"\"\n    H_D = entropy(nx0, nx1, n)\n    freq_D_F = n11 / n\n    H_D_F = entropy(0, n11, n11)\n    freq_bar_D_F = (n - n11) / n\n    H_D_bar_F = entropy(n00, n01, n0x)\n    value = H_D - freq_D_F * H_D_F - freq_bar_D_F * H_D_bar_F\n    return value\ndef phi(n, n11, n1x, nx1, n0x, nx0):",
+        "detail": "decision_tree_sampling.measures",
+        "documentation": {}
+    },
+    {
+        "label": "phi",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.measures",
+        "description": "decision_tree_sampling.measures",
+        "peekOfCode": "def phi(n, n11, n1x, nx1, n0x, nx0):\n    \"\"\"Calculates the phi measure (φ) from a 2x2 contingency table.\"\"\"\n    numerator = n * n11 - n1x * nx1\n    try:\n        # To avoid overflow\n        log_product = math.log(n1x) + math.log(nx1) + math.log(n0x) + math.log(nx0)\n        denominator = math.sqrt(math.exp(log_product))\n    except ValueError:\n        print(\"One of the values is negative or zero, cannot compute.\")\n        denominator = float('inf')",
+        "detail": "decision_tree_sampling.measures",
+        "documentation": {}
+    },
+    {
+        "label": "load_dataset",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.model_evaluation",
+        "description": "decision_tree_sampling.model_evaluation",
+        "peekOfCode": "def load_dataset(dataset_file):\n    \"\"\"\n    Load dataset from a .dat file.\n    Args:\n        dataset_file (str): Path to the .dat dataset file.\n    Returns:\n        tuple: A tuple containing the feature matrix X and target vector y.\n    \"\"\"\n    df = pd.read_csv(dataset_file, sep=\" \", header=None)\n    X = df.iloc[:, :-1]  # Features (all columns except the last one)",
+        "detail": "decision_tree_sampling.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "fetch_first_csv",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.model_evaluation",
+        "description": "decision_tree_sampling.model_evaluation",
+        "peekOfCode": "def fetch_first_csv(sample_path, keyword='jaccard', exclude=False):\n    \"\"\"\n    Fetch the first CSV file from a directory that contains or excludes a specific keyword in its filename.\n    Args:\n        sample_path (str): The directory path where the files are located.\n        keyword (str): Keyword to include or exclude in the file names.\n        exclude (bool): If True, exclude files containing the keyword; if False, include them.\n    Returns:\n        str: The full path to the first matched CSV file or None if no file is found.\n    \"\"\"",
+        "detail": "decision_tree_sampling.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "load_distance_matrix",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.model_evaluation",
+        "description": "decision_tree_sampling.model_evaluation",
+        "peekOfCode": "def load_distance_matrix(filepath):\n    \"\"\"\n    Load a distance matrix from a CSV file and convert it to a Numpy array.\n    Args:\n        filepath (str): Full path to the CSV file containing the distance matrix.\n    Returns:\n        np.ndarray: A 2D Numpy array representing the distance matrix.\n    \"\"\"\n    if filepath is None:\n        return None",
+        "detail": "decision_tree_sampling.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "compute_rule_measure",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.model_evaluation",
+        "description": "decision_tree_sampling.model_evaluation",
+        "peekOfCode": "def compute_rule_measure(rule_stats, measure, n):\n    \"\"\"\n    Compute the measure value for a single rule.\n    Args:\n        rule_stats (dict): Statistics for the rule.\n        measure (str): The measure to compute ('IG' or 'phi').\n        n (int): Total number of samples.\n    Returns:\n        float: The computed measure value.\n    \"\"\"",
+        "detail": "decision_tree_sampling.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "compute_redundancy_score",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.model_evaluation",
+        "description": "decision_tree_sampling.model_evaluation",
+        "peekOfCode": "def compute_redundancy_score(top_k_values, distance_matrix):\n    \"\"\"\n    Compute the redundancy score using the top_k_values and distance_matrix.\n    Args:\n        top_k_values (pd.Series or list): Series of top_k measure values.\n        distance_matrix (np.ndarray): Distance matrix.\n    Returns:\n        float: Redundancy score.\n    \"\"\"\n    score = top_k_values[0]",
+        "detail": "decision_tree_sampling.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "evaluate_tree_on_dataset",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.model_evaluation",
+        "description": "decision_tree_sampling.model_evaluation",
+        "peekOfCode": "def evaluate_tree_on_dataset(X, y, class_values, measure, top_k, depth_range=10, repetitions=5):\n    \"\"\"\n    Evaluate decision tree rules on the dataset, compute the redundancy score,\n    and return the top_k measure values and covers.\n    Returns:\n        tuple: redundancy_score, top_k_values, top_k_covers, actual_k\n    \"\"\"\n    measure_values_with_covers = []\n    seen_rules = set()\n    for depth in range(1, depth_range + 1):",
+        "detail": "decision_tree_sampling.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "evaluate_datasets",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.model_evaluation",
+        "description": "decision_tree_sampling.model_evaluation",
+        "peekOfCode": "def evaluate_datasets(dat_files_folder, output_base, measure, top_k):\n    \"\"\"\n    Evaluate datasets by computing redundancy scores and collecting rule data.\n    Returns:\n        tuple: results, tree_data_per_dataset, sample_data_per_dataset\n    \"\"\"\n    class_items_dict = {\n        \"adult\": [145, 146],\n        \"bank\": [89, 90],\n        \"connect\": [127, 128],",
+        "detail": "decision_tree_sampling.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "plot_distance_cdfs",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.model_evaluation",
+        "description": "decision_tree_sampling.model_evaluation",
+        "peekOfCode": "def plot_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, output_base, measure):\n    \"\"\"\n    Plot two CDFs on the same plot, one for each method (sampling and tree), using the entries of the distance matrices.\n    \"\"\"\n    distances_tree = []\n    distances_sample = []\n    for dataset_name in tree_data_per_dataset.keys():\n        tree_data = tree_data_per_dataset[dataset_name]\n        sample_data = sample_data_per_dataset.get(dataset_name)\n        if not sample_data:",
+        "detail": "decision_tree_sampling.model_evaluation",
+        "documentation": {}
+    },
+    {
+        "label": "plot_results",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.plotting",
+        "description": "decision_tree_sampling.plotting",
+        "peekOfCode": "def plot_results(results, output_base, measure, top_k):\n    \"\"\"\n    Visualize the results of dataset evaluations as paired bar plots.\n    Parameters:\n    results (dict): A dictionary where the keys are dataset names and the values are\n                   tuples of (best_score_tree, best_score_sample).\n    \"\"\"\n    fig, ax = plt.subplots(figsize=(12, 8))\n    dataset_names = list(results.keys())\n    tree_scores = [result[0] for result in results.values()]",
+        "detail": "decision_tree_sampling.plotting",
+        "documentation": {}
+    },
+    {
+        "label": "generate_latex_table",
+        "kind": 2,
+        "importPath": "decision_tree_sampling.plotting",
+        "description": "decision_tree_sampling.plotting",
+        "peekOfCode": "def generate_latex_table(results, output_base, measure, top_k):\n    \"\"\"\n    Generate a LaTeX table from the results of dataset evaluations.\n    Parameters:\n    results (dict): A dictionary where the keys are dataset names and the values are\n                    tuples of (best_score_tree, best_score_sample).\n    output_base (str): The directory where the LaTeX table file will be saved.\n    measure (str): The performance measure used (e.g., accuracy, precision).\n    top_k (int): The top K samples considered.\n    \"\"\"",
+        "detail": "decision_tree_sampling.plotting",
         "documentation": {}
     },
     {

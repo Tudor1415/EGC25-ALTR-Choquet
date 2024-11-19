@@ -1,7 +1,59 @@
 from collections import Counter
 from sklearn.tree import DecisionTreeClassifier
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
 
+def extract_random_forest_rules(X, y, n_estimators=100, max_depth=5):
+    """
+    Fit a Random Forest classifier and extract all decision rules from all trees in the forest.
+
+    Parameters:
+    X (numpy.ndarray or pandas.DataFrame): Feature data
+    y (numpy.ndarray or pandas.Series): Target data
+
+    Returns:
+    list: A list of decision rules from all trees. Each rule is a list of (feature, operator, threshold, class_label) tuples.
+    """
+    # Fit the Random Forest
+    clf = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth)
+    clf.fit(X, y)
+
+    all_rules = []
+
+    for tree_idx, tree in enumerate(clf.estimators_):
+        # Extract the tree structure
+        n_nodes = tree.tree_.node_count
+        children_left = tree.tree_.children_left
+        children_right = tree.tree_.children_right
+        feature = tree.tree_.feature
+        threshold = tree.tree_.threshold
+        value = tree.tree_.value
+
+        # Helper function to traverse the tree and extract rules
+        def extract_rules(node_id, current_path):
+            if children_left[node_id] == children_right[node_id]:
+                # Leaf node, get the class label
+                class_label = np.argmax(value[node_id][0])
+                # Append the class label to the current path
+                return [current_path + [('class', '=', None, class_label)]]
+
+            # Internal node
+            rules = []
+            # Left child
+            if children_left[node_id] != -1:
+                left_path = current_path + [(feature[node_id], '<=', threshold[node_id], None)]
+                rules.extend(extract_rules(children_left[node_id], left_path))
+            # Right child
+            if children_right[node_id] != -1:
+                right_path = current_path + [(feature[node_id], '>', threshold[node_id], None)]
+                rules.extend(extract_rules(children_right[node_id], right_path))
+            return rules
+
+        # Extract all decision rules from this tree
+        tree_rules = extract_rules(0, [])
+        all_rules.extend(tree_rules)
+
+    return all_rules
 def extract_decision_tree_rules(X, y, max_depth = 5):
     """
     Fit a decision tree classifier and extract all decision rules as paths from root to leaf, including class labels.

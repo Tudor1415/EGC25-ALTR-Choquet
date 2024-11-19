@@ -7,7 +7,7 @@ import pandas as pd
 from plotting import plot_results, generate_latex_table
 from java_runner import run_extract_sample
 from maven_utils import get_maven_classpath
-from model_evaluation import evaluate_datasets, plot_mean_distance_cdfs
+from model_evaluation import evaluate_datasets, plot_distance_cdfs
 
 def main():
     # Parse command-line arguments
@@ -67,7 +67,7 @@ def main():
         # Evaluate datasets and collect data
         results, tree_data_per_dataset, sample_data_per_dataset = evaluate_datasets(dat_files_folder, output_base, measure, top_k)
 
-        plot_mean_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, output_base, measure)
+        plot_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, output_base, measure)
         generate_latex_table(results, output_base, measure, top_k)
         plot_results(results, output_base, measure, top_k)
 

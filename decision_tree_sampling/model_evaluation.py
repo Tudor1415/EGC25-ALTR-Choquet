@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from measures import information_gain, phi
-from data_processing import extract_decision_tree_rules, get_rule_stats, compute_jaccard_distance_matrix
+from data_processing import extract_random_forest_rules, get_rule_stats, compute_jaccard_distance_matrix
 
 # --------------------------------------
 # Data Loading Functions
@@ -146,7 +146,7 @@ def evaluate_tree_on_dataset(X, y, class_values, measure, top_k, depth_range=10,
     for depth in range(1, depth_range + 1):
         for _ in range(repetitions):
             # Extract decision tree rules
-            rules = extract_decision_tree_rules(X, y, max_depth=depth)
+            rules = extract_random_forest_rules(X, y, max_depth=depth)
             # Get rule statistics
             stats = get_rule_stats(X, y, rules, class_values)
 
@@ -291,13 +291,12 @@ def evaluate_datasets(dat_files_folder, output_base, measure, top_k):
 
     return results, tree_data_per_dataset, sample_data_per_dataset
 
-# Modified function
-def plot_mean_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, output_base, measure):
+def plot_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, output_base, measure):
     """
-    Plot two CDFs on the same plot, one for each method (sampling and tree), using the pre-extracted data.
+    Plot two CDFs on the same plot, one for each method (sampling and tree), using the entries of the distance matrices.
     """
-    mean_distances_tree = []
-    mean_distances_sample = []
+    distances_tree = []
+    distances_sample = []
 
     for dataset_name in tree_data_per_dataset.keys():
         tree_data = tree_data_per_dataset[dataset_name]
@@ -309,45 +308,42 @@ def plot_mean_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, outp
         # Use the actual_k value for consistency
         adjusted_k = tree_data['actual_k']
 
-        # Compute mean distances for tree method if not already computed
-        if tree_data['mean_distances'] is None:
-            if tree_data['distance_matrix'] is None:
-                # Compute distance matrix
-                distance_matrix = compute_jaccard_distance_matrix(list(tree_data['covers']))
-                tree_data['distance_matrix'] = distance_matrix
-            else:
-                distance_matrix = tree_data['distance_matrix']
-            mean_distances = []
-            for i in range(adjusted_k):
-                distances = np.delete(distance_matrix[i][:adjusted_k], i)
-                mean_distance = np.mean(distances)
-                mean_distances.append(mean_distance)
-            tree_data['mean_distances'] = mean_distances
-        mean_distances_tree.extend(tree_data['mean_distances'])
+        # Get the distance matrix for tree method
+        if tree_data['distance_matrix'] is None:
+            # Compute distance matrix
+            distance_matrix = compute_jaccard_distance_matrix(list(tree_data['covers']))
+            tree_data['distance_matrix'] = distance_matrix
+        else:
+            distance_matrix = tree_data['distance_matrix']
 
-        # Similarly for sample method
-        if sample_data['mean_distances'] is None:
+        # Flatten the upper triangle of the distance matrix, excluding the diagonal
+        triu_indices = np.triu_indices(adjusted_k, k=1)
+        distances = distance_matrix[triu_indices]
+        distances_tree.extend(distances)
+
+        if sample_data['distance_matrix'] is None:
+            distance_matrix = compute_jaccard_distance_matrix(list(sample_data['covers']))
+            sample_data['distance_matrix'] = distance_matrix
+        else:
             distance_matrix = sample_data['distance_matrix']
-            mean_distances = []
-            for i in range(adjusted_k):
-                distances = np.delete(distance_matrix[i], i)
-                mean_distance = np.mean(distances)
-                mean_distances.append(mean_distance)
-            sample_data['mean_distances'] = mean_distances
-        mean_distances_sample.extend(sample_data['mean_distances'])
+
+        # Flatten the upper triangle of the distance matrix, excluding the diagonal
+        triu_indices = np.triu_indices(adjusted_k, k=1)
+        distances = distance_matrix[triu_indices]
+        distances_sample.extend(distances)
 
     # Ensure that we have data to plot
-    if not mean_distances_tree or not mean_distances_sample:
+    if not distances_tree or not distances_sample:
         print("No data available to plot.")
         return
 
     # Get the number of data points for each method
-    num_points_tree = len(mean_distances_tree)
-    num_points_sample = len(mean_distances_sample)
+    num_points_tree = len(distances_tree)
+    num_points_sample = len(distances_sample)
 
     # Compute CDFs
-    sorted_tree_distances = np.sort(mean_distances_tree)
-    sorted_sample_distances = np.sort(mean_distances_sample)
+    sorted_tree_distances = np.sort(distances_tree)
+    sorted_sample_distances = np.sort(distances_sample)
 
     cdf_tree = np.arange(1, len(sorted_tree_distances)+1) / len(sorted_tree_distances)
     cdf_sample = np.arange(1, len(sorted_sample_distances)+1) / len(sorted_sample_distances)
@@ -357,16 +353,16 @@ def plot_mean_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, outp
     plt.plot(sorted_tree_distances, cdf_tree, label='Tree Method')
     plt.plot(sorted_sample_distances, cdf_sample, label='Sampling Method')
 
-    plt.xlabel('Mean Distance to Other Rules')
+    plt.xlabel('Distance Between Rules')
     plt.ylabel('Cumulative Distribution Function (CDF)')
-    plt.title(f'CDF of Mean Distances for {measure} Across Datasets\n'
+    plt.title(f'CDF of Distances for {measure} Across Datasets\n'
               f'Number of Data Points - Tree: {num_points_tree}, Sampling: {num_points_sample}')
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
 
     # Save the plot
-    plot_filename = f'mean_distance_cdf_{measure}.png'
+    plot_filename = f'distance_cdf_{measure}.png'
     plot_path = os.path.join(output_base, plot_filename)
     plt.savefig(plot_path)
     plt.close()
