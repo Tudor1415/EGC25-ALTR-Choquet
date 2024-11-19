@@ -1,29 +1,30 @@
 package tools.ranking.heuristics;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.List;
+import java.util.HashSet;
+import java.util.ArrayList;
 
 import lombok.Getter;
 import lombok.Setter;
 import sampling.SMAS;
-import tools.alternatives.Alternative;
-import tools.alternatives.IAlternative;
 import tools.data.Dataset;
-import tools.functions.multivariate.CertaintyFunction;
-import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.functions.singlevariate.LinearScoreFunction;
-import tools.normalization.Normalizer;
-import tools.normalization.Normalizer.NormalizationMethod;
-import tools.oracles.ArtificialOracle;
 import tools.oracles.Oracle;
+import sampling.BatchSampler;
 import tools.ranking.Ranking;
-import tools.ranking.RankingsProvider;
-import tools.rules.DecisionRule;
 import tools.train.LearnStep;
 import tools.utils.RankingUtil;
+import tools.rules.DecisionRule;
+import tools.alternatives.Alternative;
+import tools.normalization.Normalizer;
+import tools.oracles.ArtificialOracle;
+import tools.ranking.RankingsProvider;
+import tools.alternatives.IAlternative;
+import tools.functions.multivariate.CertaintyFunction;
+import tools.functions.singlevariate.LinearScoreFunction;
+import tools.normalization.Normalizer.NormalizationMethod;
+import tools.functions.singlevariate.ISinglevariateFunction;
+import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
 
 public class TopTwoRules implements RankingsProvider {
 
@@ -70,9 +71,7 @@ public class TopTwoRules implements RankingsProvider {
 
     private void initializeSampler(Dataset dataset, String[] measureNames, int maximumIterations) {
         ISinglevariateFunction initialFunction = new LinearScoreFunction();
-        CertaintyFunction outRankingCertainty = new BradleyTerry(initialFunction);
-        this.sampler = new SMAS(maximumIterations, dataset, outRankingCertainty, initialFunction, measureNames,
-                SMOOTH_COUNTS, TOP_K);
+        this.sampler = new BatchSampler(maximumIterations, dataset, initialFunction, measureNames, TOP_K);
     }
 
     /**

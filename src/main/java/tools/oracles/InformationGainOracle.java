@@ -6,7 +6,7 @@ import tools.functions.singlevariate.InformationGainScoreFunction;
 
 public class InformationGainOracle extends ArtificialOracle {
     @Getter
-    public String TYPE = "Information Gain";
+    public String TYPE = "InformationGain";
 
     @Getter
     private InformationGainScoreFunction scoreFunction;

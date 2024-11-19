@@ -2,26 +2,26 @@ package tools.ranking.heuristics;
 
 import static java.lang.Math.abs;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.List;
+import java.util.HashSet;
+import java.util.ArrayList;
 
 import lombok.Getter;
 import lombok.Setter;
-import tools.alternatives.Alternative;
-import tools.alternatives.IAlternative;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.normalization.Normalizer;
-import tools.normalization.Normalizer.NormalizationMethod;
-import tools.oracles.ArtificialOracle;
 import tools.oracles.Oracle;
 import tools.ranking.Ranking;
-import tools.ranking.RankingsProvider;
-import tools.rules.DecisionRule;
 import tools.train.LearnStep;
 import tools.utils.RandomUtil;
 import tools.utils.RankingUtil;
+import tools.rules.DecisionRule;
+import tools.alternatives.Alternative;
+import tools.normalization.Normalizer;
+import tools.oracles.ArtificialOracle;
+import tools.ranking.RankingsProvider;
+import tools.alternatives.IAlternative;
+import tools.normalization.Normalizer.NormalizationMethod;
+import tools.functions.singlevariate.ISinglevariateFunction;
 
 /**
  * A ranking provider based on an alternative selection heuristic (section
@@ -118,14 +118,17 @@ public class MinGapsRankingsProvider implements RankingsProvider {
 
         int a1Index = -1;
         int a2Index = -1;
+        
         for (int i = 0; i < randomSampleSize; i++) {
             for (int j = i + 1; j < randomSampleSize; j++) {
                 int iIndex = randomSample[i];
                 int jIndex = randomSample[j];
+        
                 if (selectedPairs.contains(
                         new IAlternative[] { sample[iIndex].getAlternative(), sample[jIndex].getAlternative() })) {
                     continue;
                 }
+        
                 double measureGap = measureGap(sample[iIndex].getAlternative(), sample[jIndex].getAlternative());
                 if (measureGap < minGap) {
                     minGap = measureGap;
@@ -134,7 +137,14 @@ public class MinGapsRankingsProvider implements RankingsProvider {
                 }
             }
         }
-
+        
+        // Check if a1Index or a2Index is still -1
+        if (a1Index == -1 || a2Index == -1) {
+            System.out.println("No suitable pair found; a1Index or a2Index is -1.");
+            a1Index = 0;
+            a2Index = 1;
+        }
+        
         // Add the selected pair to the set of selected pairs
         IAlternative norm_a = new Alternative(normalizer.normalize(sample[a1Index].getAlternative().getVector(),
                 NormalizationMethod.MIN_MAX_SCALING, false));

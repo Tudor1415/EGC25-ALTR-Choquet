@@ -167,8 +167,21 @@ public class ExperimentLogger implements PropertyChangeListener {
     /**
      * Writes the iteration times to a CSV file.
      */
-    public void writeIterationTimes() {
-        String filename = loggingPath + learningAlgName + "_times_fold" + foldIdx + ".csv";
+
+     public void writeIterationTimes() {
+        String directoryPath = loggingPath + "timing/";
+        String filename = directoryPath + learningAlgName + "_times_fold" + foldIdx + ".csv";
+    
+        // Ensure the directory exists
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            if (!directory.mkdirs()) {
+                System.err.println("Failed to create directory: " + directoryPath);
+                return;
+            }
+        }
+    
+        // Write the file
         try (FileWriter writer = new FileWriter(filename)) {
             writer.write("Iteration,Time(ms)\n");
             for (int i = 0; i < perIterationTimes.size(); i++) {

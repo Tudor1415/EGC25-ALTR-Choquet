@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import re
+import sys
 import argparse
-import pandas as pd
 import numpy as np
+import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from collections import defaultdict
 from scipy.stats import spearmanr
 from scipy.stats import kendalltau
+from collections import defaultdict
 
 def parse_filename(filename):
     """
@@ -302,7 +302,7 @@ def plot_metrics(results, algorithm_color_mapping, cumulative):
             plt.savefig(output_filename, format='pdf')
 
             # Save the horizontal legend with custom labels
-            save_horizontal_legend(handles, labels, filename=f"{datasetName}_legend.pdf", title="Algorithms Legend")
+            save_horizontal_legend(handles, labels, filename="results/active_learning/output_plots/" + f"{datasetName}_legend.pdf", title="Algorithms Legend")
             
             plt.close()
             print(f"Plot and legend saved to {output_filename} and {datasetName}_legend.pdf")
@@ -322,7 +322,13 @@ def main():
 
     grouped_files = group_files(data_dir)
     if not grouped_files:
-        print("No files were grouped. Please check if the directory contains CSV files with the correct naming pattern.")
+        # List files in the directory
+        files_in_dir = [f for f in os.listdir(data_dir) if os.path.isfile(os.path.join(data_dir, f))]
+        if files_in_dir:
+            print("No files were grouped. Please check if the directory contains CSV files with the correct naming pattern.")
+            print(f"Example file found in the directory: {files_in_dir[0]}")
+        else:
+            print(f"The directory {data_dir} is empty.")
         sys.exit(1)
 
     results = process_files(grouped_files, cumulative)
@@ -332,11 +338,9 @@ def main():
 
     # Collect all unique algorithms
     all_algorithms = collect_all_algorithms(results)
-    print(f"All algorithms: {all_algorithms}")
 
     # Create a consistent color mapping for algorithms
     algorithm_color_mapping = create_algorithm_color_mapping(all_algorithms)
-    print(f"Algorithm color mapping: {algorithm_color_mapping}")
 
     plot_metrics(results, algorithm_color_mapping, cumulative)
 

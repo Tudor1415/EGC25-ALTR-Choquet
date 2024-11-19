@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 import lombok.Getter;
 import tools.data.Dataset;
@@ -34,11 +37,10 @@ public class ExperimentActiveLearning {
     public static final String expDirectory = "results/active_learning/samples/";
 
     public static final List<String> datasetNames = Arrays.asList(
-        "bank", "credit", "dota", "toms", "connect", "mushroom", "adult", 
-        "banknote", "heart", "ionosphere", "ilpd", "magic", "medical_kaggle", 
-        "parkinsons", "pima", "skin", "tictactoe", "transfusion", 
-        "travel-insurance", "twitter", "wdbc", "weatherAUS"
-    );    
+            "bank", "credit", "dota", "toms", "connect", "mushroom", "adult",
+            "banknote", "heart", "ionosphere", "ilpd", "magic", "medical_kaggle",
+            "parkinsons", "pima", "skin", "tictactoe", "transfusion",
+            "travel-insurance", "twitter", "wdbc", "weatherAUS");
 
     public static final @Getter String[] measureNames = { "yuleQ", "cosine", "kruskal", "pavillon", "certainty" };
 
@@ -67,17 +69,17 @@ public class ExperimentActiveLearning {
         Set<Integer> classItemsInt = classItems.stream()
                 .map(Integer::parseInt)
                 .collect(Collectors.toSet());
-    
+
         // Mining function with minConf = 90 (for 90%) and minSup = 1
         int minConf = 90;
-        int minSup = 1;
-    
+        int minSup = 10;
+
         // Perform the mining using DRMiningChoco
         DRMiningChoco.mine(dataPath, classItemsInt, outputCsvPath, minSup, minConf);
-    
+
         // Print the output path after mining
         System.out.println("Mined rules have been saved to: " + outputCsvPath);
-        
+
         // Optional: Verify if the file exists and print a confirmation message
         File minedRulesFile = new File(outputCsvPath);
         if (minedRulesFile.exists()) {
@@ -86,7 +88,7 @@ public class ExperimentActiveLearning {
             System.err.println("Failed to create the mined rules file at: " + outputCsvPath);
         }
     }
-    
+
     /**
      * Retrieves a list of ranking learning algorithms for experimentation.
      *
@@ -245,7 +247,7 @@ public class ExperimentActiveLearning {
         // Paths for Choco miner
         String chocoRulesPath = dataDirectory + datasetName + "/train/train_rules_" + foldIdx + ".csv";
         String foldPath = dataDirectory + datasetName + "/train/train_" + foldIdx + ".dat";
-        
+
         // Mine the rules for the current fold
         mineRulesForFold(foldPath, getClassItems(datasetName), chocoRulesPath);
 
@@ -255,7 +257,7 @@ public class ExperimentActiveLearning {
         learningAlgorithms.parallelStream().forEach(algorithm -> {
             try {
                 System.out.println("Dataset: " + datasetName + " oracle: " + trainOracle.getTYPE()
-                        + " fold: " + (foldIdx + 1) + " algorithm: " + algorithm.getName());
+                        + " fold: " + foldIdx + " algorithm: " + algorithm.getName());
                 ExperimentLogger logger = new ExperimentLogger(testOracle, algorithm.getName(), loggingPath,
                         datasetName,
                         foldIdx,
@@ -264,6 +266,8 @@ public class ExperimentActiveLearning {
                 algorithm.addObserver(logger);
 
                 FunctionParameters func = algorithm.learn();
+
+                logger.writeIterationTimes();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -312,49 +316,79 @@ public class ExperimentActiveLearning {
         }
     }
 
+    /**
+     * Runs the active learning experiment in parallel, limiting to five folds
+     * processed at the same time across all datasets.
+     *
+     * @throws Exception If an error occurs during the experiment.
+     */
     public void runParallel() throws Exception {
+        ExecutorService foldExecutor = Executors.newFixedThreadPool(7);
+
+        // Iterate over each dataset
         for (String datasetName : datasetNames) {
             try {
                 List<Dataset> trainDatasets = readDatasetsFromFold(datasetName, "/train/");
                 List<Dataset> testDatasets = readDatasetsFromFold(datasetName, "/test/");
 
-                IntStream.range(0, trainDatasets.size()).parallel().forEach(foldIdx -> {
-                    Dataset trainDataset = trainDatasets.get(foldIdx);
-                    Dataset testDataset = testDatasets.get(foldIdx);
+                // Iterate over each fold within the dataset
+                for (int foldIdx = 0; foldIdx < trainDatasets.size(); foldIdx++) {
+                    final int currentFoldIdx = foldIdx;
+                    Dataset trainDataset = trainDatasets.get(currentFoldIdx);
+                    Dataset testDataset = testDatasets.get(currentFoldIdx);
 
                     List<ArtificialOracle> trainOracles = getOracles(trainDataset.getNbTransactions());
                     List<ArtificialOracle> testOracles = getOracles(testDataset.getNbTransactions());
 
                     // Sampling the testing set of rules
-                    RandomSampler sampler = new RandomSampler(testDatasets.get(foldIdx), 3, 3, getMeasureNames(), 0.1d);
+                    RandomSampler sampler = new RandomSampler(testDataset, 3, 3, getMeasureNames(), 0.1d);
                     List<DecisionRule> testRuleList = new ArrayList<>(
-                            sampler.sample(1_000, testDatasets.get(foldIdx).getConsequentItemsSet(),
-                                    testDatasets.get(foldIdx).getAntecedentItemsSet(), 10));
+                            sampler.sample(1_000, testDataset.getConsequentItemsSet(),
+                                    testDataset.getAntecedentItemsSet(), 10));
 
-                    IntStream.range(0, trainOracles.size()).parallel().forEach(oracleId -> {
-                        ArtificialOracle trainOracle = trainOracles.get(oracleId);
-                        ArtificialOracle testOracle = testOracles.get(oracleId);
+                    // Submit a task for processing this fold
+                    foldExecutor.submit(() -> {
                         try {
-                            launchExperimentOnFold(
-                                    trainDataset,
-                                    testDataset,
-                                    trainOracle,
-                                    testOracle,
-                                    expDirectory + datasetName + "/",
-                                    datasetName,
-                                    foldIdx + 1,
-                                    NormalizationMethod.MIN_MAX_SCALING,
-                                    testRuleList);
+                            // Iterate over each oracle pair
+                            for (int oracleId = 0; oracleId < trainOracles.size(); oracleId++) {
+                                ArtificialOracle trainOracle = trainOracles.get(oracleId);
+                                ArtificialOracle testOracle = testOracles.get(oracleId);
+
+                                // Launch the experiment for this fold and oracle
+                                launchExperimentOnFold(
+                                        trainDataset,
+                                        testDataset,
+                                        trainOracle,
+                                        testOracle,
+                                        expDirectory + datasetName + "/",
+                                        datasetName,
+                                        currentFoldIdx + 1,
+                                        NormalizationMethod.MIN_MAX_SCALING,
+                                        testRuleList);
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     });
-                });
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        ;
+
+        // Shutdown the executor and await termination
+        foldExecutor.shutdown();
+        try {
+            if (!foldExecutor.awaitTermination(1, TimeUnit.HOURS)) { // Adjust timeout as needed
+                foldExecutor.shutdownNow();
+                if (!foldExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    System.err.println("Executor did not terminate.");
+                }
+            }
+        } catch (InterruptedException ie) {
+            foldExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     public static void main(String[] args) throws Exception {
