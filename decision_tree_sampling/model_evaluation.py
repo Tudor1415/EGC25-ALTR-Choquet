@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 from measures import information_gain, phi
 from data_processing import extract_random_forest_rules, get_rule_stats, compute_jaccard_distance_matrix
@@ -131,7 +132,6 @@ def compute_redundancy_score(top_k_values, distance_matrix):
 
     return score
 
-# Modified function
 def evaluate_tree_on_dataset(X, y, class_values, measure, top_k, depth_range=10, repetitions=5):
     """
     Evaluate decision tree rules on the dataset, compute the redundancy score,
@@ -142,26 +142,33 @@ def evaluate_tree_on_dataset(X, y, class_values, measure, top_k, depth_range=10,
     """
     measure_values_with_covers = []
     seen_rules = set()
+    total_iterations = depth_range * repetitions
 
-    for depth in range(1, depth_range + 1):
-        for _ in range(repetitions):
-            # Extract decision tree rules
-            rules = extract_random_forest_rules(X, y, max_depth=depth)
-            # Get rule statistics
-            stats = get_rule_stats(X, y, rules, class_values)
+    bar_format = '{desc}: |{bar}| {percentage:3.0f}% [{elapsed}<{remaining}]'
 
-            for rule in stats:
-                rule_hash = hash(tuple(rule))
+    with tqdm(total=total_iterations, desc="Processing", unit="iteration",
+              bar_format=bar_format, ncols=80, ascii='=>') as pbar:
+        for depth in range(1, depth_range + 1):
+            for _ in range(repetitions):
+                # Extract decision tree rules
+                rules = extract_random_forest_rules(X, y, max_depth=depth)
+                # Get rule statistics
+                stats = get_rule_stats(X, y, rules, class_values)
 
-                if rule_hash not in seen_rules:
-                    seen_rules.add(rule_hash)
+                for rule in stats:
+                    rule_hash = hash(tuple(rule))
 
-                    # Compute the measure
-                    n = len(X)
-                    rule_stats = stats[rule]
-                    value = compute_rule_measure(rule_stats, measure, n)
-                    cover = rule_stats['cover']
-                    measure_values_with_covers.append((value, cover))
+                    if rule_hash not in seen_rules:
+                        seen_rules.add(rule_hash)
+
+                        # Compute the measure
+                        n = len(X)
+                        rule_stats = stats[rule]
+                        value = compute_rule_measure(rule_stats, measure, n)
+                        cover = rule_stats['cover']
+                        measure_values_with_covers.append((value, cover))
+                # Update the progress bar
+                pbar.update(1)
 
     # Adjust top_k to be the minimum of desired top_k and number of rules collected
     actual_k = min(top_k, len(measure_values_with_covers))

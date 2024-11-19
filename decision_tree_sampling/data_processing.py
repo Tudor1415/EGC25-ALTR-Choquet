@@ -3,7 +3,7 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
-def extract_random_forest_rules(X, y, n_estimators=100, max_depth=5):
+def extract_random_forest_rules(X, y, n_estimators=10, max_depth=5):
     """
     Fit a Random Forest classifier and extract all decision rules from all trees in the forest.
 
@@ -32,10 +32,8 @@ def extract_random_forest_rules(X, y, n_estimators=100, max_depth=5):
         # Helper function to traverse the tree and extract rules
         def extract_rules(node_id, current_path):
             if children_left[node_id] == children_right[node_id]:
-                # Leaf node, get the class label
-                class_label = np.argmax(value[node_id][0])
-                # Append the class label to the current path
-                return [current_path + [('class', '=', None, class_label)]]
+                class_label = value[node_id].argmax()
+                return [current_path + [(feature[node_id], '<=', threshold[node_id], class_label)]]
 
             # Internal node
             rules = []
