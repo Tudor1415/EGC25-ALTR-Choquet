@@ -1,22 +1,21 @@
 package tools.functions.singlevariate;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.HashMap;
 import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Comparator;
 
 import lombok.Getter;
 import lombok.Setter;
-import tools.alternatives.Alternative;
-import tools.alternatives.IAlternative;
-import tools.functions.multivariate.IMultivariateFunction;
-import tools.normalization.Normalizer;
-import tools.normalization.Normalizer.NormalizationMethod;
 import tools.rules.DecisionRule;
+import tools.utils.AlternativeScore;
+import tools.alternatives.Alternative;
+import tools.normalization.Normalizer;
+import tools.alternatives.IAlternative;
+import tools.functions.multivariate.CertaintyFunction;
+import tools.normalization.Normalizer.NormalizationMethod;
 
 public class MultivariateToSinglevariate implements ISinglevariateFunction {
     public @Getter @Setter String Name;
@@ -25,30 +24,30 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
 
     private @Getter HashMap<IAlternative, DecisionRule> seenAlternatives;
 
-    private @Getter LinkedHashMap<IAlternative, DecisionRule> scoreAlternatives;
+    private @Getter TreeSet<AlternativeScore> scoreAlternatives;
 
-    private IMultivariateFunction pairwiseUncertainty;
+    private LinkedList<AlternativeScore> insertionOrder = new LinkedList<>();
+
+    private CertaintyFunction pairwiseUncertainty;
 
     private @Getter Normalizer normalizer = new Normalizer();
 
-    private @Getter @Setter int maxHistSize = 1000;
+    private @Getter @Setter int maxHistSize = 100;
 
-    public MultivariateToSinglevariate(String name, IMultivariateFunction pairwiseUncertainty,
+    public MultivariateToSinglevariate(String name, CertaintyFunction pairwiseUncertainty,
             List<DecisionRule> initialRules, int maxHistSize) {
         this.Name = name;
         this.pairwiseUncertainty = pairwiseUncertainty;
         this.maxHistSize = maxHistSize;
 
-        this.history = new TreeSet<>(Comparator.comparingDouble(this::getAlternativeScore).reversed()
+        this.history = new TreeSet<IAlternative[]>(Comparator
+                .<IAlternative[]>comparingDouble(pair -> getAlternativePairScore(pair))
+                .reversed()
                 .thenComparingInt(System::identityHashCode));
 
         this.seenAlternatives = new HashMap<>();
-        this.scoreAlternatives = new LinkedHashMap<IAlternative, DecisionRule>(10, 0.75f, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<IAlternative, DecisionRule> eldest) {
-                return size() > 10;
-            }
-        };
+        this.scoreAlternatives = new TreeSet<>(Comparator.comparingDouble(AlternativeScore::getScore)
+                .thenComparingInt(score -> System.identityHashCode(score.getAlternative())));
 
         for (DecisionRule rule : initialRules)
             addToHistory(rule.getAlternative(), rule);
@@ -79,18 +78,41 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
     public void addToHistory(IAlternative alternative, DecisionRule rule) {
         // Keep track of the alternatives seen so far
         seenAlternatives.put(alternative, rule);
-        scoreAlternatives.put(alternative, rule);
-
+    
+        // Compute the score and check for NaN
+        double score = getAlternativeScore(alternative);
+        if (Double.isNaN(score)) {
+            return;
+        }
+    
+        // Create an AlternativeScore
+        AlternativeScore altScore = new AlternativeScore(alternative, score);
+    
+        // Add to scoreAlternatives (TreeSet for score sorting)
+        scoreAlternatives.add(altScore);
+    
+        // Add to insertionOrder (queue for oldest tracking)
+        insertionOrder.addLast(altScore);
+    
+        // Enforce size limit by removing the oldest alternative
+        if (insertionOrder.size() > 10) {
+            AlternativeScore oldest = insertionOrder.removeFirst(); // Remove the oldest alternative
+            scoreAlternatives.remove(oldest); // Also remove it from the TreeSet
+        }
+    
         // Add each new pair of alternatives to the history
-        for (IAlternative scoreAlternative : getScoreAlternatives().keySet())
+        for (AlternativeScore scoreAlt : scoreAlternatives) {
+            IAlternative scoreAlternative = scoreAlt.getAlternative();
             if (!alternative.equals(scoreAlternative)) {
                 getHistory().add(new IAlternative[] { alternative, scoreAlternative });
-
+    
                 if (history.size() > maxHistSize) {
                     history.pollLast();
                 }
             }
-    }
+        }
+    }    
+    
 
     @Override
     public double computeScore(DecisionRule rule) {
@@ -101,18 +123,35 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
     public double computeScore(IAlternative alternative) {
         updateNormalization(alternative);
 
-        List<Double> allScores = new ArrayList<>();
+        // Compute the score for the alternative directly
+        double score = getAlternativeScore(alternative);
 
-        for (IAlternative scoreAlternative : getScoreAlternatives().keySet())
-            if (!alternative.equals(scoreAlternative))
-                allScores.add(getAlternativeScore(new IAlternative[] { alternative, scoreAlternative }));
+        AlternativeScore altScore = new AlternativeScore(alternative, score);
 
-        if (allScores.isEmpty()) {
-            return 0.0;
+        // Find floor and ceiling in the scoreAlternatives TreeSet
+        AlternativeScore floor = scoreAlternatives.floor(altScore);
+        AlternativeScore ceiling = scoreAlternatives.ceiling(altScore);
+
+        AlternativeScore nearest = null;
+
+        if (floor == null && ceiling == null) {
+            // No other samples exist; set default gapScore
+            nearest = altScore;
+        } else if (floor == null) {
+            nearest = ceiling;
+        } else if (ceiling == null) {
+            nearest = floor;
+        } else {
+            nearest = (score - floor.getScore() <= ceiling.getScore() - score) ? floor : ceiling;
         }
 
-        Optional<Double> maxScore = allScores.stream().max(Double::compareTo);
-        return maxScore.orElse(-1.0);
+        double gapScore = 0.0;
+        if (nearest != null && nearest != altScore) {
+            double gap = Math.abs(score - nearest.getScore());
+            gapScore = 1.0 - gap;
+        }
+
+        return gapScore;
     }
 
     @Override
@@ -124,7 +163,7 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
         getNormalizer().normalize(alternative.getVector(), NormalizationMethod.NO_NORMALIZATION, true);
     }
 
-    public double getAlternativeScore(IAlternative[] alternatives) {
+    public double getAlternativePairScore(IAlternative[] alternatives) {
         double[] unNormVector0 = alternatives[0].getVector();
         double[] normVector0 = getNormalizer().normalize(unNormVector0, NormalizationMethod.MIN_MAX_SCALING, false);
         IAlternative normAlternative0 = new Alternative(normVector0);
@@ -134,5 +173,13 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
         IAlternative normAlternative1 = new Alternative(normVector1);
 
         return pairwiseUncertainty.computeScore(new IAlternative[] { normAlternative0, normAlternative1 });
+    }
+
+    public double getAlternativeScore(IAlternative alternative) {
+        double[] unNormVector = alternative.getVector();
+        double[] normVector = getNormalizer().normalize(unNormVector, NormalizationMethod.MIN_MAX_SCALING, false);
+        IAlternative normAlternative = new Alternative(normVector);
+
+        return pairwiseUncertainty.getScoreFunction().computeScore(normAlternative);
     }
 }

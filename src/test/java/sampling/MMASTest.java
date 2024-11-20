@@ -32,10 +32,10 @@ public class MMASTest {
     static void setUp() throws IOException {
         // Mock dataset
         Set<String> classItemValues = new HashSet<>();
-        classItemValues.add("145");
-        classItemValues.add("146");
+        classItemValues.add("346");
+        classItemValues.add("347");
 
-        dataset = new Dataset("adult.dat", "src/test/resources/", classItemValues);
+        dataset = new Dataset("dota.dat", "src/test/resources/", classItemValues);
 
         // Measures
         measureNames = new String[] { "lift", "confidence", "support", "yuleQ", "kruskal" };
@@ -52,7 +52,7 @@ public class MMASTest {
 
     @Test
     void testMMAS() throws IOException {
-        int maxIterations = 1000;
+        int maxIterations = 100;
         String outputDir = "src/test/output/";
 
         MMAS mmas = new MMAS(maxIterations, 1, dataset, pairwiseUncertainty, measureNames);

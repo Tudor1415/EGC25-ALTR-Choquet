@@ -53,7 +53,7 @@ public class UncertaintySampling implements RankingsProvider {
     private List<Ranking<IAlternative>> rankings = new ArrayList<>();
 
     private static final double DEFAULT_NOISE = 0d;
-    private static final int MAXIMUM_ITERATIONS = 1000;
+    private static final int MAXIMUM_ITERATIONS = 100;
 
     public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, double noise) {
         this(oracle, dataset, measureNames, noise, MAXIMUM_ITERATIONS, "ScoreDifference", NormalizationMethod.MIN_MAX_SCALING);

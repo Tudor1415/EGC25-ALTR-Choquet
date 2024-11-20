@@ -1,0 +1,6 @@
+Maximizing Rules:
+Antecedents: [330, 92, 84, 295] | Consequent: 347
+Antecedents: [132, 288, 26, 325, 70, 280, 94, 83, 271] | Consequent: 347
+Alternative 1: 1.899265  1.000000  0.000032  0.999999  0.000000  
+Alternative 0: 1.899265  1.000000  0.000022  0.999999  0.000000  
+Score: 1.1647190336638857E-6

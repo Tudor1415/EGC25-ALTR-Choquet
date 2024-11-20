@@ -2,9 +2,9 @@ package tools.functions.multivariate;
 
 import lombok.Getter;
 import lombok.Setter;
+import tools.rules.DecisionRule;
 import tools.alternatives.IAlternative;
 import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.rules.DecisionRule;
 
 public class PairwiseUncertainty implements CertaintyFunction{
     public @Getter @Setter String Name;
@@ -35,6 +35,11 @@ public class PairwiseUncertainty implements CertaintyFunction{
     @Override
     public void setScoreFunction(ISinglevariateFunction scoreFunction) {
         getTheta().setScoreFunction(scoreFunction);
+    }
+
+    @Override
+    public ISinglevariateFunction getScoreFunction() {
+       return getTheta().getScoreFunction();
     }
     
 }

@@ -1,8 +1,8 @@
 package tools.functions.multivariate;
 
+import tools.rules.DecisionRule;
 import tools.alternatives.IAlternative;
 import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.rules.DecisionRule;
 
 public interface CertaintyFunction extends IMultivariateFunction{
 
@@ -13,6 +13,8 @@ public interface CertaintyFunction extends IMultivariateFunction{
     String getName();
 
     void setScoreFunction(ISinglevariateFunction scoreFunction);
+
+    ISinglevariateFunction getScoreFunction();
 
     double computeScore(IAlternative[] alternatives);
 

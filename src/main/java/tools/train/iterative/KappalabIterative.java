@@ -63,7 +63,7 @@ public class KappalabIterative extends IterativeRankingLearn {
      * @param directoryPath The directory where the input JSON file should be saved.
      * @throws IOException If an error occurs during file writing.
      */
-    public void logCurrentKappalabInput(String directoryPath) throws IOException {
+    public void logCurrentKappalabInput(String directoryPath, String filePath) throws IOException {
         if (lastKappalabInput == null) {
             System.err.println("No KappalabInput available to log.");
             return;
@@ -78,7 +78,6 @@ public class KappalabIterative extends IterativeRankingLearn {
         }
 
         // Create the JSON file
-        String filePath = directoryPath + "/kappalab_input.json";
         File jsonFile = new File(filePath);
 
         // Write the KappalabInput to the JSON file

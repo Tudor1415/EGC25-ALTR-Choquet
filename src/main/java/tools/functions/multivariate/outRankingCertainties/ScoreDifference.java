@@ -2,12 +2,12 @@ package tools.functions.multivariate.outRankingCertainties;
 
 import lombok.Getter;
 import lombok.Setter;
+import tools.rules.DecisionRule;
 import tools.alternatives.Alternative;
 import tools.alternatives.IAlternative;
 import tools.functions.multivariate.CertaintyFunction;
-import tools.functions.singlevariate.ISinglevariateFunction;
 import tools.normalization.Normalizer.NormalizationMethod;
-import tools.rules.DecisionRule;
+import tools.functions.singlevariate.ISinglevariateFunction;
 
 public class ScoreDifference implements CertaintyFunction {
 
@@ -16,7 +16,7 @@ public class ScoreDifference implements CertaintyFunction {
     public @Setter @Getter double eps = 0.001;
 
     /** The function of which we want to compute the out-ranking certainty */
-    private @Setter ISinglevariateFunction scoreFunction;
+    private @Setter @Getter ISinglevariateFunction scoreFunction;
 
 
     public ScoreDifference(ISinglevariateFunction scoreFunction) {

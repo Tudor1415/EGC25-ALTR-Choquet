@@ -22,17 +22,17 @@ r-install:
 
 exp_active:
 	rm -rf ${exp_active}
-	mkdir -p ${exp_active}/samples
+	mkdir -p ${exp_active}
 	mvn exec:java -Dexec.mainClass="experiments.ExperimentActiveLearning"
 
 exp_norm:
 	rm -rf ${exp_norm}
-	mkdir -p ${exp_norm}/samples
+	mkdir -p ${exp_norm}
 	mvn exec:java -Dexec.mainClass="experiments.ExperimentActiveNormalization"
 
 exp_sample:
 	rm -rf ${exp_sample}
-	mkdir -p ${exp_sample}/samples
+	mkdir -p ${exp_sample}
 	mvn exec:java -Dexec.mainClass="experiments.SamplingMethodExperiment"
 
 plot_exp_sampling:

@@ -34,15 +34,21 @@ public class ExperimentActiveLearning {
     public static final String dataDirectory = "data/folds/";
     public static final String expDirectory = "results/active_learning/samples/";
 
+    // public static final List<String> datasetNames = Arrays.asList(
+    // "bank", "credit", "dota", "toms", "connect", "mushroom", "adult",
+    // "banknote", "heart", "ionosphere", "ilpd", "magic", "medical_kaggle",
+    // "parkinsons", "pima", "skin", "tictactoe", "transfusion",
+    // "travel-insurance", "twitter", "wdbc", "weatherAUS");
+
     public static final List<String> datasetNames = Arrays.asList(
-            "bank", "credit", "dota", "toms", "connect", "mushroom", "adult",
+            "toms", "connect", "mushroom", "adult",
             "banknote", "heart", "ionosphere", "ilpd", "magic", "medical_kaggle",
             "parkinsons", "pima", "skin", "tictactoe", "transfusion",
             "travel-insurance", "twitter", "wdbc", "weatherAUS");
 
     public static final @Getter String[] measureNames = { "yuleQ", "cosine", "kruskal", "pavillon", "certainty" };
 
-    public static final int nbLearningIterations = 1;
+    public static final int nbLearningIterations = 100;
 
     /**
      * Generates a list of oracles for the experiment.
@@ -100,18 +106,19 @@ public class ExperimentActiveLearning {
         double noise = 0.0d;
         List<KappalabIterative> learningAlgorithms = new ArrayList<>();
 
-        KappalabIterative topTwoRules = new KappalabIterative(nbLearningIterations,
-                new TopTwoRules(oracle, dataset, measureNames, noise), new LinearScoreFunction(), measureNames.length);
-        topTwoRules.setName("TopTwoRules-" + noise);
-        topTwoRules.setTimeLimit(3600);
-        learningAlgorithms.add(topTwoRules);
+        // KappalabIterative topTwoRules = new KappalabIterative(nbLearningIterations,
+        // new TopTwoRules(oracle, dataset, measureNames, noise), new
+        // LinearScoreFunction(), measureNames.length);
+        // topTwoRules.setName("TopTwoRules-" + noise);
+        // topTwoRules.setTimeLimit(36000);
+        // learningAlgorithms.add(topTwoRules);
 
         // KappalabIterative uncertaintySamplingSD = new
         // KappalabIterative(nbLearningIterations,
         // new UncertaintySampling(oracle, dataset, measureNames), new
         // LinearScoreFunction(), measureNames.length);
         // uncertaintySamplingSD.setName("ScoreDifference-" + noise);
-        // uncertaintySamplingSD.setTimeLimit(3600);
+        // uncertaintySamplingSD.setTimeLimit(36000);
         // learningAlgorithms.add(uncertaintySamplingSD);
 
         // KappalabIterative uncertaintySamplingBT = new
@@ -120,23 +127,25 @@ public class ExperimentActiveLearning {
         // LinearScoreFunction(),
         // measureNames.length);
         // uncertaintySamplingBT.setName("BradleyTerry-" + noise);
-        // uncertaintySamplingBT.setTimeLimit(3600);
+        // uncertaintySamplingBT.setTimeLimit(36000);
         // learningAlgorithms.add(uncertaintySamplingBT);
 
         KappalabIterative uncertaintySamplingTh = new KappalabIterative(nbLearningIterations,
                 new UncertaintySampling(oracle, dataset, measureNames, "Thurstone"), new LinearScoreFunction(),
                 measureNames.length);
         uncertaintySamplingTh.setName("Thurstone-" + noise);
-        uncertaintySamplingTh.setTimeLimit(3600);
+        uncertaintySamplingTh.setTimeLimit(36000);
         learningAlgorithms.add(uncertaintySamplingTh);
 
-        DecisionRule[] minedRules = RuleUtil.extractRulesFromCSV(chocoRulesPath, dataset, measureNames);
+        // DecisionRule[] minedRules = RuleUtil.extractRulesFromCSV(chocoRulesPath,
+        // dataset, measureNames);
 
-        KappalabIterative ChoquetRank = new KappalabIterative(nbLearningIterations,
-                new MinGapsRankingsProvider(oracle, minedRules), new LinearScoreFunction(), measureNames.length);
-        ChoquetRank.setName("ChoquetRank-" + noise);
-        ChoquetRank.setTimeLimit(3600);
-        learningAlgorithms.add(ChoquetRank);
+        // KappalabIterative ChoquetRank = new KappalabIterative(nbLearningIterations,
+        // new MinGapsRankingsProvider(oracle, minedRules), new LinearScoreFunction(),
+        // measureNames.length);
+        // ChoquetRank.setName("ChoquetRank-" + noise);
+        // ChoquetRank.setTimeLimit(36000);
+        // learningAlgorithms.add(ChoquetRank);
 
         return learningAlgorithms;
     }
@@ -247,7 +256,7 @@ public class ExperimentActiveLearning {
         String foldPath = dataDirectory + datasetName + "/train/train_" + foldIdx + ".dat";
 
         // Mine the rules for the current fold
-        mineRulesForFold(foldPath, getClassItems(datasetName), chocoRulesPath);
+        // mineRulesForFold(foldPath, getClassItems(datasetName), chocoRulesPath);
 
         List<KappalabIterative> learningAlgorithms = getLearningAlgorithms(trainOracle,
                 trainDataset, chocoRulesPath);
@@ -267,9 +276,9 @@ public class ExperimentActiveLearning {
 
                 logger.writeIterationTimes();
 
-                String directoryPath = loggingPath + "input/";
+                String directoryPath = "results/active_learning/input/" + datasetName + "/";
                 String filename = directoryPath + algorithm.getName() + "_input_fold" + foldIdx + ".json";
-                algorithm.logCurrentKappalabInput(foldPath);
+                algorithm.logCurrentKappalabInput(directoryPath, filename);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -325,7 +334,7 @@ public class ExperimentActiveLearning {
      * @throws Exception If an error occurs during the experiment.
      */
     public void runParallel() throws Exception {
-        ExecutorService foldExecutor = Executors.newFixedThreadPool(7);
+        ExecutorService foldExecutor = Executors.newFixedThreadPool(10);
 
         // Iterate over each dataset
         for (String datasetName : datasetNames) {
@@ -394,6 +403,6 @@ public class ExperimentActiveLearning {
     }
 
     public static void main(String[] args) throws Exception {
-        new ExperimentActiveLearning().runParallel();
+        new ExperimentActiveLearning().run();
     }
 }

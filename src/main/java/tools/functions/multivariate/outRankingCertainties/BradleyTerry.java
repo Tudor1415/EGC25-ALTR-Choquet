@@ -2,10 +2,10 @@ package tools.functions.multivariate.outRankingCertainties;
 
 import lombok.Getter;
 import lombok.Setter;
+import tools.rules.DecisionRule;
 import tools.alternatives.IAlternative;
 import tools.functions.multivariate.CertaintyFunction;
 import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.rules.DecisionRule;
 
 public class BradleyTerry implements CertaintyFunction {
 
@@ -13,7 +13,7 @@ public class BradleyTerry implements CertaintyFunction {
     public @Setter @Getter String name = "BradleyTerryOutRanking";
 
     /** The function of which we want to compute the out-ranking certainty */
-    private @Setter ISinglevariateFunction scoreFunction;
+    private @Setter @Getter ISinglevariateFunction scoreFunction;
 
     public BradleyTerry(ISinglevariateFunction scoreFunction) {
         this.scoreFunction = scoreFunction;
