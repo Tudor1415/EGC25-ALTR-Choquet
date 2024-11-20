@@ -168,9 +168,9 @@ public class ExperimentLogger implements PropertyChangeListener {
      * Writes the iteration times to a CSV file.
      */
 
-     public void writeIterationTimes() {
+     public void writeIterationTimes(String oracleName) {
         String directoryPath = loggingPath + "timing/";
-        String filename = directoryPath + learningAlgName + "_times_fold" + foldIdx + ".csv";
+        String filename = directoryPath + learningAlgName + "_" + oracleName + "_times_fold_" + foldIdx + ".csv";
     
         // Ensure the directory exists
         File directory = new File(directoryPath);

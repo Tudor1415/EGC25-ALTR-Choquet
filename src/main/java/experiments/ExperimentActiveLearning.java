@@ -274,10 +274,10 @@ public class ExperimentActiveLearning {
 
                 FunctionParameters func = algorithm.learn();
 
-                logger.writeIterationTimes();
+                logger.writeIterationTimes(testOracle.getTYPE());
 
                 String directoryPath = "results/active_learning/input/" + datasetName + "/";
-                String filename = directoryPath + algorithm.getName() + "_input_fold" + foldIdx + ".json";
+                String filename = directoryPath + algorithm.getName() + "_" + testOracle.getTYPE() +"_input_fold_" + foldIdx + ".json";
                 algorithm.logCurrentKappalabInput(directoryPath, filename);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -403,6 +403,6 @@ public class ExperimentActiveLearning {
     }
 
     public static void main(String[] args) throws Exception {
-        new ExperimentActiveLearning().run();
+        new ExperimentActiveLearning().runParallel();
     }
 }

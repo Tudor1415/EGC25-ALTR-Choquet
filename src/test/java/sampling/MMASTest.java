@@ -15,6 +15,7 @@ import tools.utils.AlternativeUtil;
 import tools.alternatives.IAlternative;
 import tools.functions.multivariate.CertaintyFunction;
 import tools.functions.multivariate.PairwiseUncertainty;
+import tools.functions.singlevariate.LinearScoreFunction;
 import tools.functions.singlevariate.OWA.OWAScoreFunction;
 import tools.functions.singlevariate.ISinglevariateFunction;
 import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
@@ -43,7 +44,7 @@ public class MMASTest {
 
         double[] weights = new double[measureNames.length];
         Arrays.fill(weights, 1.0 / measureNames.length);
-        scoringFunction = new OWAScoreFunction(weights);
+        scoringFunction = new LinearScoreFunction(weights);
 
         outRankingCertainty = new BradleyTerry(scoringFunction);
 

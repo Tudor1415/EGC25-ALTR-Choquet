@@ -49,7 +49,7 @@ public class MMAS {
         getCertaintyFunction().setScoreFunction(approxFunction);
         
         this.scoringFunction = new MultivariateToSinglevariate(certaintyFunction.getName() + "Singlevariate",
-                certaintyFunction, dataset.getRandomValidRules(2, 1e-6d, measureNames), 100);
+                certaintyFunction, dataset.getRandomValidRules(2, 1e-6d, measureNames), 10);
     }
 
     public Normalizer getNormalizer() {

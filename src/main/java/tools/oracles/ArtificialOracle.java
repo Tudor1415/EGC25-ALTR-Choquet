@@ -3,9 +3,9 @@ package tools.oracles;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import lombok.Getter;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.rules.DecisionRule;
 import tools.utils.RandomUtil;
+import tools.rules.DecisionRule;
+import tools.functions.singlevariate.ISinglevariateFunction;
 
 /**
  * Abstract class representing a score-based oracle for comparing alternatives.
