@@ -3,27 +3,38 @@
 import os
 import re
 import sys
+import logging
 import argparse
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.stats import spearmanr, kendalltau
 from collections import defaultdict
+from scipy.stats import spearmanr, kendalltau
 
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger(__name__)
 
 def parse_filename(filename):
     """
     Parses the filename to extract datasetName, foldID, LearningAlgorithm, Oracle, and timestamp.
     Expected filename format: datasetName_foldID_LearningAlgorithm_Oracle_timestamp.csv
     """
+    logger.debug(f"Parsing filename: {filename}")
     basename = os.path.basename(filename)
     pattern = r'^(.*?)_(.*?)_(.*?)_(.*?)_(.*?)\.csv$'
     match = re.match(pattern, basename)
     if match:
         datasetName, foldID, LearningAlgorithm, Oracle, timestamp = match.groups()
+        logger.debug(f"Parsed: {datasetName}, {foldID}, {LearningAlgorithm}, {Oracle}, {timestamp}")
         return datasetName, foldID, LearningAlgorithm, Oracle, timestamp
     else:
+        logger.warning(f"Filename {filename} does not match expected pattern.")
         return None
 
 
@@ -31,6 +42,7 @@ def group_files(directory):
     """
     Groups files by datasetName, LearningAlgorithm, Oracle, and foldID in a nested dictionary.
     """
+    logger.info(f"Grouping files in directory: {directory}")
     files_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(list))))
 
     for filename in os.listdir(directory):
@@ -41,7 +53,9 @@ def group_files(directory):
                 file_path = os.path.join(directory, filename)
                 files_dict[datasetName][Oracle][LearningAlgorithm][foldID].append(file_path)
             else:
-                print(f"Filename {filename} does not match expected pattern.")
+                logger.warning(f"Skipping file: {filename}")
+
+    logger.info(f"Grouped files: {len(files_dict)} datasets found.")
     return files_dict
 
 
@@ -49,6 +63,7 @@ def compute_rankings(df):
     """
     Computes rankings based on scoreApprox and scoreOracle.
     """
+    logger.debug("Computing rankings.")
     df = df.copy()
     df['rankApprox'] = df['scoreApprox'].rank(ascending=False, method='first')
     df['rankOracle'] = df['scoreOracle'].rank(ascending=False, method='first')
@@ -59,9 +74,11 @@ def compute_average_precision_at_k(df, k):
     """
     Computes Average Precision at top k entries.
     """
+    logger.debug(f"Computing average precision at k={k}.")
     df = df.nsmallest(k, 'rankApprox')
     relevant = df['rankOracle'] <= k
     precision_at_k = relevant.sum() / k
+    logger.debug(f"Average precision at k={k}: {precision_at_k}")
     return precision_at_k
 
 
@@ -69,6 +86,7 @@ def process_files(grouped_files, cumulative):
     """
     Processes each group of files and computes metrics.
     """
+    logger.info("Processing files.")
     results = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: {
         'avg_precision_1': [], 'avg_precision_10': [], 'timestamps': []
     }))))
@@ -77,28 +95,36 @@ def process_files(grouped_files, cumulative):
     top_percentage_10 = 0.10
 
     for datasetName, oracles in grouped_files.items():
+        logger.info(f"Processing dataset: {datasetName}")
         for oracle, algos in oracles.items():
+            logger.info(f"Processing oracle: {oracle}")
             for algo, folds in algos.items():
+                logger.info(f"Processing algorithm: {algo}")
                 for foldID, files in folds.items():
+                    logger.info(f"Processing fold: {foldID}")
                     temp_storage = []
 
                     for file in files:
-                        df = pd.read_csv(file)
-                        if 'scoreApprox' not in df.columns or 'scoreOracle' not in df.columns:
-                            print(f"Warning: 'scoreApprox' or 'scoreOracle' columns not found in {file}. Skipping.")
-                            continue
-                        df = compute_rankings(df)
+                        logger.debug(f"Reading file: {file}")
+                        try:
+                            df = pd.read_csv(file)
+                            if 'scoreApprox' not in df.columns or 'scoreOracle' not in df.columns:
+                                logger.warning(f"Missing required columns in {file}. Skipping.")
+                                continue
+                            df = compute_rankings(df)
 
-                        k_1 = max(1, int(len(df) * top_percentage_1))
-                        k_10 = max(1, int(len(df) * top_percentage_10))
+                            k_1 = max(1, int(len(df) * top_percentage_1))
+                            k_10 = max(1, int(len(df) * top_percentage_10))
 
-                        avg_precision_1 = compute_average_precision_at_k(df, k_1)
-                        avg_precision_10 = compute_average_precision_at_k(df, k_10)
+                            avg_precision_1 = compute_average_precision_at_k(df, k_1)
+                            avg_precision_10 = compute_average_precision_at_k(df, k_10)
 
-                        parsed = parse_filename(file)
-                        if parsed:
-                            _, _, _, _, timestamp = parsed
-                            temp_storage.append((int(timestamp), avg_precision_1, avg_precision_10))
+                            parsed = parse_filename(file)
+                            if parsed:
+                                _, _, _, _, timestamp = parsed
+                                temp_storage.append((int(timestamp), avg_precision_1, avg_precision_10))
+                        except Exception as e:
+                            logger.error(f"Error processing file {file}: {e}")
 
                     temp_storage.sort()
                     for timestamp, avg_prec_1, avg_prec_10 in temp_storage:
@@ -111,6 +137,7 @@ def process_files(grouped_files, cumulative):
                         result['avg_precision_1'] = list(np.cumsum(result['avg_precision_1']))
                         result['avg_precision_10'] = list(np.cumsum(result['avg_precision_10']))
 
+    logger.info("Finished processing files.")
     return results
 
 
@@ -118,7 +145,9 @@ def plot_metrics(results, algorithm_color_mapping, cumulative, use_latex):
     """
     Generates and saves plots for average precision.
     """
+    logger.info("Plotting metrics.")
     if use_latex:
+        logger.debug("Using LaTeX for rendering plots.")
         plt.rc('text', usetex=True)
         plt.rc('font', family='serif')
     else:
@@ -127,6 +156,7 @@ def plot_metrics(results, algorithm_color_mapping, cumulative, use_latex):
     for datasetName, oracles in results.items():
         for oracle, algorithms in oracles.items():
             for algo, folds_data in algorithms.items():
+                logger.info(f"Generating plots for {datasetName} - {oracle} - {algo}")
                 data_precision_1, data_precision_10 = [], []
 
                 for foldID, metrics in folds_data.items():
@@ -171,6 +201,7 @@ def plot_metrics(results, algorithm_color_mapping, cumulative, use_latex):
                 os.makedirs(output_dir, exist_ok=True)
                 output_filename = os.path.join(output_dir, f"{datasetName}_{oracle}_precision.pdf")
                 plt.savefig(output_filename, format='pdf')
+                logger.info(f"Saved plot: {output_filename}")
                 plt.close()
 
 
@@ -182,6 +213,7 @@ def main():
 
     args = parser.parse_args()
 
+    logger.info("Starting script.")
     grouped_files = group_files(args.directory)
     results = process_files(grouped_files, args.cumulative)
 
@@ -189,6 +221,7 @@ def main():
     algorithm_color_mapping = {algo: sns.color_palette("bright", len(algorithms))[i] for i, algo in enumerate(algorithms)}
 
     plot_metrics(results, algorithm_color_mapping, args.cumulative, args.use_latex)
+    logger.info("Script finished successfully.")
 
 
 if __name__ == "__main__":

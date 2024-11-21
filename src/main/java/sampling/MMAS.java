@@ -62,12 +62,12 @@ public class MMAS {
     }
 
     public boolean isUncertainty() {
-        return this.scoringFunction.isUncertainty();
+        return this.scoringFunction.getIsUncertainty();
     }
 
     public void setUncertainty(boolean isUncertainty) {
         this.isUncertainty = isUncertainty;
-        this.scoringFunction.setUncertainty(isUncertainty);
+        this.scoringFunction.setIsUncertainty(isUncertainty);
     }
 
 }

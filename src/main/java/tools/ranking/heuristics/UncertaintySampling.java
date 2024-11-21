@@ -58,7 +58,7 @@ public class UncertaintySampling implements RankingsProvider {
 
     private static final double DEFAULT_NOISE = 0d;
     private static final int MAXIMUM_ITERATIONS = 100;
-    private static final int CHANGE_PERIOD = 5;
+    private static final int CHANGE_PERIOD = 100;
 
     public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, double noise,
             int nbLearningIteration) {
@@ -137,8 +137,9 @@ public class UncertaintySampling implements RankingsProvider {
         // Sampling new rules using the sampler with the updated approximation function
         sampler.setScoringFunction(scoreFunction);
 
-        if (learningIteration > CHANGE_PERIOD && learningIteration % CHANGE_PERIOD == 0)
-            sampler.setUncertainty(!sampler.isUncertainty());
+        // if (learningIteration > CHANGE_PERIOD && learningIteration % CHANGE_PERIOD == 0)
+        if (learningIteration > CHANGE_PERIOD)
+            sampler.setUncertainty(true);
 
         // Sample new alternatives from the test dataset
         List<DecisionRule[]> sample = sampler.sample();
