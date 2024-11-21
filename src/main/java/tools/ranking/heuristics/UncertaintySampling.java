@@ -58,7 +58,7 @@ public class UncertaintySampling implements RankingsProvider {
 
     private static final double DEFAULT_NOISE = 0d;
     private static final int MAXIMUM_ITERATIONS = 100;
-    private static final int CHANGE_PERIOD = 2;
+    private static final int CHANGE_PERIOD = 5;
 
     public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, double noise,
             int nbLearningIteration) {
