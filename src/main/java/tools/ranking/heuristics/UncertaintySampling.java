@@ -47,6 +47,10 @@ public class UncertaintySampling implements RankingsProvider {
     // The maximum iterations used for sampling
     private @Setter @Getter int maximum_iterations = MAXIMUM_ITERATIONS;
 
+    // Number of learning iterations
+    private @Getter @Setter int nbLearningIteration;
+    private int learningIteration;
+
     // The list of all selected pairs of alternatives from all the iterations
     // and their respective ranking given by the oracle.
     private Set<IAlternative[]> selectedPairs = new HashSet<>();
@@ -54,23 +58,32 @@ public class UncertaintySampling implements RankingsProvider {
 
     private static final double DEFAULT_NOISE = 0d;
     private static final int MAXIMUM_ITERATIONS = 100;
+    private static final int CHANGE_PERIOD = 2;
 
-    public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, double noise) {
-        this(oracle, dataset, measureNames, noise, MAXIMUM_ITERATIONS, "ScoreDifference", NormalizationMethod.MIN_MAX_SCALING);
+    public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, double noise,
+            int nbLearningIteration) {
+        this(oracle, dataset, measureNames, noise, MAXIMUM_ITERATIONS, "ScoreDifference",
+                NormalizationMethod.MIN_MAX_SCALING, nbLearningIteration);
     }
 
-    public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames) {
-        this(oracle, dataset, measureNames, DEFAULT_NOISE, MAXIMUM_ITERATIONS, "ScoreDifference", NormalizationMethod.MIN_MAX_SCALING);
+    public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames,
+            int nbLearningIteration) {
+        this(oracle, dataset, measureNames, DEFAULT_NOISE, MAXIMUM_ITERATIONS, "ScoreDifference",
+                NormalizationMethod.MIN_MAX_SCALING, nbLearningIteration);
     }
 
-    public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, String certaintyType) {
-        this(oracle, dataset, measureNames, DEFAULT_NOISE, MAXIMUM_ITERATIONS, certaintyType, NormalizationMethod.MIN_MAX_SCALING);
+    public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, String certaintyType,
+            int nbLearningIteration) {
+        this(oracle, dataset, measureNames, DEFAULT_NOISE, MAXIMUM_ITERATIONS, certaintyType,
+                NormalizationMethod.MIN_MAX_SCALING, nbLearningIteration);
     }
 
     public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, double noise,
-            int maximumIterations, String certaintyType, NormalizationMethod normalizationMethod) {
+            int maximumIterations, String certaintyType, NormalizationMethod normalizationMethod,
+            int nbLearningIteration) {
         this.oracle = oracle;
         this.noise = noise;
+        this.nbLearningIteration = nbLearningIteration;
 
         updateCertaintyFunction(certaintyType, new LinearScoreFunction());
         initializeSampler(dataset, measureNames, maximumIterations);
@@ -84,12 +97,15 @@ public class UncertaintySampling implements RankingsProvider {
             case "ScoreDifferece":
                 this.pairwiseCertaintyFunction = new PairwiseUncertainty("ScoreDifferencePairUncertainty",
                         new ScoreDifference(scoreFunction));
+                break;
             case "BradleyTerry":
                 this.pairwiseCertaintyFunction = new PairwiseUncertainty("BradleyTerryPairUncertainty",
                         new BradleyTerry(scoreFunction));
+                break;
             case "Thurstone":
                 this.pairwiseCertaintyFunction = new PairwiseUncertainty("ThurstonePairUncertainty",
                         new Thurstone(scoreFunction));
+                break;
             default:
                 this.pairwiseCertaintyFunction = new PairwiseUncertainty("ScoreDifferencePairUncertainty",
                         new ScoreDifference(scoreFunction));
@@ -112,11 +128,17 @@ public class UncertaintySampling implements RankingsProvider {
      */
     @Override
     public List<Ranking<IAlternative>> provideRankings(LearnStep step) {
+        // Increment the learning iteration counter
+        learningIteration++;
+
         // Retrieving the state of the approximation function at the current iteration
         scoreFunction = step.getCurrentScoreFunction();
 
         // Sampling new rules using the sampler with the updated approximation function
         sampler.setScoringFunction(scoreFunction);
+
+        if (learningIteration > CHANGE_PERIOD && learningIteration % CHANGE_PERIOD == 0)
+            sampler.setUncertainty(!sampler.isUncertainty());
 
         // Sample new alternatives from the test dataset
         List<DecisionRule[]> sample = sampler.sample();

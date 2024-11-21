@@ -131,7 +131,8 @@ public class ExperimentActiveLearning {
         // learningAlgorithms.add(uncertaintySamplingBT);
 
         KappalabIterative uncertaintySamplingTh = new KappalabIterative(nbLearningIterations,
-                new UncertaintySampling(oracle, dataset, measureNames, "Thurstone"), new LinearScoreFunction(),
+                new UncertaintySampling(oracle, dataset, measureNames, "Thurstone", nbLearningIterations),
+                new LinearScoreFunction(),
                 measureNames.length);
         uncertaintySamplingTh.setName("Thurstone-" + noise);
         uncertaintySamplingTh.setTimeLimit(36000);
@@ -277,7 +278,8 @@ public class ExperimentActiveLearning {
                 logger.writeIterationTimes(testOracle.getTYPE());
 
                 String directoryPath = "results/active_learning/input/" + datasetName + "/";
-                String filename = directoryPath + algorithm.getName() + "_" + testOracle.getTYPE() +"_input_fold_" + foldIdx + ".json";
+                String filename = directoryPath + algorithm.getName() + "_" + testOracle.getTYPE() + "_input_fold_"
+                        + foldIdx + ".json";
                 algorithm.logCurrentKappalabInput(directoryPath, filename);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -334,7 +336,7 @@ public class ExperimentActiveLearning {
      * @throws Exception If an error occurs during the experiment.
      */
     public void runParallel() throws Exception {
-        ExecutorService foldExecutor = Executors.newFixedThreadPool(10);
+        ExecutorService foldExecutor = Executors.newFixedThreadPool(2);
 
         // Iterate over each dataset
         for (String datasetName : datasetNames) {

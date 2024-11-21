@@ -21,6 +21,7 @@ public class MMAS {
     private @Getter MultivariateToSinglevariate scoringFunction;
     private @Getter SMAS singleVariateSampler;
     private @Setter @Getter String[] measureNames;
+    private boolean isUncertainty = false;
 
     public MMAS(int maximumIterations, int topK, Dataset dataset, CertaintyFunction certaintyFunction,
             String[] measureNames) {
@@ -29,7 +30,7 @@ public class MMAS {
         this.dataset = dataset;
         this.certaintyFunction = certaintyFunction;
         this.scoringFunction = new MultivariateToSinglevariate(certaintyFunction.getName() + "Singlevariate",
-                certaintyFunction, dataset.getRandomValidRules(10, 1e-6d, measureNames), 1);
+                certaintyFunction, dataset.getRandomValidRules(10, 1e-6d, measureNames), 1, isUncertainty);
 
         this.measureNames = measureNames;
         BatchSampler sampler = new BatchSampler(10, dataset, getScoringFunction(), measureNames, 1);
@@ -47,9 +48,9 @@ public class MMAS {
 
     public void setScoringFunction(ISinglevariateFunction approxFunction) {
         getCertaintyFunction().setScoreFunction(approxFunction);
-        
         this.scoringFunction = new MultivariateToSinglevariate(certaintyFunction.getName() + "Singlevariate",
-                certaintyFunction, dataset.getRandomValidRules(2, 1e-6d, measureNames), 10);
+                certaintyFunction, dataset.getRandomValidRules(2, 1e-6d, measureNames), 10, isUncertainty);
+        getSingleVariateSampler().setScoringFunction(this.scoringFunction);
     }
 
     public Normalizer getNormalizer() {
@@ -59,4 +60,14 @@ public class MMAS {
     public void setNormalizationTechnique(NormalizationMethod norm) {
         getSingleVariateSampler().setNormalizationTechnique(norm);
     }
+
+    public boolean isUncertainty() {
+        return this.scoringFunction.isUncertainty();
+    }
+
+    public void setUncertainty(boolean isUncertainty) {
+        this.isUncertainty = isUncertainty;
+        this.scoringFunction.setUncertainty(isUncertainty);
+    }
+
 }

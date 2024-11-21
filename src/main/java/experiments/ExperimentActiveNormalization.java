@@ -59,7 +59,7 @@ public class ExperimentActiveNormalization {
      * @return List of ranking learning algorithms.
      */
     private List<IterativeRankingLearn> getLearningAlgorithms(ArtificialOracle oracle, Dataset dataset) {
-        List<IterativeRankingLearn>  algorithms = new ArrayList<>();
+        List<IterativeRankingLearn> algorithms = new ArrayList<>();
         List<NormalizationMethod> normMethods = new ArrayList<>();
         normMethods.add(NormalizationMethod.NO_NORMALIZATION);
         normMethods.add(NormalizationMethod.MIN_MAX_SCALING);
@@ -77,21 +77,24 @@ public class ExperimentActiveNormalization {
             algorithms.add(topTwoRules);
 
             KappalabIterative uncertaintySamplingSD = new KappalabIterative(nbLearningIterations,
-                    new UncertaintySampling(oracle, dataset, measureNames, 0.0d, 1000, "ScoreDifference", norm),
+                    new UncertaintySampling(oracle, dataset, measureNames, 0.0d, 1000, "ScoreDifference", norm,
+                            nbLearningIterations),
                     new LinearScoreFunction(), measureNames.length);
             uncertaintySamplingSD.setName("ScoreDifference-" + normMethod);
             uncertaintySamplingSD.setTimeLimit(3600);
             algorithms.add(uncertaintySamplingSD);
 
             KappalabIterative uncertaintySamplingBT = new KappalabIterative(nbLearningIterations,
-                    new UncertaintySampling(oracle, dataset, measureNames, 0.0d, 1000, "BradleyTerry", norm),
+                    new UncertaintySampling(oracle, dataset, measureNames, 0.0d, 1000, "BradleyTerry", norm,
+                            nbLearningIterations),
                     new LinearScoreFunction(), measureNames.length);
             uncertaintySamplingBT.setName("BradleyTerry-" + normMethod);
             uncertaintySamplingBT.setTimeLimit(3600);
             algorithms.add(uncertaintySamplingBT);
 
             KappalabIterative uncertaintySamplingTh = new KappalabIterative(nbLearningIterations,
-                    new UncertaintySampling(oracle, dataset, measureNames, 0.0d, 1000, "Thurstone", norm),
+                    new UncertaintySampling(oracle, dataset, measureNames, 0.0d, 1000, "Thurstone", norm,
+                            nbLearningIterations),
                     new LinearScoreFunction(), measureNames.length);
             uncertaintySamplingTh.setName("Thurstone-" + normMethod);
             uncertaintySamplingTh.setTimeLimit(3600);

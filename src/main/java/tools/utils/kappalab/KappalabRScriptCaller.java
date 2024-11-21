@@ -47,7 +47,7 @@ public class KappalabRScriptCaller implements Callable<KappalabOutput> {
 
         // Execute the Kappalab R script using ProcessBuilder
         // "C:\Program Files\R\R-4.3.2\bin\x64\Rscript.exe"
-        ProcessBuilder builder = new ProcessBuilder("Rscript",
+        ProcessBuilder builder = new ProcessBuilder("C:\\Program Files\\R\\R-4.3.2\\bin\\x64\\Rscript.exe",
                 "scripts/call_kappalab.R",
                 inputFile.getAbsolutePath(), outputFile.getAbsolutePath());
         Process process = builder.start();
