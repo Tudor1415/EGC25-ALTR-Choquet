@@ -336,7 +336,7 @@ public class ExperimentActiveLearning {
      * @throws Exception If an error occurs during the experiment.
      */
     public void runParallel() throws Exception {
-        ExecutorService foldExecutor = Executors.newFixedThreadPool(1);
+        ExecutorService foldExecutor = Executors.newFixedThreadPool(10);
 
         // Iterate over each dataset
         for (String datasetName : datasetNames) {

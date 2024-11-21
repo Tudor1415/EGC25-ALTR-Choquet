@@ -36,19 +36,14 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
 
     private @Getter @Setter int nbOfScoringAlternatives = 10;
 
-    private @Getter @Setter boolean isUncertainty = true;
+    private boolean isUncertainty = true;
 
     public MultivariateToSinglevariate(String name, CertaintyFunction pairwiseUncertainty,
             List<DecisionRule> initialRules, int maxHistSize, boolean isUncertainty) {
         this.Name = name;
         this.pairwiseUncertainty = pairwiseUncertainty;
         this.maxHistSize = maxHistSize;
-        this.isUncertainty = isUncertainty;
-
-        this.history = new TreeSet<IAlternative[]>(Comparator
-                .<IAlternative[]>comparingDouble(pair -> getAlternativePairScore(pair))
-                .reversed()
-                .thenComparingInt(System::identityHashCode));
+        setIsUncertainty(isUncertainty);
 
         this.seenAlternatives = new HashMap<>();
         this.scoreAlternatives = new TreeSet<>((as1, as2) -> {
@@ -80,6 +75,27 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
             }
         }
     }
+
+    public boolean getIsUncertainty() {
+        return isUncertainty;
+    }
+
+    public void setIsUncertainty(boolean isUncertainty) {
+        this.isUncertainty = isUncertainty;
+        TreeSet<IAlternative[]> newHistory = new TreeSet<>(getComparatorForHistory());
+        if (this.history != null) {
+            newHistory.addAll(this.history);
+        }
+        this.history = newHistory;
+    }
+
+    private Comparator<IAlternative[]> getComparatorForHistory() {
+        Comparator<IAlternative[]> baseComparator = Comparator
+                .<IAlternative[]>comparingDouble(this::getAlternativePairScore)
+                .thenComparingInt(System::identityHashCode);
+        return isUncertainty ? baseComparator : baseComparator.reversed();
+    }
+
 
     public List<DecisionRule[]> getTopK(int k) {
         List<DecisionRule[]> topKRules = new ArrayList<>();
