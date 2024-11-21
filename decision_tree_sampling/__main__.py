@@ -31,7 +31,7 @@ def main():
     timeout_minutes = 30
 
     # Measure names and weights (can be adjusted as needed)
-    measure_names = ['phi', 'IG']
+    measure_names = ['phi']
     weights = '1'
 
     # Step 1: Get the classpath of the project including dependencies
@@ -42,34 +42,34 @@ def main():
 
     # Step 2: Iterate over all dataset files in the dataset folder and run Java program
     for measure in measure_names:
-        for dataset_file in os.listdir(dat_files_folder):
-            if os.path.isfile(os.path.join(dat_files_folder, dataset_file)):
-                dataset_name = dataset_file
-                # Construct the output directory
-                dataset_name_without_extension = os.path.splitext(dataset_name)[0]
-                output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples', measure) + "/"
+        # for dataset_file in os.listdir(dat_files_folder):
+        #     if os.path.isfile(os.path.join(dat_files_folder, dataset_file)):
+        #         dataset_name = dataset_file
+        #         # Construct the output directory
+        #         dataset_name_without_extension = os.path.splitext(dataset_name)[0]
+        #         output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples', measure) + "/"
 
-                # Ensure the output directory exists
-                os.makedirs(output_directory, exist_ok=True)
-                # Run the Java program
-                run_extract_sample(
-                    dataset_name,
-                    dat_files_folder,
-                    output_directory,
-                    nb_samples,
-                    timeout_minutes,
-                    measure,
-                    weights,
-                    execution_classpath,
-                    project_root
-                )
+        #         # Ensure the output directory exists
+        #         os.makedirs(output_directory, exist_ok=True)
+        #         # Run the Java program
+        #         run_extract_sample(
+        #             dataset_name,
+        #             dat_files_folder,
+        #             output_directory,
+        #             nb_samples,
+        #             timeout_minutes,
+        #             measure,
+        #             weights,
+        #             execution_classpath,
+        #             project_root
+        #         )
 
         # Evaluate datasets and collect data
         results, tree_data_per_dataset, sample_data_per_dataset = evaluate_datasets(dat_files_folder, output_base, measure, top_k)
 
-        plot_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, output_base, measure)
         generate_latex_table(results, output_base, measure, top_k)
         plot_results(results, output_base, measure, top_k)
+        plot_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, output_base, measure)
 
     print("Processing complete.")
 

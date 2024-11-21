@@ -312,9 +312,6 @@ def plot_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, output_ba
         if not sample_data:
             continue  # Skip if sample data is not available
 
-        # Use the actual_k value for consistency
-        adjusted_k = tree_data['actual_k']
-
         # Get the distance matrix for tree method
         if tree_data['distance_matrix'] is None:
             # Compute distance matrix
@@ -323,16 +320,23 @@ def plot_distance_cdfs(tree_data_per_dataset, sample_data_per_dataset, output_ba
         else:
             distance_matrix = tree_data['distance_matrix']
 
+        # Adjust adjusted_k to be the minimum between actual_k and the size of the distance matrix
+        adjusted_k = min(tree_data['actual_k'], distance_matrix.shape[0])
+
         # Flatten the upper triangle of the distance matrix, excluding the diagonal
         triu_indices = np.triu_indices(adjusted_k, k=1)
         distances = distance_matrix[triu_indices]
         distances_tree.extend(distances)
 
+        # Do the same for sample data
         if sample_data['distance_matrix'] is None:
             distance_matrix = compute_jaccard_distance_matrix(list(sample_data['covers']))
             sample_data['distance_matrix'] = distance_matrix
         else:
             distance_matrix = sample_data['distance_matrix']
+
+        # Adjust adjusted_k for sample data
+        adjusted_k = min(sample_data['actual_k'], distance_matrix.shape[0])
 
         # Flatten the upper triangle of the distance matrix, excluding the diagonal
         triu_indices = np.triu_indices(adjusted_k, k=1)

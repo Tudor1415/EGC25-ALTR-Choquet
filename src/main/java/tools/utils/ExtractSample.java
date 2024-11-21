@@ -48,11 +48,7 @@ public class ExtractSample {
         String filePath = directoryPath + fileName + "_" + timestamp + ".csv";
         String filePathDistanceMatrix = directoryPath + fileName + "_jaccard_" + timestamp + ".csv";
 
-        double[][] distanceMatrix = RuleUtil.computeJaccardDistance(rules);
-        RuleUtil.printDistanceMatrix(distanceMatrix, filePathDistanceMatrix);
-        
         try {
-            // Ensure the directory exists or create it
             Files.createDirectories(Paths.get(directoryPath));
 
             try (FileWriter writer = new FileWriter(filePath)) {
@@ -85,6 +81,9 @@ public class ExtractSample {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        double[][] distanceMatrix = RuleUtil.computeJaccardDistance(rules);
+        RuleUtil.printDistanceMatrix(distanceMatrix, filePathDistanceMatrix);
     }
 
     /**
@@ -145,7 +144,7 @@ public class ExtractSample {
                 return null;
         }
     }
-    
+
     /**
      * Reads a dataset from the specified folder.
      * 
