@@ -263,9 +263,9 @@ public class ActiveLearningExperimentRunner {
             List<IterativeRankingLearn> algorithms, int foldIdx) {
         try {
             // Step 1: Extract Test Rules
-            RandomSampler sampler = new RandomSampler(trainDataset, 3, 3, config.getMeasureNames(), 0.1d);
+            RandomSampler sampler = new RandomSampler(testDataset, 3, 3, config.getMeasureNames(), 0.1d);
             List<DecisionRule> testRuleList = new ArrayList<>(sampler.sample(config.getTestSetSize(),
-                    trainDataset.getConsequentItemsSet(), trainDataset.getAntecedentItemsSet(),
+                    testDataset.getConsequentItemsSet(), testDataset.getAntecedentItemsSet(),
                     config.getMaxAntSize()));
 
             // Step 2: Initialize Experiment Logger

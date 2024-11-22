@@ -1,16 +1,16 @@
 package experiments;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import experiments.configs.ActiveLearningConfig;
-import experiments.configs.ActiveLearningExperimentConfig;
 import experiments.utils.ConfigLoader;
+import experiments.configs.ActiveLearningConfig;
 import experiments.utils.ActiveLearningExperimentRunner;
+import experiments.configs.ActiveLearningExperimentConfig;
 
 public class ActiveLearningExperiment {
     private static final Logger logger = LoggerFactory.getLogger(ActiveLearningExperiment.class);
@@ -36,8 +36,6 @@ public class ActiveLearningExperiment {
             }
 
             executorService.shutdown();
-
-            logger.info("All experiments have been completed.");
 
         } catch (Exception e) {
             logger.error("Failed to load configurations: {}", e.getMessage(), e);
