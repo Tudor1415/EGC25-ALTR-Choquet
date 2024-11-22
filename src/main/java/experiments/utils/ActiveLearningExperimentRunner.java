@@ -48,8 +48,6 @@ public class ActiveLearningExperimentRunner {
             List<Dataset> trainDatasets = loadDatasets(config.getDataDirectory(), "/train/");
             List<Dataset> testDatasets = loadDatasets(config.getDataDirectory(), "/test/");
 
-            // Step 3: Initialize Learning Algorithms
-
             // Step 4: Run Experiment on Each Fold
             int numFolds = trainDatasets.size();
             for (int foldIdx = 0; foldIdx < numFolds; foldIdx++) {
@@ -143,9 +141,9 @@ public class ActiveLearningExperimentRunner {
                                 queryStrategy.getRankingsProvider(),
                                 new LinearScoreFunction(),
                                 config.getMeasureNames().length);
-                        kappalab.setName("KappalabIterative-" + i);
+                        kappalab.setName("KappalabIterative-" + queryStrategy.getName());
                         algorithms.add(kappalab);
-                        logger.info("Initialized KappalabIterative algorithm with query strategy at position {}", i);
+                        logger.info("Initialized KappalabIterative algorithm with query strategy {}", queryStrategy.getName());
                         break;
 
                     default:
@@ -153,9 +151,9 @@ public class ActiveLearningExperimentRunner {
                 }
             } catch (Exception e) {
                 logger.error(
-                        "Failed to initialize learning algorithm: {} with query strategy at position {}. Error: {}",
+                        "Failed to initialize learning algorithm: {} with query strategy {}. Error: {}",
                         algorithmName,
-                        i,
+                        queryStrategy.getName(),
                         e.getMessage(),
                         e);
             }
