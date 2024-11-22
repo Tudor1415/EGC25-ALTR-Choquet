@@ -72,7 +72,7 @@ public class DatasetLoader {
         }
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(DatasetLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(DatasetLoader.class.getSimpleName());
 
     public static List<Dataset> loadDatasetsFromDirectory(String datasetPath, String datasetName) {
         File folder = new File(datasetPath);

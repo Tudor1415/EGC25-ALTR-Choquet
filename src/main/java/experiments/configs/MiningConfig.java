@@ -1,8 +1,8 @@
 package experiments.configs;
 
+import java.util.Set;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -11,11 +11,11 @@ import com.google.gson.JsonSyntaxException;
 import lombok.Getter;
 import lombok.Setter;
 import tools.data.Dataset;
-import tools.normalization.Normalizer.NormalizationMethod;
+import tools.rules.RuleMiner;
 import tools.oracles.ArtificialOracle;
 import tools.ranking.RankingsProvider;
 import tools.ranking.heuristics.UncertaintyMining;
-import tools.rules.RuleMiner;
+import tools.normalization.Normalizer.NormalizationMethod;
 
 @Getter
 @Setter

@@ -32,7 +32,7 @@ import tools.normalization.Normalizer.NormalizationMethod;
  * based on the provided configuration.
  */
 public class ActiveLearningExperimentRunner {
-    private static final Logger logger = LoggerFactory.getLogger(ActiveLearningExperimentRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ActiveLearningExperimentRunner.class.getSimpleName());
 
     private ActiveLearningExperimentConfig config;
 
@@ -273,7 +273,7 @@ public class ActiveLearningExperimentRunner {
             ExperimentLogger experimentLogger = new ExperimentLogger(
                     oracle,
                     algorithms.get(0).getName(),
-                    loggingPath,
+                    loggingPath + "/samples/",
                     datasetName,
                     foldIdx,
                     testRuleList,
@@ -293,8 +293,8 @@ public class ActiveLearningExperimentRunner {
                 experimentLogger.writeIterationTimes(oracle.getTYPE());
 
                 if (algorithm instanceof KappalabIterative) {
-                    String inputFileName = "INPUT_" + datasetName + "_" + foldIdx + "_" + algorithm.getName();
-                    ((KappalabIterative) algorithm).logCurrentKappalabInput(loggingPath, inputFileName);
+                    String filePath = loggingPath + "/input/" + datasetName + "_" + foldIdx + "_" + algorithm.getName() + ".json";
+                    ((KappalabIterative) algorithm).logCurrentKappalabInput(loggingPath + "/input/", filePath);
                     logger.info("Logged KappalabIterative input for dataset: {}, fold: {}, algorithm: {}",
                             datasetName, foldIdx, algorithm.getName());
                 }

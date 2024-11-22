@@ -13,7 +13,7 @@ import experiments.utils.ActiveLearningExperimentRunner;
 import experiments.configs.ActiveLearningExperimentConfig;
 
 public class ActiveLearningExperiment {
-    private static final Logger logger = LoggerFactory.getLogger(ActiveLearningExperiment.class);
+    private static final Logger logger = LoggerFactory.getLogger(ActiveLearningExperiment.class.getSimpleName());
 
     public static void main(String[] args) {
         String config_filepath = "experimental_configs/active_learning/config.json";

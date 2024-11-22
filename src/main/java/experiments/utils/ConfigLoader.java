@@ -9,17 +9,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.List;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Utility class for loading Active Learning Configurations from JSON files.
  */
 public class ConfigLoader {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConfigLoader.class.getSimpleName());
 
     /**
      * Loads an ActiveLearningConfig object from a given filepath and its associated experiment configuration folder.

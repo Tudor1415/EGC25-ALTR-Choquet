@@ -2,32 +2,32 @@ package tools.ranking.heuristics;
 
 import static java.lang.Math.abs;
 
+import java.util.Set;
+import java.util.List;
+import java.util.HashSet;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import experiments.configs.MiningConfig;
 import lombok.Getter;
 import lombok.Setter;
-import tools.alternatives.Alternative;
-import tools.alternatives.IAlternative;
 import tools.data.Dataset;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.normalization.Normalizer;
-import tools.normalization.Normalizer.NormalizationMethod;
-import tools.oracles.ArtificialOracle;
+import tools.utils.RuleUtil;
 import tools.ranking.Ranking;
-import tools.ranking.RankingsProvider;
-import tools.rules.DecisionRule;
 import tools.train.LearnStep;
 import tools.utils.RandomUtil;
 import tools.utils.RankingUtil;
-import tools.utils.RuleUtil;
+import tools.rules.DecisionRule;
+import tools.alternatives.Alternative;
+import tools.normalization.Normalizer;
+import tools.oracles.ArtificialOracle;
+import tools.ranking.RankingsProvider;
+import tools.alternatives.IAlternative;
+import experiments.configs.MiningConfig;
+import tools.normalization.Normalizer.NormalizationMethod;
+import tools.functions.singlevariate.ISinglevariateFunction;
 
 @Getter
 @Setter
@@ -52,7 +52,7 @@ public class UncertaintyMining implements RankingsProvider {
     // State
     private Set<IAlternative[]> selectedPairs = new HashSet<>();
     private List<Ranking<IAlternative>> rankings = new ArrayList<>();
-    private static final Logger logger = LoggerFactory.getLogger(MiningConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(MiningConfig.class.getSimpleName());
 
     public UncertaintyMining(MiningConfig config) {
         // Set configurable parameters

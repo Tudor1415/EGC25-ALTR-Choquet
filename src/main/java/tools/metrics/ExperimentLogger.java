@@ -81,7 +81,7 @@ public class ExperimentLogger implements PropertyChangeListener {
     public void writeSampleToCSV(List<DecisionRule> rules, List<Double> scoresApprox, List<Double> scoresOracle,
             String fileName) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String filePath = loggingPath + fileName + "_" + timestamp + ".csv";
+        String filePath = loggingPath + "/" + fileName + "_" + timestamp + ".csv";
 
         try (FileWriter writer = new FileWriter(filePath)) {
             // Write header
@@ -168,7 +168,13 @@ public class ExperimentLogger implements PropertyChangeListener {
      */
 
      public void writeIterationTimes(String oracleName) {
-        String directoryPath = loggingPath + "timing/";
+        String directoryPath = loggingPath;
+
+        if (loggingPath.endsWith("/samples/")) {
+            directoryPath = loggingPath.substring(0, loggingPath.length() - "/samples/".length());
+        }
+        
+        directoryPath = directoryPath + "/timing/";
         String filename = directoryPath + learningAlgName + "_" + oracleName + "_times_fold_" + foldIdx + ".csv";
     
         // Ensure the directory exists
