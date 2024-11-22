@@ -5,11 +5,11 @@
     "datasetNames": ["adult", "bank"],
     "measureNames": ["support", "confidence", "cosine"],
     "oracles": ["ChiSquaredOracle", "InformationGainOracle"],
-    "learningToRankAlgorithms": ["KappalabIterative"],
+    "learningToRankAlgorithms": ["KappalabIterative", "KappalabIterative"],
     "querySelectionAlgorithms": ["UncertaintySampling", "HighScoreSampling"],
     "querySelectionConfigPaths": ["experimental_configs/active_learning/query_selection/uncertainty_sampling_conf.json", "experimental_configs/active_learning/query_selection/highScore_sampling_config.json"],
     "nbLearningIterations": 100,
-    "nbParallelThreads": 4,
+    "nbParallelThreads": 1,
     "testSetSize": 1000,
     "maxAntSize": 5,
     "logToFile": true

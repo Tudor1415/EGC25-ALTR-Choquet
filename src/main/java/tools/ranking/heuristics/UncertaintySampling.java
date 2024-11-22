@@ -1,32 +1,32 @@
 package tools.ranking.heuristics;
 
-import experiments.configs.UncertaintySamplingConfig;
 import lombok.Getter;
 import lombok.Setter;
 import sampling.MMAS;
-import tools.alternatives.Alternative;
-import tools.alternatives.IAlternative;
 import tools.data.Dataset;
-import tools.functions.multivariate.CertaintyFunction;
-import tools.functions.multivariate.PairwiseUncertainty;
-import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
-import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
-import tools.functions.multivariate.outRankingCertainties.Thurstone;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.functions.singlevariate.LinearScoreFunction;
-import tools.normalization.Normalizer;
-import tools.normalization.Normalizer.NormalizationMethod;
-import tools.oracles.ArtificialOracle;
 import tools.ranking.Ranking;
-import tools.ranking.RankingsProvider;
-import tools.rules.DecisionRule;
 import tools.train.LearnStep;
 import tools.utils.RankingUtil;
+import tools.rules.DecisionRule;
+import tools.alternatives.Alternative;
+import tools.normalization.Normalizer;
+import tools.oracles.ArtificialOracle;
+import tools.ranking.RankingsProvider;
+import tools.alternatives.IAlternative;
+import experiments.configs.UncertaintySamplingConfig;
+import tools.functions.multivariate.CertaintyFunction;
+import tools.functions.multivariate.PairwiseUncertainty;
+import tools.functions.singlevariate.LinearScoreFunction;
+import tools.normalization.Normalizer.NormalizationMethod;
+import tools.functions.singlevariate.ISinglevariateFunction;
+import tools.functions.multivariate.outRankingCertainties.Thurstone;
+import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
+import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.List;
+import java.util.HashSet;
+import java.util.ArrayList;
 
 @Getter
 @Setter

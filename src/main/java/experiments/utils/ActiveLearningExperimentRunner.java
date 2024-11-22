@@ -1,31 +1,31 @@
 package experiments.utils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import experiments.configs.ActiveLearningExperimentConfig;
-import experiments.configs.HighScoreSamplingConfig;
-import experiments.configs.MiningConfig;
-import experiments.configs.QuerySelectionConfig;
-import experiments.configs.UncertaintySamplingConfig;
-import sampling.RandomSampler;
 import tools.data.Dataset;
-import tools.functions.singlevariate.LinearScoreFunction;
-import tools.metrics.ExperimentLogger;
-import tools.normalization.Normalizer.NormalizationMethod;
-import tools.oracles.ArtificialOracle;
-import tools.oracles.ChiSquaredOracle;
-import tools.oracles.InformationGainOracle;
+import sampling.RandomSampler;
 import tools.oracles.OWAOracle;
 import tools.rules.DecisionRule;
+import tools.metrics.ExperimentLogger;
+import tools.oracles.ArtificialOracle;
+import tools.oracles.ChiSquaredOracle;
+import experiments.configs.MiningConfig;
 import tools.train.IterativeRankingLearn;
+import tools.oracles.InformationGainOracle;
 import tools.train.iterative.KappalabIterative;
+import experiments.configs.QuerySelectionConfig;
+import experiments.configs.HighScoreSamplingConfig;
+import experiments.configs.UncertaintySamplingConfig;
+import tools.functions.singlevariate.LinearScoreFunction;
+import experiments.configs.ActiveLearningExperimentConfig;
+import tools.normalization.Normalizer.NormalizationMethod;
 
 /**
  * Class responsible for running an individual active learning experiment
@@ -51,8 +51,8 @@ public void run() {
 
             // Load all the folds
             String dataPath = config.getDataDirectory() + datasetName;
-            List<Dataset> trainDatasets = loadDatasets(dataPath, "/train/");
-            List<Dataset> testDatasets = loadDatasets(dataPath, "/test/");
+            List<Dataset> trainDatasets = loadDatasets(dataPath, "/train/", datasetName);
+            List<Dataset> testDatasets = loadDatasets(dataPath, "/test/", datasetName);
             logger.info("Loaded {} train folds and {} test folds for dataset: {}", 
                         trainDatasets.size(), testDatasets.size(), datasetName);
 
@@ -62,9 +62,6 @@ public void run() {
                 final int currentFoldIdx = foldIdx;
                 executor.submit(() -> {
                     try {
-                        logger.info("Processing fold {}/{} for dataset: {}", 
-                                    currentFoldIdx + 1, numFolds, datasetName);
-
                         Dataset trainDataset = trainDatasets.get(currentFoldIdx);
                         Dataset testDataset = testDatasets.get(currentFoldIdx);
 
@@ -115,19 +112,16 @@ public void run() {
     }
 }
 
-    private List<Dataset> loadDatasets(String dataDirectory, String subDirectory) throws Exception {
+    private List<Dataset> loadDatasets(String dataDirectory, String subDirectory, String datasetName) throws Exception {
         String datasetPath = dataDirectory + subDirectory;
         logger.info("Loading datasets from: {}", datasetPath);
 
-        // Use DatasetLoader to load datasets (implement this utility as needed)
-        List<Dataset> datasets = DatasetLoader.loadDatasetsFromDirectory(
-                datasetPath, config.getDatasetNames());
+        List<Dataset> datasets = DatasetLoader.loadDatasetsFromDirectory(datasetPath, datasetName);
 
         if (datasets.isEmpty()) {
             throw new Exception("No datasets found in directory: " + datasetPath);
         }
 
-        logger.info("Loaded {} datasets from {}", datasets.size(), datasetPath);
         return datasets;
     }
 
@@ -151,7 +145,6 @@ public void run() {
             }
         }
 
-        logger.info("Initialized {} oracles.", oracles.size());
         return oracles;
     }
 

@@ -1,4 +1,4 @@
 {
-    "maxParallelExperiments": 5,
+    "maxParallelExperiments": 1,
     "experimentConfigFolderPath": "experimental_configs/active_learning/experiments" 
 }
