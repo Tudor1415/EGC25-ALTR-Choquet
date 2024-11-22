@@ -62,6 +62,8 @@ public class RuleMiner {
             throws Exception {
         TransactionalDatabase database = new DatReader(dataPath).read();
         Model model = new Model("Association Rule mining");
+
+        // Variable declarations and constraints
         BoolVar[] x = model.boolVarArray("x", database.getNbItems());
         BoolVar[] y = model.boolVarArray("y", database.getNbItems());
         BoolVar[] z = model.boolVarArray("z", database.getNbItems());
@@ -84,23 +86,41 @@ public class RuleMiner {
         try (Writer writer = new FileWriter(outputCsvPath)) {
             writer.write("antecedent,consequent,freqX,freqY,freqZ\n");
             Solver solver = model.getSolver();
-            int ruleCount = 0;
-            while (solver.solve() && ruleCount < 10000) {
-                int[] antecedent = getItemset(x, database);
-                int[] consequent = getItemset(y, database);
-                writer.write("{"
-                        + Arrays.stream(antecedent).mapToObj(String::valueOf).reduce((a, b) -> a + ";" + b).orElse("")
-                        + "}," +
-                        "{"
-                        + Arrays.stream(consequent).mapToObj(String::valueOf).reduce((a, b) -> a + ";" + b).orElse("")
-                        + "}," +
-                        freqX.getValue() + "," +
-                        freqY.getValue() + "," +
-                        freqZ.getValue() + "\n");
 
-                ruleCount++;
+            // Set to store unique combinations of freqX, freqY, freqZ
+            Set<String> freqValuesSet = new HashSet<>();
+
+            while (solver.solve()) {
+                int freqXValue = freqX.getValue();
+                int freqYValue = freqY.getValue();
+                int freqZValue = freqZ.getValue();
+                String freqKey = freqXValue + "," + freqYValue + "," + freqZValue;
+
+                // Check if the combination is unique
+                if (!freqValuesSet.contains(freqKey)) {
+                    freqValuesSet.add(freqKey);
+
+                    int[] antecedent = getItemset(x, database);
+                    int[] consequent = getItemset(y, database);
+                    writer.write("{"
+                            + Arrays.stream(antecedent).mapToObj(String::valueOf).reduce((a, b) -> a + ";" + b)
+                                    .orElse("")
+                            + "}," +
+                            "{"
+                            + Arrays.stream(consequent).mapToObj(String::valueOf).reduce((a, b) -> a + ";" + b)
+                                    .orElse("")
+                            + "}," +
+                            freqXValue + "," +
+                            freqYValue + "," +
+                            freqZValue + "\n");
+                }
+
+                // Stop if we have 10,000 unique combinations
+                if (freqValuesSet.size() >= 10_000) {
+                    break;
+                }
             }
-            solver.printStatistics();
+            // solver.printStatistics();
         }
     }
 
