@@ -17,7 +17,6 @@ public class ActiveLearningExperimentConfig {
     private String[] querySelectionAlgorithms;
     private String[] querySelectionConfigPaths;
     private int nbLearningIterations;
-    private int nbParralelThreads;
     private boolean logToFile;
     private double noiseLevel;
 }

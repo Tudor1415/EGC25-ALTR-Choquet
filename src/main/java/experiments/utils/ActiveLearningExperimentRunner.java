@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import experiments.configs.ActiveLearningExperimentConfig;
+import experiments.configs.UncertaintySamplingConfig;
 import tools.data.Dataset;
 import tools.functions.singlevariate.LinearScoreFunction;
 import tools.metrics.ExperimentLogger;
@@ -17,6 +18,7 @@ import tools.oracles.InformationGainOracle;
 import tools.oracles.OWAOracle;
 import tools.ranking.heuristics.UncertaintySampling;
 import tools.rules.DecisionRule;
+import tools.rules.RuleMiner;
 import tools.train.IterativeRankingLearn;
 import tools.train.iterative.KappalabIterative;
 
@@ -41,9 +43,6 @@ public class ActiveLearningExperimentRunner {
             List<Dataset> trainDatasets = loadDatasets(config.getDataDirectory(), "/train/");
             List<Dataset> testDatasets = loadDatasets(config.getDataDirectory(), "/test/");
 
-            // Step 2: Initialize Oracles
-            List<ArtificialOracle> oracles = initializeOracles();
-
             // Step 3: Initialize Learning Algorithms
             List<IterativeRankingLearn> learningAlgorithms = initializeLearningAlgorithms();
 
@@ -52,6 +51,9 @@ public class ActiveLearningExperimentRunner {
             for (int foldIdx = 0; foldIdx < numFolds; foldIdx++) {
                 Dataset trainDataset = trainDatasets.get(foldIdx);
                 Dataset testDataset = testDatasets.get(foldIdx);
+
+                // Step 2: Initialize Oracles
+                List<ArtificialOracle> oracles = initializeOracles(testDataset);
 
                 logger.info("Processing fold {}/{}", foldIdx + 1, numFolds);
 
@@ -118,12 +120,10 @@ public class ActiveLearningExperimentRunner {
                             config.getNbLearningIterations(),
                             null, // Query selection strategy will be set later
                             new LinearScoreFunction(),
-                            config.getMeasureNames().length
-                    );
+                            config.getMeasureNames().length);
                     kappalab.setName("KappalabIterative");
                     algorithms.add(kappalab);
                     break;
-                // Add other algorithms as needed
                 default:
                     logger.warn("Unknown algorithm specified: {}", algorithmName);
             }
@@ -133,14 +133,27 @@ public class ActiveLearningExperimentRunner {
             throw new Exception("No valid learning algorithms initialized.");
         }
 
+        for (int i = 0; i < config.getQuerySelectionAlgorithms().length; i++) {
+            String algorithmName = config.getQuerySelectionAlgorithms()[i];
+
+            switch (algorithmName) {
+                case "UncertaintySampling":
+                    UncertaintySamplingConfig 
+                    break;
+            
+                default:
+                    break;
+            }
+        }
+
         logger.info("Initialized {} learning algorithms.", algorithms.size());
         return algorithms;
     }
 
     private void runExperimentOnFold(Dataset trainDataset, Dataset testDataset, ArtificialOracle oracle,
-                                     List<IterativeRankingLearn> algorithms, int foldIdx) {
+            List<IterativeRankingLearn> algorithms, int foldIdx) {
         try {
-            logger.info("Running experiment on fold {} with oracle {}", foldIdx + 1, oracle.getType());
+            logger.info("Running experiment on fold {} with oracle {}", foldIdx + 1, oracle.getTYPE());
 
             // Step 1: Mine Rules
             List<DecisionRule> minedRules = RuleMiner.mineRulesForDataset(
@@ -154,8 +167,7 @@ public class ActiveLearningExperimentRunner {
                     config.getExperimentName(),
                     foldIdx,
                     minedRules,
-                    NormalizationMethod.MIN_MAX_SCALING
-            );
+                    NormalizationMethod.MIN_MAX_SCALING);
 
             // Step 3: Run Learning Algorithms
             for (IterativeRankingLearn algorithm : algorithms) {
@@ -165,8 +177,7 @@ public class ActiveLearningExperimentRunner {
                 UncertaintySampling querySelection = new UncertaintySampling(
                         oracle,
                         trainDataset,
-                        config.getMeasureNames()
-                );
+                        config.getMeasureNames());
                 algorithm.setQuerySelectionStrategy(querySelection);
 
                 // Attach logger to algorithm
@@ -176,7 +187,7 @@ public class ActiveLearningExperimentRunner {
                 algorithm.learn();
 
                 // Write iteration times
-                experimentLogger.writeIterationTimes(oracle.getType());
+                experimentLogger.writeIterationTimes(oracle.getTYPE());
 
                 // Optionally, save results or model parameters
                 // algorithm.saveModel(...);

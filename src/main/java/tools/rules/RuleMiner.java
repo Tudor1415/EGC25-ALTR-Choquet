@@ -17,7 +17,7 @@ import io.gitlab.chaver.mining.patterns.constraints.factory.ConstraintFactory;
 import io.gitlab.chaver.mining.patterns.io.DatReader;
 import io.gitlab.chaver.mining.patterns.io.TransactionalDatabase;
 
-public class DRMiningChoco {
+public class RuleMiner {
 
     static int[] getItemset(BoolVar[] x, TransactionalDatabase database) {
         return IntStream
