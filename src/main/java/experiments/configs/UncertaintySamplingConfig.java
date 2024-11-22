@@ -31,6 +31,7 @@ public class UncertaintySamplingConfig implements QuerySelectionConfig {
     private int changePeriod;
     private boolean startUncertainty;
 
+    private String name = "UncertaintySampling";
     private RankingsProvider rankingsProvider;
 
     /**

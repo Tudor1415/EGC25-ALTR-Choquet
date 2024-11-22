@@ -28,6 +28,7 @@ public class HighScoreSamplingConfig implements QuerySelectionConfig {
     private int maximumIterations;
     private NormalizationMethod normalizationMethod;
 
+    private String name = "HighScoreSampling";
     private RankingsProvider rankingsProvider;
 
     /**

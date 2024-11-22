@@ -3,10 +3,15 @@ package experiments.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.crypto.Data;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import experiments.configs.ActiveLearningExperimentConfig;
+import experiments.configs.HighScoreSamplingConfig;
+import experiments.configs.MiningConfig;
+import experiments.configs.QuerySelectionConfig;
 import experiments.configs.UncertaintySamplingConfig;
 import tools.data.Dataset;
 import tools.functions.singlevariate.LinearScoreFunction;
@@ -39,12 +44,11 @@ public class ActiveLearningExperimentRunner {
         try {
             logger.info("Starting Experiment: {}", config.getExperimentName());
 
-            // Step 1: Load Datasets
+            // Step 1: Load all the folds
             List<Dataset> trainDatasets = loadDatasets(config.getDataDirectory(), "/train/");
             List<Dataset> testDatasets = loadDatasets(config.getDataDirectory(), "/test/");
 
             // Step 3: Initialize Learning Algorithms
-            List<IterativeRankingLearn> learningAlgorithms = initializeLearningAlgorithms();
 
             // Step 4: Run Experiment on Each Fold
             int numFolds = trainDatasets.size();
@@ -59,6 +63,10 @@ public class ActiveLearningExperimentRunner {
 
                 // Run experiment for each oracle
                 for (ArtificialOracle oracle : oracles) {
+                    List<QuerySelectionConfig> selectionStrategies = initializeQuerySelectionConfigs(oracle,
+                            trainDataset,
+                            config.getMeasureNames());
+                    List<IterativeRankingLearn> learningAlgorithms = initializeLearningAlgorithms(selectionStrategies);
                     runExperimentOnFold(trainDataset, testDataset, oracle, learningAlgorithms, foldIdx);
                 }
             }
@@ -109,45 +117,104 @@ public class ActiveLearningExperimentRunner {
         return oracles;
     }
 
-    private List<IterativeRankingLearn> initializeLearningAlgorithms() throws Exception {
+    private List<IterativeRankingLearn> initializeLearningAlgorithms(List<QuerySelectionConfig> selectionStrategies) {
         List<IterativeRankingLearn> algorithms = new ArrayList<>();
 
+        // Ensure the number of query selection strategies matches the number of
+        // learning algorithms
+        if (config.getLearningToRankAlgorithms().length != selectionStrategies.size()) {
+            logger.error("Mismatch between the number of learning algorithms and query selection strategies. " +
+                    "Algorithms: {}, Strategies: {}",
+                    config.getLearningToRankAlgorithms().length,
+                    selectionStrategies.size());
+            return algorithms;
+        }
+
         // Initialize learning algorithms based on config
-        for (String algorithmName : config.getLearningToRankAlgorithms()) {
-            switch (algorithmName) {
-                case "KappalabIterative":
-                    IterativeRankingLearn kappalab = new KappalabIterative(
-                            config.getNbLearningIterations(),
-                            null, // Query selection strategy will be set later
-                            new LinearScoreFunction(),
-                            config.getMeasureNames().length);
-                    kappalab.setName("KappalabIterative");
-                    algorithms.add(kappalab);
-                    break;
-                default:
-                    logger.warn("Unknown algorithm specified: {}", algorithmName);
+        for (int i = 0; i < config.getLearningToRankAlgorithms().length; i++) {
+            String algorithmName = config.getLearningToRankAlgorithms()[i];
+            QuerySelectionConfig queryStrategy = selectionStrategies.get(i);
+
+            try {
+                switch (algorithmName) {
+                    case "KappalabIterative":
+                        IterativeRankingLearn kappalab = new KappalabIterative(
+                                config.getNbLearningIterations(),
+                                queryStrategy.getRankingsProvider(),
+                                new LinearScoreFunction(),
+                                config.getMeasureNames().length);
+                        kappalab.setName("KappalabIterative-" + i);
+                        algorithms.add(kappalab);
+                        logger.info("Initialized KappalabIterative algorithm with query strategy at position {}", i);
+                        break;
+
+                    default:
+                        logger.warn("Unknown algorithm specified: {}", algorithmName);
+                }
+            } catch (Exception e) {
+                logger.error(
+                        "Failed to initialize learning algorithm: {} with query strategy at position {}. Error: {}",
+                        algorithmName,
+                        i,
+                        e.getMessage(),
+                        e);
             }
         }
 
         if (algorithms.isEmpty()) {
-            throw new Exception("No valid learning algorithms initialized.");
+            logger.error("No learning algorithms were initialized.");
+        } else {
+            logger.info("Successfully initialized {} learning algorithms.", algorithms.size());
         }
+
+        return algorithms;
+    }
+
+    private List<QuerySelectionConfig> initializeQuerySelectionConfigs(ArtificialOracle oracle, Dataset dataset,
+            String[] measureNames) {
+        List<QuerySelectionConfig> queryConfigs = new ArrayList<>();
 
         for (int i = 0; i < config.getQuerySelectionAlgorithms().length; i++) {
             String algorithmName = config.getQuerySelectionAlgorithms()[i];
+            String configPath = config.getQuerySelectionConfigPaths()[i];
 
-            switch (algorithmName) {
-                case "UncertaintySampling":
-                    UncertaintySamplingConfig 
-                    break;
-            
-                default:
-                    break;
+            try {
+                QuerySelectionConfig queryConfig;
+
+                switch (algorithmName) {
+                    case "UncertaintySampling":
+                        queryConfig = new UncertaintySamplingConfig(oracle, dataset, measureNames);
+                        queryConfig.loadFromFile(configPath);
+                        queryConfig.setUp();
+                        queryConfigs.add(queryConfig);
+                        break;
+                    case "HighScoreSampling":
+                        queryConfig = new HighScoreSamplingConfig(oracle, dataset, measureNames);
+                        queryConfig.loadFromFile(configPath);
+                        queryConfig.setUp();
+                        queryConfigs.add(queryConfig);
+                        break;
+                    case "Mining":
+                        queryConfig = new MiningConfig(oracle, dataset, measureNames);
+                        queryConfig.loadFromFile(configPath);
+                        queryConfig.setUp();
+                        queryConfigs.add(queryConfig);
+                        break;
+                    default:
+                        logger.warn("Unknown query selection algorithm: {}", algorithmName);
+                        break;
+                }
+            } catch (Exception e) {
+                logger.error("Failed to set up query selection algorithm: {} for Oracle: {} Dataset: {}. Error: {}",
+                        algorithmName,
+                        oracle.getClass().getSimpleName(),
+                        dataset.getFilename(),
+                        e.getMessage(),
+                        e);
             }
         }
 
-        logger.info("Initialized {} learning algorithms.", algorithms.size());
-        return algorithms;
+        return queryConfigs;
     }
 
     private void runExperimentOnFold(Dataset trainDataset, Dataset testDataset, ArtificialOracle oracle,

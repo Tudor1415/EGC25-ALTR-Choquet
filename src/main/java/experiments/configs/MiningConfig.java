@@ -1,21 +1,21 @@
 package experiments.configs;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+
 import lombok.Getter;
 import lombok.Setter;
 import tools.data.Dataset;
 import tools.normalization.Normalizer.NormalizationMethod;
 import tools.oracles.ArtificialOracle;
-import tools.rules.DecisionRule;
-import tools.rules.RuleMiner;
 import tools.ranking.RankingsProvider;
 import tools.ranking.heuristics.UncertaintyMining;
-
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Set;
-import java.util.stream.Collectors;
+import tools.rules.RuleMiner;
 
 @Getter
 @Setter
@@ -35,9 +35,7 @@ public class MiningConfig implements QuerySelectionConfig {
     private NormalizationMethod normalizationMethod = NormalizationMethod.MIN_MAX_SCALING;
     private String minedRulesOutputPath;
 
-    // Optional: Directly set the sample
-    private DecisionRule[] sample;
-
+    private String name = "Mining";
     private RankingsProvider rankingsProvider;
 
     /**
@@ -62,7 +60,7 @@ public class MiningConfig implements QuerySelectionConfig {
         this.rankingsProvider = new UncertaintyMining(this);
         
         String dataPath = dataset.getExpDir() + dataset.getFilename();
-        
+
         Set<Integer> classItemsInt = dataset.getConsequentItemsSet().stream()
                 .map(Integer::parseInt)
                 .collect(Collectors.toSet());
