@@ -1,0 +1,7 @@
+{
+    "noise": 0,
+    "topK": 2,
+    "maximumIterations": 5000,
+    "normalizationMethod": "Z_NORMALIZATION"
+  }
+  

@@ -13,6 +13,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
   <dependencies>
+    <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -25,57 +26,70 @@
       <version>5.8.2</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Gson for JSON parsing -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>2.8.9</version>
     </dependency>
+
+    <!-- Lombok for boilerplate code reduction -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.18.22</version>
       <scope>provided</scope>
     </dependency>
+
+    <!-- SparseBitSet -->
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>SparseBitSet</artifactId>
       <version>1.2</version>
       <scope>compile</scope>
     </dependency>
+
+    <!-- Choco-Mining for constraint programming -->
     <dependency>
       <groupId>io.gitlab.chaver</groupId>
       <artifactId>choco-mining</artifactId>
       <version>1.0.2</version>
     </dependency>
+
+    <!-- Apache Commons Math -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-math3</artifactId>
       <version>3.6.1</version>
     </dependency>
+
+    <!-- T-Digest for quantile estimation -->
     <dependency>
       <groupId>com.tdunning</groupId>
       <artifactId>t-digest</artifactId>
       <version>3.2</version>
     </dependency>
+
+    <!-- FastUtil for fast collections -->
     <dependency>
       <groupId>it.unimi.dsi</groupId>
       <artifactId>fastutil</artifactId>
       <version>8.5.9</version>
     </dependency>
+
+    <!-- SLF4J API -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.7.36</version>
     </dependency>
+
+    <!-- SLF4J Binding for Logback -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.4.14</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.cdimascio</groupId>
-      <artifactId>java-dotenv</artifactId>
-      <version>5.2.2</version>
+      <version>1.2.11</version>
     </dependency>
   </dependencies>
 </project>

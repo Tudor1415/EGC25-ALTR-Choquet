@@ -16,10 +16,10 @@ public class ActiveLearningExperiment {
     private static final Logger logger = LoggerFactory.getLogger(ActiveLearningExperiment.class);
 
     public static void main(String[] args) {
-        String configFolderPath = "path/to/configs";
+        String config_filepath = "experimental_configs/active_learning/config.json";
 
         try {
-            ActiveLearningConfig activeLearningConfig = ConfigLoader.loadActiveLearningConfig(configFolderPath);
+            ActiveLearningConfig activeLearningConfig = ConfigLoader.loadActiveLearningConfig(config_filepath);
             logger.info("Loaded configuration folder path: {}", activeLearningConfig.getExperimentConfigFolderPath());
             logger.info("Loaded {} experiment configurations.", activeLearningConfig.getExperimentConfigs().size());
 

@@ -41,7 +41,7 @@ public class ActiveLearningExperimentRunner {
     }
 
 public void run() {
-    ExecutorService executor = Executors.newFixedThreadPool(config.getNbParralelThreads());
+    ExecutorService executor = Executors.newFixedThreadPool(config.getNbParallelThreads());
 
     try {
         logger.info("Starting Experiment: {}", config.getExperimentName());
@@ -267,10 +267,11 @@ public void run() {
                     trainDataset.getConsequentItemsSet(), trainDataset.getAntecedentItemsSet(), config.getMaxAntSize()));
 
             // Step 2: Initialize Experiment Logger
+            String loggingPath = config.getLoggingPath() + config.getExperimentName();
             ExperimentLogger experimentLogger = new ExperimentLogger(
                     oracle,
                     algorithms.get(0).getName(),
-                    config.getLoggingPath(),
+                    loggingPath,
                     datasetName,
                     foldIdx,
                     testRuleList,
@@ -291,7 +292,7 @@ public void run() {
 
                 if (algorithm instanceof KappalabIterative) {
                     String inputFileName = "INPUT_" + datasetName + "_" + foldIdx + "_" + algorithm.getName();
-                    ((KappalabIterative) algorithm).logCurrentKappalabInput(config.getLoggingPath(), inputFileName);
+                    ((KappalabIterative) algorithm).logCurrentKappalabInput(loggingPath, inputFileName);
                     logger.info("Logged KappalabIterative input for dataset: {}, fold: {}, algorithm: {}", 
                                 datasetName, foldIdx, algorithm.getName());
                 } 

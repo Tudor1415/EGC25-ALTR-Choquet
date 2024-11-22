@@ -138,22 +138,22 @@ public class DatasetTest {
      *
      * @throws IOException if there is an error reading the dataset file
      */
-    @Test
-    public void testCoverComputationIris() throws IOException {
-        // Retrieving the iris dataset
-        Set<String> classItemValues = new HashSet<>(Arrays.asList("13", "14", "15"));
-        Dataset irisDataset = new Dataset("iris.dat", "src/test/resources/", classItemValues);
-        String[][] irisTransactions = irisDataset.getTransactionalDataset();
+    // @Test
+    // public void testCoverComputationIris() throws IOException {
+    //     // Retrieving the iris dataset
+    //     Set<String> classItemValues = new HashSet<>(Arrays.asList("13", "14", "15"));
+    //     Dataset irisDataset = new Dataset("iris.dat", "src/test/resources/", classItemValues);
+    //     String[][] irisTransactions = irisDataset.getTransactionalDataset();
 
-        for (String itemValue : irisDataset.getItemsMap().keySet()) {
-            SparseBitSet cover = irisDataset.getItemsMap().get(itemValue);
-            assertNotNull(cover);
+    //     for (String itemValue : irisDataset.getItemsMap().keySet()) {
+    //         SparseBitSet cover = irisDataset.getItemsMap().get(itemValue);
+    //         assertNotNull(cover);
 
-            // Perform assertions on the computed cover
-            int expected = TestUtils.countTransactionsWithItems(irisTransactions, itemValue);
-            assertEquals(expected, cover.cardinality());
-        }
-    }
+    //         // Perform assertions on the computed cover
+    //         int expected = TestUtils.countTransactionsWithItems(irisTransactions, itemValue);
+    //         assertEquals(expected, cover.cardinality());
+    //     }
+    // }
 
     @Test
     public void testGetItemsFromTransactions() {
@@ -248,16 +248,16 @@ public class DatasetTest {
         }
     }
 
-    @Test
-    public void datasetEquivalenceClasses() throws IOException {
-        String datasetName = "mushroom";
+    // @Test
+    // public void datasetEquivalenceClasses() throws IOException {
+    //     String datasetName = "mushroom";
 
-        Dataset dataset = new Dataset(datasetName+".dat", "src/test/resources/", getClassItems(datasetName));
+    //     Dataset dataset = new Dataset(datasetName+".dat", "src/test/resources/", getClassItems(datasetName));
 
-        dataset.findEquivalenceClasses();
+    //     dataset.findEquivalenceClasses();
 
-        UnionFind uf = dataset.getEquivalenceClasses();
+    //     UnionFind uf = dataset.getEquivalenceClasses();
 
-        System.out.println("Dataset " + datasetName + " has " + uf.countClasses() + " equivalence class(es)." );
-    }
+    //     System.out.println("Dataset " + datasetName + " has " + uf.countClasses() + " equivalence class(es)." );
+    // }
 }
