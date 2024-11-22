@@ -8,11 +8,14 @@ import tools.data.Dataset;
 import tools.normalization.Normalizer.NormalizationMethod;
 import tools.oracles.ArtificialOracle;
 import tools.rules.DecisionRule;
+import tools.rules.RuleMiner;
 import tools.ranking.RankingsProvider;
 import tools.ranking.heuristics.UncertaintyMining;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -25,10 +28,12 @@ public class MiningConfig implements QuerySelectionConfig {
 
     // Configurable parameters
     private double noise = 0.0;
+    private int sampleSize = 10_000;
     private int randomSampleSize = 50;
+    private int minSup = 10;
+    private int minConf = 90;
     private NormalizationMethod normalizationMethod = NormalizationMethod.MIN_MAX_SCALING;
-    private int sampleSize = 1000;
-    private String rulesPath;
+    private String minedRulesOutputPath;
 
     // Optional: Directly set the sample
     private DecisionRule[] sample;
@@ -52,16 +57,24 @@ public class MiningConfig implements QuerySelectionConfig {
     }
 
     @Override
-    public void setUp() {
+    public void setUp() throws Exception {
         // Initialize the rankings provider based on the current configuration
         this.rankingsProvider = new UncertaintyMining(this);
+        
+        String dataPath = dataset.getExpDir() + dataset.getFilename();
+        
+        Set<Integer> classItemsInt = dataset.getConsequentItemsSet().stream()
+                .map(Integer::parseInt)
+                .collect(Collectors.toSet());
+
+        RuleMiner.mine(dataPath, classItemsInt, minedRulesOutputPath, sampleSize, randomSampleSize);
     }
 
     /**
      * Loads configurable parameters from a JSON file into the current instance.
      *
      * @param filePath The path to the JSON configuration file.
-     * @throws IOException        If the file cannot be read.
+     * @throws IOException         If the file cannot be read.
      * @throws JsonSyntaxException If the JSON file has invalid syntax.
      */
     public void loadFromFile(String filePath) throws IOException, JsonSyntaxException {
@@ -76,7 +89,7 @@ public class MiningConfig implements QuerySelectionConfig {
             this.randomSampleSize = parameters.getRandomSampleSize();
             this.normalizationMethod = parameters.getNormalizationMethodEnum();
             this.sampleSize = parameters.getSampleSize();
-            this.rulesPath = parameters.getRulesPath();
+            this.minedRulesOutputPath = parameters.getRulesPath();
         }
     }
 

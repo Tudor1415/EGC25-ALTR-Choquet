@@ -35,8 +35,8 @@ import tools.utils.RandomUtil;
 public class Dataset {
 
     // Variables regarding the path to the file containing the transactional data
-    private String filename;
-    private String expDir;
+    private @Getter String filename;
+    private @Getter String expDir;
 
     // Variables regarding the dataset
     private @Setter @Getter Map<String, SparseBitSet> itemsMap; // The map value -> item coverage in the dataset

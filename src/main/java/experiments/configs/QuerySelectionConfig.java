@@ -4,7 +4,7 @@ import tools.ranking.RankingsProvider;
 
 public interface QuerySelectionConfig {
 
-    public void setUp();
+    public void setUp() throws Exception;
 
     public RankingsProvider getRankingsProvider();
 }
