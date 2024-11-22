@@ -1,0 +1,38 @@
+{
+    "experimentName": "Exp_ChangePeriod_6",
+    "dataDirectory": "data/folds/",
+    "loggingPath": "results/",
+    "datasetNames": [
+        "adult",
+        "bank",
+        "connect",
+        "credit",
+        "dota",
+        "toms"
+    ],
+    "measureNames": [
+        "yuleQ",
+        "cosine",
+        "kruskal",
+        "pavillon",
+        "certainty"
+    ],
+    "oracles": [
+        "ChiSquaredOracle",
+        "InformationGainOracle"
+    ],
+    "learningToRankAlgorithms": [
+        "KappalabIterative"
+    ],
+    "querySelectionAlgorithms": [
+        "UncertaintySampling"
+    ],
+    "querySelectionConfigPaths": [
+        "experimental_configs/active_learning/query_selection/uncertainty_sampling_conf_70.json"
+    ],
+    "nbLearningIterations": 100,
+    "nbParallelThreads": 10,
+    "testSetSize": 1000,
+    "maxAntSize": 10,
+    "logToFile": true
+}
