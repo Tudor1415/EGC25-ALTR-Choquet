@@ -41,7 +41,7 @@ plot_exp_sampling:
 plot_exp_active:
 	@for dir in $(shell find results/active_learning/samples -mindepth 1 -maxdepth 1 -type d); do \
 	    echo "Plotting for $$dir..."; \
-	    python scripts/plot_active_learning.py $$dir --cumulative; \
+	    python scripts/plot_active_learning.py $$dir; \
 	done
 
 plot_exp_norm:

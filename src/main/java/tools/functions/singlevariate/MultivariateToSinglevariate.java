@@ -93,7 +93,7 @@ public class MultivariateToSinglevariate implements ISinglevariateFunction {
         Comparator<IAlternative[]> baseComparator = Comparator
                 .<IAlternative[]>comparingDouble(this::getAlternativePairScore)
                 .thenComparingInt(System::identityHashCode);
-        return isUncertainty ? baseComparator : baseComparator.reversed();
+        return isUncertainty ? baseComparator.reversed() : baseComparator;
     }
 
 
