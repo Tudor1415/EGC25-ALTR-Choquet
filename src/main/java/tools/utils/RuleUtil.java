@@ -133,7 +133,7 @@ public class RuleUtil {
         return resultList.get(0);
     }
 
-    private static int[] randomSample(int size, int sampleSize) {
+    public static int[] randomSample(int size, int sampleSize) {
         RandomUtil random = RandomUtil.getInstance();
         return random.kFolds(1, size, sampleSize)[0];
     }

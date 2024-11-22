@@ -2,10 +2,14 @@ package tools.ranking.heuristics;
 
 import static java.lang.Math.abs;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import experiments.configs.MiningConfig;
 import lombok.Getter;
@@ -23,6 +27,7 @@ import tools.rules.DecisionRule;
 import tools.train.LearnStep;
 import tools.utils.RandomUtil;
 import tools.utils.RankingUtil;
+import tools.utils.RuleUtil;
 
 @Getter
 @Setter
@@ -47,6 +52,7 @@ public class UncertaintyMining implements RankingsProvider {
     // State
     private Set<IAlternative[]> selectedPairs = new HashSet<>();
     private List<Ranking<IAlternative>> rankings = new ArrayList<>();
+    private static final Logger logger = LoggerFactory.getLogger(MiningConfig.class);
 
     public UncertaintyMining(MiningConfig config) {
         // Set configurable parameters
@@ -68,38 +74,23 @@ public class UncertaintyMining implements RankingsProvider {
     }
 
     private void initializeSample(MiningConfig config) {
-        if (config.getRulesPath() != null) {
-            // Load sample from rules file
-            this.sample = loadRulesFromFile(config.getRulesPath());
-        } else {
-            // Generate sample from dataset
-            int sampleSize = config.getSampleSize();
-            if (sampleSize <= 0) {
-                throw new IllegalArgumentException("Sample size must be greater than 0");
+        try {
+            logger.info("Initializing sample from rules path: {}", config.getRulesPath());
+
+            this.sample = RuleUtil.extractRulesFromCSV(config.getRulesPath(), dataset, measureNames);
+
+            logger.info("Successfully loaded {} rules from {}", sample.length, config.getRulesPath());
+
+            // Normalize the sample
+            for (DecisionRule rule : sample) {
+                normalizer.normalize(rule.getAlternative().getVector(), NormalizationMethod.NO_NORMALIZATION, true);
             }
-            this.sample = sampleRulesFromDataset(sampleSize);
+
+            logger.info("Sample normalization completed for {} rules.", sample.length);
+
+        } catch (IOException e) {
+            logger.error("Failed to load rules from path: {}. Error: {}", config.getRulesPath(), e.getMessage(), e);
         }
-
-        // Normalize the sample
-        for (DecisionRule rule : sample) {
-            normalizer.normalize(rule.getAlternative().getVector(), NormalizationMethod.NO_NORMALIZATION, true);
-        }
-    }
-
-    private DecisionRule[] loadRulesFromFile(String rulesPath) {
-        // Implement loading rules from a file
-        // Placeholder implementation:
-        // DecisionRule[] rules = ...;
-        // return rules;
-        throw new UnsupportedOperationException("Loading rules from file not implemented yet");
-    }
-
-    private DecisionRule[] sampleRulesFromDataset(int sampleSize) {
-        // Implement sampling rules from the dataset
-        // Placeholder implementation:
-        // You might use a sampling method to generate DecisionRule[] from the dataset
-        // For now, we'll throw an exception
-        throw new UnsupportedOperationException("Sampling rules from dataset not implemented yet");
     }
 
     /**
@@ -154,7 +145,7 @@ public class UncertaintyMining implements RankingsProvider {
                 IAlternative alt2 = sample[jIndex].getAlternative();
 
                 // Skip if the pair has already been selected
-                if (selectedPairs.contains(new IAlternative[]{alt1, alt2})) {
+                if (selectedPairs.contains(new IAlternative[] { alt1, alt2 })) {
                     continue;
                 }
 
@@ -179,7 +170,7 @@ public class UncertaintyMining implements RankingsProvider {
         IAlternative normB = new Alternative(
                 normalizer.normalize(sample[a2Index].getAlternative().getVector(), normalizationMethod, false));
 
-        IAlternative[] alternativePair = new IAlternative[]{normA, normB};
+        IAlternative[] alternativePair = new IAlternative[] { normA, normB };
         List<DecisionRule> rulePair = new ArrayList<>();
         rulePair.add(sample[a1Index]);
         rulePair.add(sample[a2Index]);
