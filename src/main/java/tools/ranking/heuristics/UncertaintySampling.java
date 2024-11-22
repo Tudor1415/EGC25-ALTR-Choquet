@@ -1,100 +1,82 @@
 package tools.ranking.heuristics;
 
-import java.util.Set;
-import java.util.List;
-import java.util.HashSet;
-import java.util.ArrayList;
-
+import experiments.configs.UncertaintySamplingConfig;
 import lombok.Getter;
 import lombok.Setter;
 import sampling.MMAS;
-import tools.data.Dataset;
-import tools.oracles.Oracle;
-import tools.ranking.Ranking;
-import tools.train.LearnStep;
-import tools.utils.RankingUtil;
-import tools.rules.DecisionRule;
 import tools.alternatives.Alternative;
-import tools.normalization.Normalizer;
-import tools.oracles.ArtificialOracle;
-import tools.ranking.RankingsProvider;
 import tools.alternatives.IAlternative;
+import tools.data.Dataset;
 import tools.functions.multivariate.CertaintyFunction;
 import tools.functions.multivariate.PairwiseUncertainty;
-import tools.functions.singlevariate.LinearScoreFunction;
-import tools.normalization.Normalizer.NormalizationMethod;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.functions.multivariate.outRankingCertainties.Thurstone;
 import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
 import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
+import tools.functions.multivariate.outRankingCertainties.Thurstone;
+import tools.functions.singlevariate.ISinglevariateFunction;
+import tools.functions.singlevariate.LinearScoreFunction;
+import tools.normalization.Normalizer;
+import tools.normalization.Normalizer.NormalizationMethod;
+import tools.oracles.ArtificialOracle;
+import tools.ranking.Ranking;
+import tools.ranking.RankingsProvider;
+import tools.rules.DecisionRule;
+import tools.train.LearnStep;
+import tools.utils.RankingUtil;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Getter
+@Setter
 public class UncertaintySampling implements RankingsProvider {
 
-    private @Getter @Setter double noise;
+    // Configurable parameters
+    private double noise;
+    private int maximumIterations;
+    private String certaintyType;
+    private NormalizationMethod normalizationMethod;
+    private int nbLearningIterations;
+    private int changePeriod;
 
-    // The oracle used to rank the selected pair of rules
+    // Required components
     private ArtificialOracle oracle;
+    private Dataset dataset;
+    private String[] measureNames;
 
-    // The uncertainty used for sampling
-    private @Getter CertaintyFunction pairwiseCertaintyFunction;
-
-    // The state of the approximation function at the current iteration
-    private @Getter ISinglevariateFunction scoreFunction;
-
-    // The sampling instance used to sample the rules
+    // Internal components
+    private CertaintyFunction pairwiseCertaintyFunction;
+    private ISinglevariateFunction scoreFunction;
     private MMAS sampler;
 
-    // The maximum iterations used for sampling
-    private @Setter @Getter int maximum_iterations = MAXIMUM_ITERATIONS;
-
-    // Number of learning iterations
-    private @Getter @Setter int nbLearningIteration;
-    private int learningIteration;
-
-    // The list of all selected pairs of alternatives from all the iterations
-    // and their respective ranking given by the oracle.
+    // State
     private Set<IAlternative[]> selectedPairs = new HashSet<>();
     private List<Ranking<IAlternative>> rankings = new ArrayList<>();
+    private int learningIteration = 0;
 
-    private static final double DEFAULT_NOISE = 0d;
-    private static final int MAXIMUM_ITERATIONS = 100;
-    private static final int CHANGE_PERIOD = 100;
+    public UncertaintySampling(UncertaintySamplingConfig config) {
+        // Set configurable parameters
+        this.noise = config.getNoise();
+        this.maximumIterations = config.getMaximumIterations();
+        this.certaintyType = config.getCertaintyType();
+        this.normalizationMethod = config.getNormalizationMethod();
+        this.nbLearningIterations = config.getNbLearningIterations();
 
-    public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, double noise,
-            int nbLearningIteration) {
-        this(oracle, dataset, measureNames, noise, MAXIMUM_ITERATIONS, "ScoreDifference",
-                NormalizationMethod.MIN_MAX_SCALING, nbLearningIteration);
+        // Set required components
+        this.oracle = config.getOracle();
+        this.dataset = config.getDataset();
+        this.measureNames = config.getMeasureNames();
+
+        // Initialize components
+        this.scoreFunction = new LinearScoreFunction();
+        initializeCertaintyFunction();
+        initializeSampler(config.isStartUncertainty());
     }
 
-    public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames,
-            int nbLearningIteration) {
-        this(oracle, dataset, measureNames, DEFAULT_NOISE, MAXIMUM_ITERATIONS, "ScoreDifference",
-                NormalizationMethod.MIN_MAX_SCALING, nbLearningIteration);
-    }
-
-    public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, String certaintyType,
-            int nbLearningIteration) {
-        this(oracle, dataset, measureNames, DEFAULT_NOISE, MAXIMUM_ITERATIONS, certaintyType,
-                NormalizationMethod.MIN_MAX_SCALING, nbLearningIteration);
-    }
-
-    public UncertaintySampling(ArtificialOracle oracle, Dataset dataset, String[] measureNames, double noise,
-            int maximumIterations, String certaintyType, NormalizationMethod normalizationMethod,
-            int nbLearningIteration) {
-        this.oracle = oracle;
-        this.noise = noise;
-        this.nbLearningIteration = nbLearningIteration;
-
-        updateCertaintyFunction(certaintyType, new LinearScoreFunction());
-        initializeSampler(dataset, measureNames, maximumIterations);
-        setSamplerNormalizationMethod(normalizationMethod);
-    }
-
-    public void updateCertaintyFunction(String certaintyType, ISinglevariateFunction scoreFunction) {
-        this.scoreFunction = scoreFunction;
-
+    private void initializeCertaintyFunction() {
         switch (certaintyType) {
-            case "ScoreDifferece":
+            case "ScoreDifference":
                 this.pairwiseCertaintyFunction = new PairwiseUncertainty("ScoreDifferencePairUncertainty",
                         new ScoreDifference(scoreFunction));
                 break;
@@ -107,77 +89,72 @@ public class UncertaintySampling implements RankingsProvider {
                         new Thurstone(scoreFunction));
                 break;
             default:
+                // Default to ScoreDifference if invalid type is provided
                 this.pairwiseCertaintyFunction = new PairwiseUncertainty("ScoreDifferencePairUncertainty",
                         new ScoreDifference(scoreFunction));
+                break;
         }
     }
 
-    private void initializeSampler(Dataset dataset, String[] measureNames, int maximumIterations) {
-        this.sampler = new MMAS(MAXIMUM_ITERATIONS, 1, dataset, pairwiseCertaintyFunction, measureNames);
+    private void initializeSampler(boolean isStartUncertainty) {
+        this.sampler = new MMAS(maximumIterations, 1, dataset, pairwiseCertaintyFunction, measureNames);
+        this.sampler.setNormalizationTechnique(normalizationMethod);
+        this.sampler.setUncertainty(isStartUncertainty);
     }
 
-    /**
-     * The algorithm selects pairs of alternatives with minimal gaps in their score
-     * and generates rankings for each pair.
-     * The process is repeated until the desired number of rankings is obtained.
-     *
-     * @param step The current iteration step containing the score function and
-     *             other information.
-     * @return A list of rankings generated by the MinGapsRankingsProvider
-     *         algorithm.
-     */
     @Override
     public List<Ranking<IAlternative>> provideRankings(LearnStep step) {
         // Increment the learning iteration counter
         learningIteration++;
 
-        // Retrieving the state of the approximation function at the current iteration
-        scoreFunction = step.getCurrentScoreFunction();
+        // Update score function
+        this.scoreFunction = step.getCurrentScoreFunction();
 
-        // Sampling new rules using the sampler with the updated approximation function
-        sampler.setScoringFunction(scoreFunction);
+        // Update certainty function with the new score function
+        initializeCertaintyFunction();
 
-        // if (learningIteration > CHANGE_PERIOD && learningIteration % CHANGE_PERIOD == 0)
-        if (learningIteration > CHANGE_PERIOD)
-            sampler.setUncertainty(true);
+        // Update sampler with the new scoring function
+        this.sampler.setScoringFunction(scoreFunction);
 
-        // Sample new alternatives from the test dataset
-        List<DecisionRule[]> sample = sampler.sample();
+        // Change sampler behavior after CHANGE_PERIOD iterations
+        if (learningIteration > changePeriod && learningIteration % changePeriod == 0)
+            sampler.setUncertainty(!sampler.isUncertainty());
+
+        // Sample new alternatives from the dataset
+        List<DecisionRule[]> samplePairs = sampler.sample();
+
+        // Assuming that sampler.sample() returns a list with pairs of DecisionRule[]
+        if (samplePairs.isEmpty()) {
+            throw new IllegalStateException("Sampler returned no samples");
+        }
+
+        // Process each sampled pair (here, we assume only one pair is sampled per iteration)
+        DecisionRule[] selectedPairRules = samplePairs.get(0);
 
         List<DecisionRule> listSample = new ArrayList<>();
-        listSample.add(sample.get(0)[0]);
-        listSample.add(sample.get(0)[1]);
+        listSample.add(selectedPairRules[0]);
+        listSample.add(selectedPairRules[1]);
 
         Normalizer normalizer = sampler.getNormalizer();
 
-        Alternative normalized0 = new Alternative(normalizer.normalize(listSample.get(0).getAlternative().getVector(),
-                NormalizationMethod.MIN_MAX_SCALING, false));
-        Alternative normalized1 = new Alternative(normalizer.normalize(listSample.get(1).getAlternative().getVector(),
-                NormalizationMethod.MIN_MAX_SCALING, false));
+        // Normalize sampled alternatives
+        IAlternative normalized0 = new Alternative(
+                normalizer.normalize(selectedPairRules[0].getAlternative().getVector(), normalizationMethod, false));
+        IAlternative normalized1 = new Alternative(
+                normalizer.normalize(selectedPairRules[1].getAlternative().getVector(), normalizationMethod, false));
 
         // Add the selected pair to the set of selected pairs
-        IAlternative[] alternativePair = new IAlternative[] { normalized0, normalized1 };
+        IAlternative[] alternativePair = new IAlternative[]{normalized0, normalized1};
         selectedPairs.add(alternativePair);
 
         // Compute the ranking for the selected pair using the oracle
-        if (oracle instanceof ArtificialOracle) {
-            if (getNoise() == 0) {
-                rankings.add(RankingUtil.computeRankingWithOracle(oracle, listSample, alternativePair));
-            } else {
-                rankings.add(RankingUtil.computeNoisyRankingWithOracle(oracle, listSample, getNoise()));
-            }
-        } else if (oracle instanceof Oracle) {
+        if (noise == 0) {
             rankings.add(RankingUtil.computeRankingWithOracle(oracle, listSample, alternativePair));
         } else {
-            throw new IllegalArgumentException("Unsupported Oracle type: " + oracle.getClass().getName());
+            rankings.add(RankingUtil.computeNoisyRankingWithOracle(oracle, listSample, noise));
         }
 
-        // Return all the computed rankings (from all the prior iterations including
-        // this one)
+        // Return all the computed rankings (from all prior iterations including this one)
         return rankings;
-    }
-
-    public void setSamplerNormalizationMethod(NormalizationMethod normalizationMethod) {
-        sampler.setNormalizationTechnique(normalizationMethod);
     }
 }
