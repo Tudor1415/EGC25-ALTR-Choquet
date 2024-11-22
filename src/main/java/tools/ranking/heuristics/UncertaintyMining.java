@@ -1,6 +1,12 @@
 package tools.ranking.heuristics;
 
-import experiments.configs.MiningConfig;
+import static java.lang.Math.abs;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import experiments.configs.MiningConfig;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,20 +17,12 @@ import tools.functions.singlevariate.ISinglevariateFunction;
 import tools.normalization.Normalizer;
 import tools.normalization.Normalizer.NormalizationMethod;
 import tools.oracles.ArtificialOracle;
-import tools.oracles.Oracle;
 import tools.ranking.Ranking;
 import tools.ranking.RankingsProvider;
 import tools.rules.DecisionRule;
 import tools.train.LearnStep;
-import tools.utils.RankingUtil;
 import tools.utils.RandomUtil;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static java.lang.Math.abs;
+import tools.utils.RankingUtil;
 
 @Getter
 @Setter
@@ -70,9 +68,7 @@ public class UncertaintyMining implements RankingsProvider {
     }
 
     private void initializeSample(MiningConfig config) {
-        if (config.getSample() != null) {
-            this.sample = config.getSample();
-        } else if (config.getRulesPath() != null) {
+        if (config.getRulesPath() != null) {
             // Load sample from rules file
             this.sample = loadRulesFromFile(config.getRulesPath());
         } else {
