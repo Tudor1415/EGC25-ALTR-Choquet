@@ -39,8 +39,7 @@ public class ExperimentLogger implements PropertyChangeListener {
     private long lastUpdateTime;
 
     public ExperimentLogger(ArtificialOracle oracle, String learningAlgName, String loggingPath, String datasetName,
-            int foldIdx,
-            List<DecisionRule> testRuleSet, NormalizationMethod normMethod) {
+            int foldIdx, List<DecisionRule> testRuleSet, NormalizationMethod normMethod) {
         this.oracle = oracle;
         this.learningAlgName = learningAlgName;
         this.loggingPath = loggingPath;

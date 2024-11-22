@@ -3,8 +3,6 @@ package experiments.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.crypto.Data;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +11,7 @@ import experiments.configs.HighScoreSamplingConfig;
 import experiments.configs.MiningConfig;
 import experiments.configs.QuerySelectionConfig;
 import experiments.configs.UncertaintySamplingConfig;
+import sampling.RandomSampler;
 import tools.data.Dataset;
 import tools.functions.singlevariate.LinearScoreFunction;
 import tools.metrics.ExperimentLogger;
@@ -21,9 +20,7 @@ import tools.oracles.ArtificialOracle;
 import tools.oracles.ChiSquaredOracle;
 import tools.oracles.InformationGainOracle;
 import tools.oracles.OWAOracle;
-import tools.ranking.heuristics.UncertaintySampling;
 import tools.rules.DecisionRule;
-import tools.rules.RuleMiner;
 import tools.train.IterativeRankingLearn;
 import tools.train.iterative.KappalabIterative;
 
@@ -62,10 +59,9 @@ public class ActiveLearningExperimentRunner {
                 // Run experiment for each oracle
                 for (ArtificialOracle oracle : oracles) {
                     List<QuerySelectionConfig> selectionStrategies = initializeQuerySelectionConfigs(oracle,
-                            trainDataset,
-                            config.getMeasureNames());
+                            trainDataset, config.getMeasureNames());
                     List<IterativeRankingLearn> learningAlgorithms = initializeLearningAlgorithms(selectionStrategies);
-                    runExperimentOnFold(trainDataset, testDataset, oracle, learningAlgorithms, foldIdx);
+                    runExperimentOnFold(datasetName, trainDataset, testDataset, oracle, learningAlgorithms, foldIdx);
                 }
             }
 
@@ -143,7 +139,8 @@ public class ActiveLearningExperimentRunner {
                                 config.getMeasureNames().length);
                         kappalab.setName("KappalabIterative-" + queryStrategy.getName());
                         algorithms.add(kappalab);
-                        logger.info("Initialized KappalabIterative algorithm with query strategy {}", queryStrategy.getName());
+                        logger.info("Initialized KappalabIterative algorithm with query strategy {}",
+                                queryStrategy.getName());
                         break;
 
                     default:
@@ -215,35 +212,29 @@ public class ActiveLearningExperimentRunner {
         return queryConfigs;
     }
 
-    private void runExperimentOnFold(Dataset trainDataset, Dataset testDataset, ArtificialOracle oracle,
+    private void runExperimentOnFold(String datasetName, Dataset trainDataset, Dataset testDataset, ArtificialOracle oracle,
             List<IterativeRankingLearn> algorithms, int foldIdx) {
         try {
             logger.info("Running experiment on fold {} with oracle {}", foldIdx + 1, oracle.getTYPE());
 
-            // Step 1: Mine Rules
-            List<DecisionRule> minedRules = RuleMiner.mineRulesForDataset(
-                    trainDataset, config.getMeasureNames(), config.getMinSupport(), config.getMinConfidence());
+            // Step 1: Extract Test Rules
+            RandomSampler sampler = new RandomSampler(trainDataset, 3, 3, config.getMeasureNames(), 0.1d);
+            List<DecisionRule> testRuleList = new ArrayList<>(sampler.sample(config.getTestSetSize(),
+                    trainDataset.getConsequentItemsSet(), trainDataset.getAntecedentItemsSet(), config.getMaxAntSize()));
 
             // Step 2: Initialize Experiment Logger
             ExperimentLogger experimentLogger = new ExperimentLogger(
                     oracle,
                     algorithms.get(0).getName(),
                     config.getLoggingPath(),
-                    config.getExperimentName(),
+                    datasetName,
                     foldIdx,
-                    minedRules,
+                    testRuleList,
                     NormalizationMethod.MIN_MAX_SCALING);
 
             // Step 3: Run Learning Algorithms
             for (IterativeRankingLearn algorithm : algorithms) {
                 logger.info("Running algorithm: {}", algorithm.getName());
-
-                // Set up query selection strategy
-                UncertaintySampling querySelection = new UncertaintySampling(
-                        oracle,
-                        trainDataset,
-                        config.getMeasureNames());
-                algorithm.setQuerySelectionStrategy(querySelection);
 
                 // Attach logger to algorithm
                 algorithm.addObserver(experimentLogger);
@@ -254,8 +245,12 @@ public class ActiveLearningExperimentRunner {
                 // Write iteration times
                 experimentLogger.writeIterationTimes(oracle.getTYPE());
 
-                // Optionally, save results or model parameters
-                // algorithm.saveModel(...);
+                if (algorithm instanceof KappalabIterative) {
+                    String inputFileName = "INPUT_" + datasetName + "_" + foldIdx + "_" + algorithm.getName();
+                    ((KappalabIterative) algorithm).logCurrentKappalabInput(config.getLoggingPath(), inputFileName);
+                    logger.info("Logged KappalabIterative input for dataset: {}, fold: {}, algorithm: {}", 
+                                datasetName, foldIdx, algorithm.getName());
+                } 
             }
         } catch (Exception e) {
             logger.error("Error during fold {}: {}", foldIdx + 1, e.getMessage(), e);
