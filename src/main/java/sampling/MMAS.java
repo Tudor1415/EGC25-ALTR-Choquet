@@ -30,7 +30,7 @@ public class MMAS {
         this.dataset = dataset;
         this.certaintyFunction = certaintyFunction;
         this.scoringFunction = new MultivariateToSinglevariate(certaintyFunction.getName() + "Singlevariate",
-                certaintyFunction, dataset.getRandomValidRules(10, 1e-6d, measureNames), 1, isUncertainty);
+                certaintyFunction, dataset.getRandomValidRules(10, 0.01d, measureNames), 1, isUncertainty);
 
         this.measureNames = measureNames;
         BatchSampler sampler = new BatchSampler(10, dataset, getScoringFunction(), measureNames, 1);

@@ -95,7 +95,6 @@ public class DatasetLoader {
                     Dataset dataset = new Dataset(file.getName(), datasetPath,
                             getClassItems(datasetName));
                     datasets.add(dataset);
-                    logger.info("Loaded dataset: {}", file.getName());
                 } catch (Exception e) {
                     logger.error("Error loading dataset from file '{}': {}", file.getName(), e.getMessage());
                 }

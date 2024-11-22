@@ -40,71 +40,90 @@ public class ActiveLearningExperimentRunner {
         this.config = config;
     }
 
-public void run() {
-    ExecutorService executor = Executors.newFixedThreadPool(config.getNbParallelThreads());
+    public void run() {
+        ExecutorService executor = Executors.newFixedThreadPool(config.getNbParallelThreads());
 
-    try {
-        logger.info("Starting Experiment: {}", config.getExperimentName());
+        try {
+            logger.info("Starting Experiment: {}", config.getExperimentName());
 
-        for (String datasetName : config.getDatasetNames()) {
-            logger.info("Processing dataset: {}", datasetName);
+            for (String datasetName : config.getDatasetNames()) {
+                logger.info("Processing dataset: {}", datasetName);
 
-            // Load all the folds
-            String dataPath = config.getDataDirectory() + datasetName;
-            List<Dataset> trainDatasets = loadDatasets(dataPath, "/train/", datasetName);
-            List<Dataset> testDatasets = loadDatasets(dataPath, "/test/", datasetName);
-            logger.info("Loaded {} train folds and {} test folds for dataset: {}", 
+                // Load all the folds
+                String dataPath = config.getDataDirectory() + datasetName;
+                List<Dataset> trainDatasets = loadDatasets(dataPath, "/train/", datasetName);
+                List<Dataset> testDatasets = loadDatasets(dataPath, "/test/", datasetName);
+                logger.info("Loaded {} train folds and {} test folds for dataset: {}",
                         trainDatasets.size(), testDatasets.size(), datasetName);
 
-            // Run Experiment on Each Fold in Parallel
-            int numFolds = trainDatasets.size();
-            for (int foldIdx = 0; foldIdx < numFolds; foldIdx++) {
-                final int currentFoldIdx = foldIdx;
-                // executor.submit(() -> {
+                // Run Experiment on Each Fold in Parallel
+                int numFolds = trainDatasets.size();
+                for (int foldIdx = 0; foldIdx < numFolds; foldIdx++) {
+                    final int currentFoldIdx = foldIdx;
+                    // executor.submit(() -> {
                     try {
                         Dataset trainDataset = trainDatasets.get(currentFoldIdx);
                         Dataset testDataset = testDatasets.get(currentFoldIdx);
 
                         // Step 2: Initialize Oracles
-                        List<ArtificialOracle> oracles = initializeOracles(testDataset);
+                        List<ArtificialOracle> trainOracles = initializeOracles(trainDataset);
+                        List<ArtificialOracle> testOracles = initializeOracles(testDataset);
 
-                        // Run experiment for each oracle
-                        for (ArtificialOracle oracle : oracles) {
-                            logger.info("Starting experiments with oracle: {} for fold {}/{} of dataset: {}", 
-                                        oracle.getTYPE(), currentFoldIdx + 1, numFolds, datasetName);
+                        if (trainOracles.size() != testOracles.size()) {
+                            throw new IllegalArgumentException(
+                                    "Mismatch between the number of train and test oracles.");
+                        }
 
+                        // Run experiment for each pair of train and test oracles
+                        for (int i = 0; i < trainOracles.size(); i++) {
+                            ArtificialOracle trainOracle = trainOracles.get(i);
+                            ArtificialOracle testOracle = testOracles.get(i);
+
+                            logger.info(
+                                    "Starting experiments with train oracle: {} and test oracle: {} for fold {}/{} of dataset: {}",
+                                    trainOracle.getTYPE(), testOracle.getTYPE(), currentFoldIdx + 1, numFolds,
+                                    datasetName);
+
+                            // Use train oracle to initialize selection strategies
                             List<QuerySelectionConfig> selectionStrategies = initializeQuerySelectionConfigs(
-                                oracle, trainDataset, config.getMeasureNames());
+                                    trainOracle, trainDataset, config.getMeasureNames());
 
-                            List<IterativeRankingLearn> learningAlgorithms = initializeLearningAlgorithms(selectionStrategies);
+                            // Initialize learning algorithms with the selection strategies
+                            List<IterativeRankingLearn> learningAlgorithms = initializeLearningAlgorithms(
+                                    selectionStrategies);
 
-                            runExperimentOnFold(datasetName, trainDataset, testDataset, oracle, learningAlgorithms, currentFoldIdx);
-                            logger.info("Completed experiments for oracle: {} on fold {}/{} of dataset: {}", 
-                                        oracle.getTYPE(), currentFoldIdx + 1, numFolds, datasetName);
+                            // Use test oracle to run experiments
+                            runExperimentOnFold(datasetName, trainDataset, testDataset, testOracle, learningAlgorithms,
+                                    currentFoldIdx);
+
+                            logger.info(
+                                    "Completed experiments for train oracle: {} and test oracle: {} on fold {}/{} of dataset: {}",
+                                    trainOracle.getTYPE(), testOracle.getTYPE(), currentFoldIdx + 1, numFolds,
+                                    datasetName);
                         }
                     } catch (Exception e) {
-                        logger.error("Error processing fold {}/{} for dataset {}: {}", 
-                                     currentFoldIdx + 1, numFolds, datasetName, e.getMessage(), e);
+                        logger.error("Error processing fold {}/{} for dataset {}: {}",
+                                currentFoldIdx + 1, numFolds, datasetName, e.getMessage(), e);
                     }
-                // });
+                    // });
+                }
+            }
+
+            executor.shutdown();
+            if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
+                executor.shutdownNow();
+                logger.warn("Timeout reached. Forced shutdown of remaining tasks.");
+            }
+
+            logger.info("Experiment '{}' completed successfully.", config.getExperimentName());
+        } catch (Exception e) {
+            logger.error("Error running experiment '{}': {}", config.getExperimentName(), e.getMessage(), e);
+        } finally {
+            if (!executor.isShutdown()) {
+                executor.shutdownNow();
             }
         }
-
-        executor.shutdown();
-        if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
-            executor.shutdownNow();
-            logger.warn("Timeout reached. Forced shutdown of remaining tasks.");
-        }
-
-        logger.info("Experiment '{}' completed successfully.", config.getExperimentName());
-    } catch (Exception e) {
-        logger.error("Error running experiment '{}': {}", config.getExperimentName(), e.getMessage(), e);
-    } finally {
-        if (!executor.isShutdown()) {
-            executor.shutdownNow();
-        }
     }
-}
 
     private List<Dataset> loadDatasets(String dataDirectory, String subDirectory, String datasetName) throws Exception {
         String datasetPath = dataDirectory + subDirectory;
@@ -239,13 +258,15 @@ public void run() {
         return queryConfigs;
     }
 
-    private void runExperimentOnFold(String datasetName, Dataset trainDataset, Dataset testDataset, ArtificialOracle oracle,
+    private void runExperimentOnFold(String datasetName, Dataset trainDataset, Dataset testDataset,
+            ArtificialOracle oracle,
             List<IterativeRankingLearn> algorithms, int foldIdx) {
         try {
             // Step 1: Extract Test Rules
             RandomSampler sampler = new RandomSampler(trainDataset, 3, 3, config.getMeasureNames(), 0.1d);
             List<DecisionRule> testRuleList = new ArrayList<>(sampler.sample(config.getTestSetSize(),
-                    trainDataset.getConsequentItemsSet(), trainDataset.getAntecedentItemsSet(), config.getMaxAntSize()));
+                    trainDataset.getConsequentItemsSet(), trainDataset.getAntecedentItemsSet(),
+                    config.getMaxAntSize()));
 
             // Step 2: Initialize Experiment Logger
             String loggingPath = config.getLoggingPath() + config.getExperimentName();
@@ -274,9 +295,9 @@ public void run() {
                 if (algorithm instanceof KappalabIterative) {
                     String inputFileName = "INPUT_" + datasetName + "_" + foldIdx + "_" + algorithm.getName();
                     ((KappalabIterative) algorithm).logCurrentKappalabInput(loggingPath, inputFileName);
-                    logger.info("Logged KappalabIterative input for dataset: {}, fold: {}, algorithm: {}", 
-                                datasetName, foldIdx, algorithm.getName());
-                } 
+                    logger.info("Logged KappalabIterative input for dataset: {}, fold: {}, algorithm: {}",
+                            datasetName, foldIdx, algorithm.getName());
+                }
             }
         } catch (Exception e) {
             logger.error("Error during fold {}: {}", foldIdx + 1, e.getMessage(), e);

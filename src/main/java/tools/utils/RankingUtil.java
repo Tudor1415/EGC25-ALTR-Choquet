@@ -3,10 +3,10 @@ package tools.utils;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import tools.alternatives.IAlternative;
-import tools.oracles.ArtificialOracle;
 import tools.ranking.Ranking;
 import tools.rules.DecisionRule;
+import tools.oracles.ArtificialOracle;
+import tools.alternatives.IAlternative;
 
 /**
  * Utility class for working with rankings.
@@ -21,25 +21,32 @@ public class RankingUtil {
          * @param alternatives The array of alternatives to be ranked.
          * @return A Ranking object representing the computed ranking.
          */
-        public static Ranking<IAlternative> computeRankingWithOracle(ArtificialOracle oracle, List<DecisionRule> rules,
+        public static Ranking<IAlternative> computeRankingWithOracle(
+                        ArtificialOracle oracle,
+                        List<DecisionRule> rules,
                         IAlternative[] normalizedAlternatives) {
 
+                // Step 1: Compute the ranking of rules based on oracle's comparison
                 int[] ranking = IntStream.range(0, rules.size())
                                 .boxed()
-                                // Sort the indices based on the scores computed by the oracle
                                 .sorted((i, j) -> oracle.compare(rules.get(i), rules.get(j)))
                                 .mapToInt(i -> i)
                                 .toArray();
 
-                // Initialize the alternativesArray based on the sorted rules
-                IAlternative[] alternativesArray = new IAlternative[] { normalizedAlternatives[ranking[0]],
-                                normalizedAlternatives[ranking[1]] };
+                // Step 2: Extract the top-ranked alternatives based on the computed ranking
+                int topRankIndex = ranking[0];
+                int secondRankIndex = ranking[1];
 
-                // Compute the oracle scores
-                Double[] scores = new Double[] { oracle.computeScore(rules.get(ranking[0])),
-                                oracle.computeScore(rules.get(ranking[1])) };
+                IAlternative topAlternative = normalizedAlternatives[topRankIndex];
+                IAlternative secondAlternative = normalizedAlternatives[secondRankIndex];
+                IAlternative[] alternativesArray = new IAlternative[] { topAlternative, secondAlternative };
 
-                // Return the final Ranking object
+                // Step 3: Compute the oracle scores for the top-ranked rules
+                double topScore = oracle.computeScore(rules.get(topRankIndex));
+                double secondScore = oracle.computeScore(rules.get(secondRankIndex));
+                Double[] scores = new Double[] { topScore, secondScore };
+
+                // Step 4: Return the final Ranking object
                 return new Ranking<>(alternativesArray, scores);
         }
 
