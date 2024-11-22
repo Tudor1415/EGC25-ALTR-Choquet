@@ -1,14 +1,14 @@
 package experiments.configs;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import lombok.Getter;
 import lombok.Setter;
 import tools.data.Dataset;
-import tools.normalization.Normalizer.NormalizationMethod;
+import com.google.gson.Gson;
 import tools.oracles.ArtificialOracle;
 import tools.ranking.RankingsProvider;
+import com.google.gson.JsonSyntaxException;
 import tools.ranking.heuristics.UncertaintySampling;
+import tools.normalization.Normalizer.NormalizationMethod;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -77,6 +77,7 @@ public class UncertaintySamplingConfig implements QuerySelectionConfig {
             this.normalizationMethod = parameters.getNormalizationMethodEnum();
             this.nbLearningIterations = parameters.getNbLearningIterations();
             this.startUncertainty = parameters.isStartUncertainty();
+            this.changePeriod = parameters.getChangePeriod();
         }
     }
 

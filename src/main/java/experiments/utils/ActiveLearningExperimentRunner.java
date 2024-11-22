@@ -60,15 +60,13 @@ public void run() {
             int numFolds = trainDatasets.size();
             for (int foldIdx = 0; foldIdx < numFolds; foldIdx++) {
                 final int currentFoldIdx = foldIdx;
-                executor.submit(() -> {
+                // executor.submit(() -> {
                     try {
                         Dataset trainDataset = trainDatasets.get(currentFoldIdx);
                         Dataset testDataset = testDatasets.get(currentFoldIdx);
 
                         // Step 2: Initialize Oracles
                         List<ArtificialOracle> oracles = initializeOracles(testDataset);
-                        logger.info("Initialized {} oracles for fold {}/{} of dataset: {}", 
-                                    oracles.size(), currentFoldIdx + 1, numFolds, datasetName);
 
                         // Run experiment for each oracle
                         for (ArtificialOracle oracle : oracles) {
@@ -77,12 +75,8 @@ public void run() {
 
                             List<QuerySelectionConfig> selectionStrategies = initializeQuerySelectionConfigs(
                                 oracle, trainDataset, config.getMeasureNames());
-                            logger.info("Initialized {} query selection strategies for oracle: {} on fold {}/{}", 
-                                        selectionStrategies.size(), oracle.getTYPE(), currentFoldIdx + 1, numFolds);
 
                             List<IterativeRankingLearn> learningAlgorithms = initializeLearningAlgorithms(selectionStrategies);
-                            logger.info("Initialized {} learning algorithms for oracle: {} on fold {}/{}", 
-                                        learningAlgorithms.size(), oracle.getTYPE(), currentFoldIdx + 1, numFolds);
 
                             runExperimentOnFold(datasetName, trainDataset, testDataset, oracle, learningAlgorithms, currentFoldIdx);
                             logger.info("Completed experiments for oracle: {} on fold {}/{} of dataset: {}", 
@@ -92,7 +86,7 @@ public void run() {
                         logger.error("Error processing fold {}/{} for dataset {}: {}", 
                                      currentFoldIdx + 1, numFolds, datasetName, e.getMessage(), e);
                     }
-                });
+                // });
             }
         }
 
@@ -176,8 +170,6 @@ public void run() {
                                 config.getMeasureNames().length);
                         kappalab.setName("KappalabIterative-" + queryStrategy.getName());
                         algorithms.add(kappalab);
-                        logger.info("Initialized KappalabIterative algorithm with query strategy {}",
-                                queryStrategy.getName());
                         break;
 
                     default:
@@ -195,8 +187,6 @@ public void run() {
 
         if (algorithms.isEmpty()) {
             logger.error("No learning algorithms were initialized.");
-        } else {
-            logger.info("Successfully initialized {} learning algorithms.", algorithms.size());
         }
 
         return algorithms;
@@ -252,8 +242,6 @@ public void run() {
     private void runExperimentOnFold(String datasetName, Dataset trainDataset, Dataset testDataset, ArtificialOracle oracle,
             List<IterativeRankingLearn> algorithms, int foldIdx) {
         try {
-            logger.info("Running experiment on fold {} with oracle {}", foldIdx + 1, oracle.getTYPE());
-
             // Step 1: Extract Test Rules
             RandomSampler sampler = new RandomSampler(trainDataset, 3, 3, config.getMeasureNames(), 0.1d);
             List<DecisionRule> testRuleList = new ArrayList<>(sampler.sample(config.getTestSetSize(),

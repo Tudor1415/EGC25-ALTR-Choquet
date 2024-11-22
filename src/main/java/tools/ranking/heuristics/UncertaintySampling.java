@@ -69,6 +69,7 @@ public class UncertaintySampling implements RankingsProvider {
         this.measureNames = config.getMeasureNames();
 
         // Initialize components
+        this.changePeriod = config.getChangePeriod();
         this.scoreFunction = new LinearScoreFunction();
         initializeCertaintyFunction();
         initializeSampler(config.isStartUncertainty());
