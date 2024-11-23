@@ -26,8 +26,8 @@ def main():
     # Base configuration templates
     uncertainty_base_config = {
         "noise": 0.0,
-        "maximumIterations": 500,
-        "certaintyType": "ScoreDifference",
+        "maximumIterations": 1000,
+        "certaintyType": "Sensitivity",
         "normalizationMethod": "MIN_MAX_SCALING",
         "nbLearningIterations": 100,
         "changePeriod": 10,  # Will be overridden in each config

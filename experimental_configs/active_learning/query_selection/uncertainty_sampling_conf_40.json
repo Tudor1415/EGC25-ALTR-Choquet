@@ -1,0 +1,9 @@
+{
+    "noise": 0.0,
+    "maximumIterations": 1000,
+    "certaintyType": "Sensitivity",
+    "normalizationMethod": "MIN_MAX_SCALING",
+    "nbLearningIterations": 100,
+    "changePeriod": 40,
+    "startUncertainty": false
+}
