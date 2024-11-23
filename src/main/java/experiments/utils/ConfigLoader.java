@@ -42,7 +42,7 @@ public class ConfigLoader {
 
         try (FileReader reader = new FileReader(configFile)) {
             activeLearningConfig = gson.fromJson(reader, ActiveLearningConfig.class);
-            logger.info("Successfully loaded main ActiveLearningConfig from file: {}", filepath);
+            // logger.info("Successfully loaded main ActiveLearningConfig from file: {}", filepath);
         } catch (JsonSyntaxException e) {
             logger.error("Invalid JSON syntax in ActiveLearningConfig file. Error: {}", e.getMessage());
             throw e;
@@ -69,7 +69,7 @@ public class ConfigLoader {
                 try (FileReader reader = new FileReader(file)) {
                     ActiveLearningExperimentConfig experimentConfig = gson.fromJson(reader, ActiveLearningExperimentConfig.class);
                     experimentConfigs.add(experimentConfig);
-                    logger.info("Successfully loaded experiment config from file: {}", file.getName());
+                    // logger.info("Successfully loaded experiment config from file: {}", file.getName());
                 } catch (JsonSyntaxException e) {
                     logger.error("Invalid JSON syntax in file: {}. Error: {}", file.getName(), e.getMessage());
                     throw e;

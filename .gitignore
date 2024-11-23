@@ -4,6 +4,8 @@ data/dat-files/*
 data/mapping-files/*
 data/folds/*
 
+experimental_configs/active_learning/*
+
 active_learning/*.pdf
 active_learning/samples/*
 active_learning/*.png

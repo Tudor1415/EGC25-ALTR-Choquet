@@ -45,7 +45,7 @@ def main():
         "querySelectionAlgorithms": ["UncertaintySampling"],
         "querySelectionConfigPaths": [],  # Will be updated dynamically
         "nbLearningIterations": 100,
-        "nbParallelThreads": 10,
+        "nbParallelThreads": 1,
         "testSetSize": 1000,
         "maxAntSize": 10,
         "logToFile": True
@@ -60,8 +60,8 @@ def main():
     os.makedirs(experiments_dir, exist_ok=True)
 
     # Generate 10 configs
-    for i in range(10):
-        change_period = (i + 1) * 10
+    for i in range(20):
+        change_period = (i + 1) * 5
         uncertainty_config_path = os.path.join(query_selection_dir, f"uncertainty_sampling_conf_{change_period}.json")
         experiment_config_path = os.path.join(experiments_dir, f"exp_{change_period}.json")
 

@@ -20,8 +20,8 @@ public class ActiveLearningExperiment {
 
         try {
             ActiveLearningConfig activeLearningConfig = ConfigLoader.loadActiveLearningConfig(config_filepath);
-            logger.info("Loaded configuration folder path: {}", activeLearningConfig.getExperimentConfigFolderPath());
-            logger.info("Loaded {} experiment configurations.", activeLearningConfig.getExperimentConfigs().size());
+            // logger.info("Loaded configuration folder path: {}", activeLearningConfig.getExperimentConfigFolderPath());
+            // logger.info("Loaded {} experiment configurations.", activeLearningConfig.getExperimentConfigs().size());
 
             int maxParallelExperiments = activeLearningConfig.getMaxParallelExperiments();
 
@@ -46,12 +46,12 @@ public class ActiveLearningExperiment {
         try {
             logger.info("Starting Experiment: {}", experimentConfig.getExperimentName());
     
-            logMemoryUsage("Before experiment");
+            // logMemoryUsage("Before experiment");
     
             ActiveLearningExperimentRunner experimentRunner = new ActiveLearningExperimentRunner(experimentConfig);
             experimentRunner.run();
     
-            logMemoryUsage("After experiment");
+            // logMemoryUsage("After experiment");
     
             logger.info("Completed Experiment: {}", experimentConfig.getExperimentName());
         } catch (OutOfMemoryError e) {

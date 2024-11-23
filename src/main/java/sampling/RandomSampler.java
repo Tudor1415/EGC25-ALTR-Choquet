@@ -3,28 +3,28 @@ package sampling;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 
 import lombok.Getter;
 import lombok.Setter;
-import tools.alternatives.IAlternative;
 import tools.data.Dataset;
-import tools.rules.DecisionRule;
-import tools.utils.RandomUtil;
-import tools.utils.RuleUtil;
 import tools.utils.SetUtil;
+import tools.utils.RuleUtil;
+import tools.utils.RandomUtil;
+import tools.rules.DecisionRule;
+import tools.alternatives.IAlternative;
 
 public class RandomSampler {
 
@@ -228,7 +228,7 @@ public class RandomSampler {
      * @param rules        The set of rules to save.
      * @param saveFilePath Path to save the JSON file.
      */
-    private void saveRulesToFile(Set<DecisionRule> rules, String saveFilePath) {
+    public void saveRulesToFile(Set<DecisionRule> rules, String saveFilePath) {
         Gson gson = new Gson();
         String json = gson.toJson(rules);
 

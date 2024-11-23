@@ -101,7 +101,6 @@ public class DatasetLoader {
             }
         }
 
-        logger.info("Successfully loaded {} datasets from '{}'.", datasets.size(), datasetPath);
         return datasets;
     }
 }
