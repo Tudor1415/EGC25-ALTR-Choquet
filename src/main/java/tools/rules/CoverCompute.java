@@ -2,7 +2,6 @@ package tools.rules;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 import com.zaxxer.sparsebits.SparseBitSet;
 
@@ -13,17 +12,14 @@ import tools.utils.SetUtil;
  * Class for sequential computation of covers.
  */
 public class CoverCompute {
-    private Dataset dataset;
     private Map<String, SparseBitSet> itemsMap;
 
     /**
      * Constructor for CoverCompute.
      * 
      * @param dataset  The dataset.
-     * @param itemsMap The map of items to SparseBitSet covers.
      */
     public CoverCompute(Dataset dataset) {
-        this.dataset = dataset;
         this.itemsMap = dataset.getItemsMap();
     }
 
