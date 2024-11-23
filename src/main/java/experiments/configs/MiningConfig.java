@@ -2,7 +2,10 @@ package experiments.configs;
 
 import java.util.Set;
 import java.io.FileReader;
+import java.nio.file.Path;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -60,7 +63,15 @@ public class MiningConfig implements QuerySelectionConfig {
     public void setUp() throws Exception {
         this.dataPath = dataset.getExpDir() + dataset.getFilename();
 
-        this.outputPath = dataPath + rulesPath;
+        String csvFilename = dataset.getFilename().replaceAll("\\.dat$", ".csv");
+        this.outputPath = dataset.getExpDir() + "/" + rulesPath + "rules_" + csvFilename;
+
+        // Ensure the output path exists
+        Path outputDir = Paths.get(outputPath).getParent();
+        if (outputDir != null && !Files.exists(outputDir)) {
+            Files.createDirectories(outputDir);
+        }
+
         Set<Integer> classItemsInt = dataset.getConsequentItemsSet().stream()
                 .map(Integer::parseInt)
                 .collect(Collectors.toSet());
@@ -79,6 +90,10 @@ public class MiningConfig implements QuerySelectionConfig {
      * @throws JsonSyntaxException If the JSON file has invalid syntax.
      */
     public void loadFromFile(String filePath) throws IOException, JsonSyntaxException {
+        if (!Files.exists(Paths.get(filePath))) {
+            throw new IOException("Configuration file does not exist: " + filePath);
+        }
+
         Gson gson = new Gson();
 
         try (FileReader reader = new FileReader(filePath)) {
@@ -91,6 +106,10 @@ public class MiningConfig implements QuerySelectionConfig {
             this.normalizationMethod = parameters.getNormalizationMethodEnum();
             this.sampleSize = parameters.getSampleSize();
             this.rulesPath = parameters.getRulesPath();
+            this.minConf = parameters.getMinConf();
+            this.minSup = parameters.getMinSup();
+        } catch (JsonSyntaxException e) {
+            throw new JsonSyntaxException("Invalid JSON syntax in file: " + filePath, e);
         }
     }
 
@@ -102,9 +121,11 @@ public class MiningConfig implements QuerySelectionConfig {
     private static class MinGapsRankingParameters {
         private double noise = 0.0;
         private int randomSampleSize = 50;
-        private String normalizationMethod = "MIN_MAX_SCALING";
         private int sampleSize = 1000;
+        private int minSup = 10;
+        private int minConf = 90;
         private String rulesPath;
+        private String normalizationMethod = "MIN_MAX_SCALING";
 
         public NormalizationMethod getNormalizationMethodEnum() {
             try {

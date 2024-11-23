@@ -1,17 +1,19 @@
 package experiments.configs;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import lombok.Getter;
 import lombok.Setter;
 import tools.data.Dataset;
-import tools.normalization.Normalizer.NormalizationMethod;
+import com.google.gson.Gson;
 import tools.oracles.ArtificialOracle;
 import tools.ranking.RankingsProvider;
+import com.google.gson.JsonSyntaxException;
 import tools.ranking.heuristics.HighScoreSampling;
+import tools.normalization.Normalizer.NormalizationMethod;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Getter
 @Setter
@@ -57,10 +59,14 @@ public class HighScoreSamplingConfig implements QuerySelectionConfig {
      * Loads configurable parameters from a JSON file into the current instance.
      *
      * @param filePath The path to the JSON configuration file.
-     * @throws IOException        If the file cannot be read.
+     * @throws IOException         If the file cannot be read.
      * @throws JsonSyntaxException If the JSON file has invalid syntax.
      */
     public void loadFromFile(String filePath) throws IOException, JsonSyntaxException {
+        if (!Files.exists(Paths.get(filePath))) {
+            throw new IOException("Configuration file does not exist: " + filePath);
+        }
+
         Gson gson = new Gson();
 
         try (FileReader reader = new FileReader(filePath)) {

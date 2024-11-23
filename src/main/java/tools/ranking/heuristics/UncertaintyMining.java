@@ -75,11 +75,11 @@ public class UncertaintyMining implements RankingsProvider {
 
     private void initializeSample(MiningConfig config) {
         try {
-            logger.info("Initializing sample from rules path: {}", config.getRulesPath());
+            logger.info("Initializing sample from rules path: {}", config.getOutputPath());
 
             this.sample = RuleUtil.extractRulesFromCSV(config.getOutputPath(), dataset, measureNames);
 
-            logger.info("Successfully loaded {} rules from {}", sample.length, config.getRulesPath());
+            logger.info("Successfully loaded {} rules from {}", sample.length, config.getOutputPath());
 
             // Normalize the sample
             for (DecisionRule rule : sample) {
@@ -89,7 +89,7 @@ public class UncertaintyMining implements RankingsProvider {
             logger.info("Sample normalization completed for {} rules.", sample.length);
 
         } catch (IOException e) {
-            logger.error("Failed to load rules from path: {}. Error: {}", config.getRulesPath(), e.getMessage(), e);
+            logger.error("Failed to load rules from path: {}. Error: {}", config.getOutputPath(), e.getMessage(), e);
         }
     }
 

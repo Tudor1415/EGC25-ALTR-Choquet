@@ -34,14 +34,14 @@
     "KappalabIterative"
   ],
   "querySelectionAlgorithms": [
+    "UncertaintyMining",
     "UncertaintySampling",
-    "HighScoreSampling",
-    "UncertaintyMining"
+    "HighScoreSampling"
   ],
   "querySelectionConfigPaths": [
+    "experimental_configs/active_learning/query_selection/uncertainty_mining_conf.json",
     "experimental_configs/active_learning/query_selection/uncertainty_sampling_conf.json",
-    "experimental_configs/active_learning/query_selection/highScore_sampling_conf.json",
-    "experimental_configs/active_learning/query_selection/uncertainty_mining_conf.json"
+    "experimental_configs/active_learning/query_selection/highScore_sampling_conf.json"
   ],
   "nbLearningIterations": 100,
   "nbParallelThreads": 10,

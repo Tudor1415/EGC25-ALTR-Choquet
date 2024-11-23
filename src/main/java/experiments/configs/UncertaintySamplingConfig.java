@@ -12,6 +12,8 @@ import tools.normalization.Normalizer.NormalizationMethod;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Getter
 @Setter
@@ -60,10 +62,14 @@ public class UncertaintySamplingConfig implements QuerySelectionConfig {
      * Loads configurable parameters from a JSON file into the current instance.
      *
      * @param filePath The path to the JSON configuration file.
-     * @throws IOException        If the file cannot be read.
+     * @throws IOException         If the file cannot be read.
      * @throws JsonSyntaxException If the JSON file has invalid syntax.
      */
     public void loadFromFile(String filePath) throws IOException, JsonSyntaxException {
+        if (!Files.exists(Paths.get(filePath))) {
+            throw new IOException("Configuration file does not exist: " + filePath);
+        }
+
         Gson gson = new Gson();
 
         try (FileReader reader = new FileReader(filePath)) {
@@ -94,6 +100,7 @@ public class UncertaintySamplingConfig implements QuerySelectionConfig {
         private int nbLearningIterations = 100;
         private int changePeriod = 10;
         private boolean startUncertainty = false;
+
         /**
          * Converts the normalization method string into the corresponding enum value.
          *
