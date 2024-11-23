@@ -1,7 +1,9 @@
 package experiments;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
@@ -26,15 +28,25 @@ public class ActiveLearningExperiment {
             List<ActiveLearningExperimentConfig> experimentConfigs = activeLearningConfig.getExperimentConfigs();
             long waitTimeBetweenExperiments = activeLearningConfig.getWaitTimeBetweenExp(); // Time in milliseconds
 
-            for (ActiveLearningExperimentConfig experimentConfig : experimentConfigs) {
-                executorService.submit(() -> {
-                    runExperiment(experimentConfig);
-                });
+            Semaphore semaphore = new Semaphore(maxParallelExperiments);
 
-                // Wait for the specified time before launching the next experiment
+            for (ActiveLearningExperimentConfig experimentConfig : experimentConfigs) {
                 try {
-                    logger.info("Waited for {} milliseconds before launching the next experiment.", waitTimeBetweenExperiments);
-                    Thread.sleep(waitTimeBetweenExperiments);
+                    semaphore.acquire();
+                    executorService.submit(() -> {
+                        try {
+                            runExperiment(experimentConfig);
+                        } finally {
+                            semaphore.release();
+                        }
+                    });
+
+                    // Wait for the specified time if there are permits available
+                    if (semaphore.availablePermits() > 0) {
+                        logger.info("Waiting for {} milliseconds before launching the next experiment.",
+                                waitTimeBetweenExperiments);
+                        Thread.sleep(waitTimeBetweenExperiments);
+                    }
                 } catch (InterruptedException e) {
                     logger.warn("Thread interrupted while waiting between experiments: {}", e.getMessage());
                     Thread.currentThread().interrupt(); // Restore the interrupted status
@@ -42,6 +54,7 @@ public class ActiveLearningExperiment {
             }
 
             executorService.shutdown();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // Wait for all tasks to finish
 
         } catch (Exception e) {
             logger.error("Failed to load configurations: {}", e.getMessage(), e);
