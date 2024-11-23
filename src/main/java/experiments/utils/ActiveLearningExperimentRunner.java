@@ -49,22 +49,22 @@ public class ActiveLearningExperimentRunner {
         ExecutorService executor = Executors.newFixedThreadPool(config.getNbParallelThreads());
 
         try {
-
             for (String datasetName : config.getDatasetNames()) {
-                executor.submit(() -> {
-                    try {
-                        // Load all the folds
-                        String dataPath = config.getDataDirectory() + datasetName;
-                        List<Dataset> trainDatasets = loadDatasets(dataPath, "/train/", datasetName);
-                        List<Dataset> testDatasets = loadDatasets(dataPath, "/test/", datasetName);
-                        logger.info("Loaded {} train folds and {} test folds for dataset: {}",
-                                trainDatasets.size(), testDatasets.size(), datasetName);
+                // Load all the folds for the current dataset
+                String dataPath = config.getDataDirectory() + datasetName;
+                List<Dataset> trainDatasets = loadDatasets(dataPath, "/train/", datasetName);
+                List<Dataset> testDatasets = loadDatasets(dataPath, "/test/", datasetName);
+                // logger.info("Loaded {} train folds and {} test folds for dataset: {}",
+                // trainDatasets.size(), testDatasets.size(), datasetName);
 
-                        // Run Experiment on Each Fold in Parallel
-                        int numFolds = trainDatasets.size();
-                        for (int foldIdx = 0; foldIdx < numFolds; foldIdx++) {
-                            final int currentFoldIdx = foldIdx;
+                int numFolds = trainDatasets.size();
 
+                // Submit each fold as an independent task
+                for (int foldIdx = 0; foldIdx < numFolds; foldIdx++) {
+                    final int currentFoldIdx = foldIdx;
+
+                    executor.submit(() -> {
+                        try {
                             Dataset trainDataset = trainDatasets.get(currentFoldIdx);
                             Dataset testDataset = testDatasets.get(currentFoldIdx);
 
@@ -82,13 +82,7 @@ public class ActiveLearningExperimentRunner {
                                 ArtificialOracle trainOracle = trainOracles.get(i);
                                 ArtificialOracle testOracle = testOracles.get(i);
 
-                                // logger.info(
-                                // "Starting experiments with train oracle: {} and test oracle: {} for fold
-                                // {}/{} of dataset: {}",
-                                // trainOracle.getTYPE(), testOracle.getTYPE(), currentFoldIdx + 1, numFolds,
-                                // datasetName);
-
-                                // Use train oracle to initialize selection strategies
+                                // Initialize selection strategies using the train oracle
                                 List<QuerySelectionConfig> selectionStrategies = initializeQuerySelectionConfigs(
                                         trainOracle, trainDataset, config.getMeasureNames());
 
@@ -107,11 +101,12 @@ public class ActiveLearningExperimentRunner {
                                         datasetName);
                             }
 
+                        } catch (Exception e) {
+                            logger.error("Error processing fold {}/{} for dataset {}: {}",
+                                    currentFoldIdx + 1, numFolds, datasetName, e.getMessage(), e);
                         }
-                    } catch (Exception e) {
-                        logger.error("Error dataset {}: {}", datasetName, e.getMessage(), e);
-                    }
-                });
+                    });
+                }
             }
 
             executor.shutdown();
@@ -271,7 +266,7 @@ public class ActiveLearningExperimentRunner {
      */
     public List<DecisionRule> getTestRules(Dataset testDataset, int foldIdx) {
         String ruleOutputPath = testDataset.getExpDir() + "test_rules_" + foldIdx + ".csv";
-        Set<DecisionRule> existingRules = new HashSet<>();
+        List<DecisionRule> ruleList = new ArrayList<>();
 
         // Check if the rules file already exists
         File ruleFile = new File(ruleOutputPath);
@@ -280,32 +275,25 @@ public class ActiveLearningExperimentRunner {
             List<DecisionRule> loadedRules;
             try {
                 loadedRules = RuleUtil.extractRulesListFromCSV(ruleOutputPath, testDataset, config.getMeasureNames());
-                existingRules.addAll(loadedRules);
+                ruleList.addAll(loadedRules);
             } catch (IOException e) {
                 logger.error("Failed to load already mined test rule set from {}!",
                         testDataset.getFilename(), e);
             }
+        } else {
+            // Generate new rules, ensuring no duplicates
+            RandomSampler sampler = new RandomSampler(testDataset, 3, 3, config.getMeasureNames(), 0.1d);
+            ruleList = new ArrayList<>(sampler.sample(
+                    config.getTestSetSize(),
+                    testDataset.getConsequentItemsSet(),
+                    testDataset.getAntecedentItemsSet(),
+                    config.getMaxAntSize()));
         }
 
-        // Generate new rules, ensuring no duplicates
-        RandomSampler sampler = new RandomSampler(testDataset, 3, 3, config.getMeasureNames(), 0.1d);
-        List<DecisionRule> newRules = new ArrayList<>(sampler.sample(
-                config.getTestSetSize(),
-                testDataset.getConsequentItemsSet(),
-                testDataset.getAntecedentItemsSet(),
-                config.getMaxAntSize()));
-
-        // Filter out duplicates
-        newRules.removeIf(existingRules::contains);
-
-        // Merge existing and new rules
-        List<DecisionRule> finalRuleList = new ArrayList<>(existingRules);
-        finalRuleList.addAll(newRules);
-
         // Save the combined rules to the CSV file
-        RuleUtil.saveRulesToCSV(finalRuleList, ruleOutputPath);
+        RuleUtil.saveRulesToCSV(ruleList, ruleOutputPath);
 
-        return finalRuleList;
+        return ruleList;
     }
 
     private void runExperimentOnFold(String datasetName, Dataset trainDataset, Dataset testDataset,
@@ -313,8 +301,9 @@ public class ActiveLearningExperimentRunner {
         try {
             // Step 1: Extract Test Rules
             List<DecisionRule> testRuleList = getTestRules(testDataset, foldIdx);
-            logger.info("Loaded {} test rules on dataset {} fold {}", testRuleList.size(), datasetName, foldIdx);
-           
+            // logger.info("Loaded {} test rules on dataset {} fold {}",
+            // testRuleList.size(), datasetName, foldIdx);
+
             // Step 2: Initialize Experiment Logger
             String loggingPath = config.getLoggingPath() + config.getExperimentName();
             ExperimentLogger experimentLogger = new ExperimentLogger(
@@ -328,7 +317,8 @@ public class ActiveLearningExperimentRunner {
 
             // Step 3: Run Learning Algorithms
             for (IterativeRankingLearn algorithm : algorithms) {
-                logger.info("Running algorithm: {}", algorithm.getName());
+                logger.info("{} || Running algorithm: {} on dataset {} fold {}", config.getExperimentName(),
+                        algorithm.getName(), datasetName, foldIdx);
 
                 // Attach logger to algorithm
                 algorithm.addObserver(experimentLogger);

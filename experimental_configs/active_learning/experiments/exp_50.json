@@ -1,5 +1,5 @@
 {
-    "experimentName": "Exp_ChangePeriod_9",
+    "experimentName": "Exp_ChangePeriod_50",
     "dataDirectory": "data/folds/",
     "loggingPath": "results/",
     "datasetNames": [
@@ -31,7 +31,7 @@
         "experimental_configs/active_learning/query_selection/uncertainty_sampling_conf_50.json"
     ],
     "nbLearningIterations": 100,
-    "nbParallelThreads": 1,
+    "nbParallelThreads": 10,
     "testSetSize": 1000,
     "maxAntSize": 10,
     "logToFile": true

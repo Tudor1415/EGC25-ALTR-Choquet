@@ -45,7 +45,7 @@ def main():
         "querySelectionAlgorithms": ["UncertaintySampling"],
         "querySelectionConfigPaths": [],  # Will be updated dynamically
         "nbLearningIterations": 100,
-        "nbParallelThreads": 1,
+        "nbParallelThreads": 10,
         "testSetSize": 1000,
         "maxAntSize": 10,
         "logToFile": True
@@ -77,7 +77,7 @@ def main():
             experiment_base_config,
             experiment_config_path,
             uncertainty_config_path,
-            f"Exp_ChangePeriod_{i}"
+            f"Exp_ChangePeriod_{(i + 1) * 5}"
         )
 
 
