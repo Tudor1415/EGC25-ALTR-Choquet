@@ -33,7 +33,7 @@ public class ActiveLearningExperiment {
 
                 // Wait for the specified time before launching the next experiment
                 try {
-                    logger.info("Waiting for {} milliseconds before launching the next experiment.", waitTimeBetweenExperiments);
+                    logger.info("Waited for {} milliseconds before launching the next experiment.", waitTimeBetweenExperiments);
                     Thread.sleep(waitTimeBetweenExperiments);
                 } catch (InterruptedException e) {
                     logger.warn("Thread interrupted while waiting between experiments: {}", e.getMessage());
