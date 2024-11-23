@@ -1,6 +1,7 @@
 package experiments;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ExecutorService;
@@ -16,7 +17,7 @@ import experiments.configs.ActiveLearningExperimentConfig;
 public class ActiveLearningExperiment {
     private static final Logger logger = LoggerFactory.getLogger(ActiveLearningExperiment.class.getSimpleName());
 
-public static void main(String[] args) {
+    public static void main(String[] args) {
         String config_filepath = "experimental_configs/active_learning/config.json";
 
         try {
@@ -30,7 +31,7 @@ public static void main(String[] args) {
                 @Override
                 public Thread newThread(Runnable r) {
                     Thread thread = defaultFactory.newThread(r);
-                    thread.setPriority(Thread.NORM_PRIORITY + 3); // Priority 8 (NORM_PRIORITY is 5)
+                    thread.setPriority(Thread.MAX_PRIORITY);
                     return thread;
                 }
             };
@@ -46,7 +47,16 @@ public static void main(String[] args) {
                 });
             }
 
+            // Initiate shutdown after submitting all tasks
             executorService.shutdown();
+
+            // Wait for up to 1 hour for tasks to complete
+            if (!executorService.awaitTermination(2, TimeUnit.HOURS)) {
+                executorService.shutdownNow(); // Force shutdown if tasks are still running
+                logger.warn("Timeout reached. Forced shutdown of remaining tasks.");
+            } else {
+                logger.info("All experiments completed successfully within the timeout.");
+            }
 
         } catch (Exception e) {
             logger.error("Failed to load configurations: {}", e.getMessage(), e);

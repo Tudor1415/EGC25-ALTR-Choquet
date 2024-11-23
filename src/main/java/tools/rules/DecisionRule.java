@@ -1,22 +1,22 @@
 package tools.rules;
 
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.LinkedHashMap;
 import java.util.function.IntConsumer;
 
 import com.zaxxer.sparsebits.SparseBitSet;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import tools.alternatives.IAlternative;
+import lombok.Builder;
 import tools.data.Dataset;
-import tools.utils.AlternativeUtil;
 import tools.utils.SetUtil;
+import lombok.AllArgsConstructor;
+import tools.utils.AlternativeUtil;
+import tools.alternatives.IAlternative;
 
 /**
  * <p>
@@ -63,7 +63,7 @@ public class DecisionRule implements IRule {
     private @Getter @Setter int maxSizeX, maxSizeZ;
 
     // Object for parallel cover computation
-    private CoverParallelCompute coverComputer;
+    private CoverCompute coverComputer;
 
     // Variable representing the consequent
     private String Y;
@@ -90,7 +90,7 @@ public class DecisionRule implements IRule {
         initializeMemoization(getMaxSizeX(), getMaxSizeZ());
 
         // Initializing the parallel computer
-        this.coverComputer = new CoverParallelCompute(getDataset());
+        this.coverComputer = new CoverCompute(getDataset());
 
         // Initializing the covers for the antecedent, consequent and their union
         computeNewCover(new String[] { "x", "y", "z" });
@@ -118,7 +118,7 @@ public class DecisionRule implements IRule {
         initializeMemoization(getMaxSizeX(), getMaxSizeZ());
 
         // Initializing the parallel computer
-        this.coverComputer = new CoverParallelCompute(getDataset());
+        this.coverComputer = new CoverCompute(getDataset());
 
         // Initializing the covers for the antecedent, consequent and their union
         computeNewCover(new String[] { "x", "y", "z" });
