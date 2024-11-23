@@ -101,7 +101,9 @@ def process_files(grouped_files, cumulative):
             for algo, folds in algos.items():
                 logger.info(f"Processing algorithm: {algo}")
                 for foldID, files in folds.items():
-                    logger.info(f"Processing fold: {foldID}")
+                    num_files = len(files)
+                    logger.info(f"Processing fold: {foldID}, Number of files: {num_files}")
+
                     temp_storage = []
 
                     for file in files:

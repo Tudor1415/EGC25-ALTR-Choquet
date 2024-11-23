@@ -57,7 +57,7 @@ public class MMASTest {
         String outputDir = "src/test/output/";
 
         MMAS mmas = new MMAS(maxIterations, 1, dataset, pairwiseUncertainty, measureNames);
-
+        mmas.setUncertainty(true);
         // Run the MMAS algorithm
         DecisionRule[] resultRule = mmas.sample().get(0);
 

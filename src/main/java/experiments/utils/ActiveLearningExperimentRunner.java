@@ -338,8 +338,7 @@ public class ActiveLearningExperimentRunner {
                     // Step 2.3: Handle specific behavior for KappalabIterative
                     if (algorithm instanceof KappalabIterative) {
                         String filePath = loggingPath + "/input/" + datasetName + "_" + foldIdx + "_"
-                                + algorithm.getName()
-                                + ".json";
+                                + algorithm.getName() + "_" + oracle.getTYPE() + ".json";
                         ((KappalabIterative) algorithm).logCurrentKappalabInput(loggingPath + "/input/", filePath);
                         logger.info("Logged KappalabIterative input for dataset: {}, fold: {}, algorithm: {}",
                                 datasetName, foldIdx, algorithm.getName());

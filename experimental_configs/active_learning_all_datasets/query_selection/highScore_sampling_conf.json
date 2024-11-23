@@ -1,7 +1,7 @@
 {
     "noise": 0.0,
     "topK": 2,
-    "maximumIterations": 10000,
+    "maximumIterations": 100000,
     "normalizationMethod": "MIN_MAX_SCALING"
   }
   
