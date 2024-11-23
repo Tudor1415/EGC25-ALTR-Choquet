@@ -197,12 +197,81 @@ def plot_metrics(results, algorithm_color_mapping, cumulative, use_latex):
                     marker='o'
                 )
 
-                output_dir = "results/active_learning/output_plots/"
+                output_dir = "results/output_plots/"
                 os.makedirs(output_dir, exist_ok=True)
                 output_filename = os.path.join(output_dir, f"{datasetName}_{oracle}_precision.pdf")
                 plt.savefig(output_filename, format='pdf')
                 logger.info(f"Saved plot: {output_filename}")
                 plt.close()
+
+def plot_metrics_single_figure(results, algorithm_color_mapping, cumulative, use_latex):
+    """
+    Generates and saves plots for average precision with all algorithms on the same figure for each dataset and oracle.
+    """
+    logger.info("Plotting metrics with all algorithms on the same figure.")
+    if use_latex:
+        logger.debug("Using LaTeX for rendering plots.")
+        plt.rc('text', usetex=True)
+        plt.rc('font', family='serif')
+    else:
+        plt.rc('text', usetex=False)
+
+    for datasetName, oracles in results.items():
+        for oracle, algorithms in oracles.items():
+            data_precision_1, data_precision_10 = [], []
+
+            for algo, folds_data in algorithms.items():
+                for foldID, metrics in folds_data.items():
+                    for i, (prec_1, prec_10) in enumerate(zip(metrics['avg_precision_1'], metrics['avg_precision_10'])):
+                        data_precision_1.append({
+                            'Algorithm': algo,
+                            'Iteration': i + 1,
+                            f'{"Cumulative " if cumulative else ""}Average Precision 1%': prec_1
+                        })
+                        data_precision_10.append({
+                            'Algorithm': algo,
+                            'Iteration': i + 1,
+                            f'{"Cumulative " if cumulative else ""}Average Precision 10%': prec_10
+                        })
+
+            # Create dataframes
+            df_precision_1 = pd.DataFrame(data_precision_1)
+            df_precision_10 = pd.DataFrame(data_precision_10)
+
+            # Create plots
+            fig, axes = plt.subplots(1, 2, figsize=(20, 10))
+
+            sns.lineplot(
+                ax=axes[0],
+                x='Iteration',
+                y=f'{"Cumulative " if cumulative else ""}Average Precision 1%',
+                hue='Algorithm',
+                data=df_precision_1,
+                palette=algorithm_color_mapping,
+                marker='o'
+            )
+            axes[0].set_title(f"{datasetName} - {oracle} - Average Precision 1%")
+            axes[0].legend(title='Algorithm', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+            sns.lineplot(
+                ax=axes[1],
+                x='Iteration',
+                y=f'{"Cumulative " if cumulative else ""}Average Precision 10%',
+                hue='Algorithm',
+                data=df_precision_10,
+                palette=algorithm_color_mapping,
+                marker='o'
+            )
+            axes[1].set_title(f"{datasetName} - {oracle} - Average Precision 10%")
+            axes[1].legend(title='Algorithm', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+            # Save plots
+            output_dir = "results/output_plots/"
+            os.makedirs(output_dir, exist_ok=True)
+            output_filename = os.path.join(output_dir, f"{datasetName}_{oracle}_precision_all_algorithms.pdf")
+            plt.savefig(output_filename, format='pdf', bbox_inches='tight')
+            logger.info(f"Saved plot: {output_filename}")
+            plt.close()
 
 
 def main():
@@ -220,7 +289,7 @@ def main():
     algorithms = {algo for _, oracles in results.items() for _, algos in oracles.items() for algo in algos.keys()}
     algorithm_color_mapping = {algo: sns.color_palette("bright", len(algorithms))[i] for i, algo in enumerate(algorithms)}
 
-    plot_metrics(results, algorithm_color_mapping, args.cumulative, args.use_latex)
+    plot_metrics_single_figure(results, algorithm_color_mapping, args.cumulative, args.use_latex)
     logger.info("Script finished successfully.")
 
 

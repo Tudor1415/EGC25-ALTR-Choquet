@@ -309,32 +309,33 @@ public class ActiveLearningExperimentRunner {
             logger.info("Loaded {} test rules on dataset {} fold {}",
                     testRuleList.size(), datasetName, foldIdx);
 
-            // Step 2: Initialize Experiment Logger
-            String loggingPath = config.getLoggingPath() + config.getExperimentName();
-            ExperimentLogger experimentLogger = new ExperimentLogger(
-                    oracle,
-                    algorithms.get(0).getName(),
-                    loggingPath + "/samples/",
-                    datasetName,
-                    foldIdx,
-                    testRuleList,
-                    NormalizationMethod.MIN_MAX_SCALING);
-
-            // Step 3: Run Learning Algorithms
+            // Step 2: Run Learning Algorithms in Parallel
             algorithms.parallelStream().forEach(algorithm -> {
                 try {
+                    // Step 2.1: Initialize Experiment Logger for the current algorithm
+                    String loggingPath = config.getLoggingPath() + config.getExperimentName();
+                    ExperimentLogger experimentLogger = new ExperimentLogger(
+                            oracle,
+                            algorithm.getName(),
+                            loggingPath + "/samples/",
+                            datasetName,
+                            foldIdx,
+                            testRuleList,
+                            NormalizationMethod.MIN_MAX_SCALING);
+
                     logger.info("{} || Running algorithm: {} on dataset {} fold {}", config.getExperimentName(),
                             algorithm.getName(), datasetName, foldIdx);
 
-                    // Attach logger to algorithm
+                    // Attach logger to the current algorithm
                     algorithm.addObserver(experimentLogger);
 
-                    // Run the learning process
+                    // Step 2.2: Run the learning process
                     algorithm.learn();
 
-                    // Write iteration times
+                    // Write iteration times for the current algorithm
                     experimentLogger.writeIterationTimes(oracle.getTYPE());
 
+                    // Step 2.3: Handle specific behavior for KappalabIterative
                     if (algorithm instanceof KappalabIterative) {
                         String filePath = loggingPath + "/input/" + datasetName + "_" + foldIdx + "_"
                                 + algorithm.getName()
@@ -345,8 +346,7 @@ public class ActiveLearningExperimentRunner {
                     }
                 } catch (Exception e) {
                     logger.error("Error occurred while running algorithm: {} on dataset {} fold {}",
-                            algorithm.getName(),
-                            datasetName, foldIdx, e);
+                            algorithm.getName(), datasetName, foldIdx, e);
                 }
             });
 

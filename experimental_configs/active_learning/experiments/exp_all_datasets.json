@@ -44,7 +44,7 @@
     "experimental_configs/active_learning/query_selection/highScore_sampling_conf.json"
   ],
   "nbLearningIterations": 100,
-  "nbParallelThreads": 10,
+  "nbParallelThreads": 20,
   "testSetSize": 1000,
   "maxAntSize": 10,
   "logToFile": true

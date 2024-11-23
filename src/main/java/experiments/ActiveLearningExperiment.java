@@ -50,13 +50,13 @@ public class ActiveLearningExperiment {
             // Initiate shutdown after submitting all tasks
             executorService.shutdown();
 
-            // Wait for up to 1 hour for tasks to complete
-            if (!executorService.awaitTermination(2, TimeUnit.HOURS)) {
-                executorService.shutdownNow(); // Force shutdown if tasks are still running
-                logger.warn("Timeout reached. Forced shutdown of remaining tasks.");
-            } else {
-                logger.info("All experiments completed successfully within the timeout.");
-            }
+            // // Wait for up to 1 hour for tasks to complete
+            // if (!executorService.awaitTermination(2, TimeUnit.HOURS)) {
+            //     executorService.shutdownNow(); // Force shutdown if tasks are still running
+            //     logger.warn("Timeout reached. Forced shutdown of remaining tasks.");
+            // } else {
+            //     logger.info("All experiments completed successfully within the timeout.");
+            // }
 
         } catch (Exception e) {
             logger.error("Failed to load configurations: {}", e.getMessage(), e);
