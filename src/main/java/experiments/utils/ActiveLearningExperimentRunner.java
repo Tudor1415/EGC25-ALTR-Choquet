@@ -259,6 +259,7 @@ public class ActiveLearningExperimentRunner {
     /**
      * Retrieves a list of test rules, ensuring no duplicates with previously mined
      * rules.
+     * Thread-safe implementation.
      *
      * @param testDataset The dataset to mine rules from.
      * @param foldIdx     The index of the current fold.
@@ -266,34 +267,39 @@ public class ActiveLearningExperimentRunner {
      */
     public List<DecisionRule> getTestRules(Dataset testDataset, int foldIdx) {
         String ruleOutputPath = testDataset.getExpDir() + "test_rules_" + foldIdx + ".csv";
-        List<DecisionRule> ruleList = new ArrayList<>();
-
-        // Check if the rules file already exists
         File ruleFile = new File(ruleOutputPath);
-        if (ruleFile.exists()) {
-            // Load existing rules from the CSV file
-            List<DecisionRule> loadedRules;
-            try {
-                loadedRules = RuleUtil.extractRulesListFromCSV(ruleOutputPath, testDataset, config.getMeasureNames());
-                ruleList.addAll(loadedRules);
-            } catch (IOException e) {
-                logger.error("Failed to load already mined test rule set from {}!",
-                        testDataset.getFilename(), e);
+
+        // Use a synchronized block for file operations to ensure thread safety
+        synchronized (ActiveLearningExperimentRunner.class) {
+            List<DecisionRule> ruleList = new ArrayList<>();
+
+            // Load rules from file if it exists
+            if (ruleFile.exists()) {
+                try {
+                    ruleList = RuleUtil.extractRulesListFromCSV(ruleOutputPath, testDataset, config.getMeasureNames());
+                    if (ruleList.size() < config.getTestSetSize()) {
+                        logger.warn("Insufficient rules in file {}. Generating additional rules.", ruleOutputPath);
+                    }
+                } catch (IOException | ArrayIndexOutOfBoundsException e) {
+                    logger.error("Error loading rules from file {}. Generating new rules.", ruleOutputPath);
+                    ruleList.clear(); // Clear any partially loaded rules
+                }
             }
-        } else {
-            // Generate new rules, ensuring no duplicates
-            RandomSampler sampler = new RandomSampler(testDataset, 3, 3, config.getMeasureNames(), 0.1d);
-            ruleList = new ArrayList<>(sampler.sample(
-                    config.getTestSetSize(),
-                    testDataset.getConsequentItemsSet(),
-                    testDataset.getAntecedentItemsSet(),
-                    config.getMaxAntSize()));
+
+            // Generate rules if file does not exist or rules are insufficient
+            if (ruleList.size() < config.getTestSetSize()) {
+                RandomSampler sampler = new RandomSampler(testDataset, 3, 3, config.getMeasureNames(), 0.1d);
+                ruleList = new ArrayList<>(sampler.sample(
+                        config.getTestSetSize(),
+                        testDataset.getConsequentItemsSet(),
+                        testDataset.getAntecedentItemsSet(),
+                        config.getMaxAntSize()));
+            }
+
+            RuleUtil.saveRulesToCSV(ruleList, ruleOutputPath);
+
+            return ruleList;
         }
-
-        // Save the combined rules to the CSV file
-        RuleUtil.saveRulesToCSV(ruleList, ruleOutputPath);
-
-        return ruleList;
     }
 
     private void runExperimentOnFold(String datasetName, Dataset trainDataset, Dataset testDataset,
@@ -301,8 +307,8 @@ public class ActiveLearningExperimentRunner {
         try {
             // Step 1: Extract Test Rules
             List<DecisionRule> testRuleList = getTestRules(testDataset, foldIdx);
-            // logger.info("Loaded {} test rules on dataset {} fold {}",
-            // testRuleList.size(), datasetName, foldIdx);
+            logger.info("Loaded {} test rules on dataset {} fold {}",
+                    testRuleList.size(), datasetName, foldIdx);
 
             // Step 2: Initialize Experiment Logger
             String loggingPath = config.getLoggingPath() + config.getExperimentName();
