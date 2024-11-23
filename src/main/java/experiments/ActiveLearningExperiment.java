@@ -28,33 +28,13 @@ public class ActiveLearningExperiment {
             List<ActiveLearningExperimentConfig> experimentConfigs = activeLearningConfig.getExperimentConfigs();
             long waitTimeBetweenExperiments = activeLearningConfig.getWaitTimeBetweenExp(); // Time in milliseconds
 
-            Semaphore semaphore = new Semaphore(maxParallelExperiments);
-
             for (ActiveLearningExperimentConfig experimentConfig : experimentConfigs) {
-                try {
-                    semaphore.acquire();
-                    executorService.submit(() -> {
-                        try {
-                            runExperiment(experimentConfig);
-                        } finally {
-                            semaphore.release();
-                        }
-                    });
-
-                    // Wait for the specified time if there are permits available
-                    if (semaphore.availablePermits() > 0) {
-                        logger.info("Waiting for {} milliseconds before launching the next experiment.",
-                                waitTimeBetweenExperiments);
-                        Thread.sleep(waitTimeBetweenExperiments);
-                    }
-                } catch (InterruptedException e) {
-                    logger.warn("Thread interrupted while waiting between experiments: {}", e.getMessage());
-                    Thread.currentThread().interrupt(); // Restore the interrupted status
-                }
+                executorService.submit(() -> {
+                    runExperiment(experimentConfig);
+                });
             }
 
             executorService.shutdown();
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // Wait for all tasks to finish
 
         } catch (Exception e) {
             logger.error("Failed to load configurations: {}", e.getMessage(), e);
