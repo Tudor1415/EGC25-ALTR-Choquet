@@ -15,6 +15,7 @@ import tools.ranking.RankingsProvider;
 import tools.alternatives.IAlternative;
 import experiments.configs.UncertaintySamplingConfig;
 import tools.functions.multivariate.CertaintyFunction;
+import tools.functions.multivariate.PairwiseSensitivity;
 import tools.functions.multivariate.PairwiseUncertainty;
 import tools.functions.singlevariate.LinearScoreFunction;
 import tools.normalization.Normalizer.NormalizationMethod;
@@ -88,6 +89,9 @@ public class UncertaintySampling implements RankingsProvider {
             case "Thurstone":
                 this.pairwiseCertaintyFunction = new PairwiseUncertainty("ThurstonePairUncertainty",
                         new Thurstone(scoreFunction));
+                break;
+            case "Sensitivity":
+                this.pairwiseCertaintyFunction = new PairwiseSensitivity("PairwiseSensitivity", scoreFunction);
                 break;
             default:
                 // Default to ScoreDifference if invalid type is provided

@@ -14,6 +14,7 @@ import tools.rules.DecisionRule;
 import tools.utils.AlternativeUtil;
 import tools.alternatives.IAlternative;
 import tools.functions.multivariate.CertaintyFunction;
+import tools.functions.multivariate.PairwiseSensitivity;
 import tools.functions.multivariate.PairwiseUncertainty;
 import tools.functions.singlevariate.LinearScoreFunction;
 import tools.functions.singlevariate.OWA.OWAScoreFunction;
@@ -26,6 +27,7 @@ public class MMASTest {
     private static ISinglevariateFunction scoringFunction;
     private static CertaintyFunction outRankingCertainty;
     private static PairwiseUncertainty pairwiseUncertainty;
+    private static CertaintyFunction pairwiseSensitivity;
     private static String[] measureNames;
     private static double smoothCounts;
 
@@ -49,6 +51,7 @@ public class MMASTest {
         outRankingCertainty = new BradleyTerry(scoringFunction);
 
         pairwiseUncertainty = new PairwiseUncertainty("BradleyTerryPairUncertainty", outRankingCertainty);
+        pairwiseSensitivity = new PairwiseSensitivity("Sensitivity", scoringFunction);
     }
 
     @Test
@@ -56,7 +59,7 @@ public class MMASTest {
         int maxIterations = 100;
         String outputDir = "src/test/output/";
 
-        MMAS mmas = new MMAS(maxIterations, 1, dataset, pairwiseUncertainty, measureNames);
+        MMAS mmas = new MMAS(maxIterations, 1, dataset, pairwiseSensitivity, measureNames);
         mmas.setUncertainty(true);
         // Run the MMAS algorithm
         DecisionRule[] resultRule = mmas.sample().get(0);

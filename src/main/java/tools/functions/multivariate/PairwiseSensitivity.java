@@ -1,10 +1,10 @@
 package tools.functions.multivariate;
 
+import static java.lang.Math.abs;
+
 import lombok.Getter;
 import lombok.Setter;
 import tools.rules.DecisionRule;
-import static java.lang.Math.abs;
-import tools.alternatives.Alternative;
 import tools.alternatives.IAlternative;
 import tools.functions.singlevariate.ISinglevariateFunction;
 
@@ -14,6 +14,11 @@ public class PairwiseSensitivity implements CertaintyFunction {
 
     private String Name;
     private ISinglevariateFunction scoreFunction;
+
+    public PairwiseSensitivity(String name, ISinglevariateFunction scoreFunction) {
+        Name = name;
+        this.scoreFunction = scoreFunction;
+    }
 
     /**
      * Measures the gap between two alternatives based on their score function
