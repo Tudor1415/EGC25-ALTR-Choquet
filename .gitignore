@@ -4,7 +4,7 @@ data/dat-files/*
 data/mapping-files/*
 data/folds/*
 
-experimental_configs/active_learning/*
+experimental_configs/active_learning/*.json
 
 active_learning/*.pdf
 active_learning/samples/*
@@ -22,6 +22,7 @@ sampling_experiment/output_plots/*/*.png
 sampling_experiment/output_plots/*/*.svg
 
 results/*
+results_ab/*
 
 sampling_experiment/output_plots/ratio_1\:1/*.pdf
 sampling_experiment/output_plots/ratio_1\:10/*.png

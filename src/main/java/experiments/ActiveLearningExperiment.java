@@ -31,7 +31,7 @@ public class ActiveLearningExperiment {
                 @Override
                 public Thread newThread(Runnable r) {
                     Thread thread = defaultFactory.newThread(r);
-                    thread.setPriority(Thread.MAX_PRIORITY);
+                    thread.setPriority(Thread.MAX_PRIORITY-1);
                     return thread;
                 }
             };

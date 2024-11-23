@@ -1,9 +1,9 @@
 {
     "noise": 0.0,
-    "maximumIterations": 500,
+    "maximumIterations": 1000,
     "certaintyType": "ScoreDifference",
     "normalizationMethod": "MIN_MAX_SCALING",
     "nbLearningIterations": 100,
-    "changePeriod": 60,
+    "changePeriod": 0,
     "startUncertainty": false
 }

@@ -60,8 +60,8 @@ def main():
     os.makedirs(experiments_dir, exist_ok=True)
 
     # Generate 10 configs
-    for i in range(20):
-        change_period = i*5
+    for i in range(6):
+        change_period = i*10
         uncertainty_config_path = os.path.join(query_selection_dir, f"uncertainty_sampling_conf_{change_period}.json")
         experiment_config_path = os.path.join(experiments_dir, f"exp_{change_period}.json")
 

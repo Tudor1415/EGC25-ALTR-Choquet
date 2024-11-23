@@ -1,0 +1,51 @@
+{
+  "experimentName": "ExpAllDatasets",
+  "dataDirectory": "data/folds/",
+  "loggingPath": "results/",
+  "datasetNames": [
+    "bank",
+    "credit",
+    "dota",
+    "toms",
+    "connect",
+    "mushroom",
+    "adult",
+    "banknote",
+    "heart",
+    "ionosphere",
+    "ilpd",
+    "magic",
+    "medical_kaggle",
+    "parkinsons",
+    "pima",
+    "skin",
+    "tictactoe",
+    "transfusion",
+    "travel-insurance",
+    "twitter",
+    "wdbc",
+    "weatherAUS"
+  ],
+  "measureNames": ["yuleQ", "cosine", "kruskal", "pavillon", "certainty"],
+  "oracles": ["ChiSquaredOracle", "InformationGainOracle"],
+  "learningToRankAlgorithms": [
+    "KappalabIterative",
+    "KappalabIterative",
+    "KappalabIterative"
+  ],
+  "querySelectionAlgorithms": [
+    "UncertaintySampling",
+    "HighScoreSampling",
+    "UncertaintyMining"
+  ],
+  "querySelectionConfigPaths": [
+    "experimental_configs/active_learning/query_selection/uncertainty_sampling_conf.json",
+    "experimental_configs/active_learning/query_selection/highScore_sampling_conf.json",
+    "experimental_configs/active_learning/query_selection/uncertainty_mining_conf.json"
+  ],
+  "nbLearningIterations": 100,
+  "nbParallelThreads": 30,
+  "testSetSize": 1000,
+  "maxAntSize": 10,
+  "logToFile": true
+}

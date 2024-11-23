@@ -35,6 +35,7 @@ public class MiningConfig implements QuerySelectionConfig {
     private NormalizationMethod normalizationMethod = NormalizationMethod.MIN_MAX_SCALING;
     private String rulesPath;
     private String dataPath;
+    private String outputPath;
 
     private String name = "Mining";
     private RankingsProvider rankingsProvider;
@@ -57,16 +58,17 @@ public class MiningConfig implements QuerySelectionConfig {
 
     @Override
     public void setUp() throws Exception {
-        // Initialize the rankings provider based on the current configuration
-        this.rankingsProvider = new UncertaintyMining(this);
-        
         this.dataPath = dataset.getExpDir() + dataset.getFilename();
 
+        this.outputPath = dataPath + rulesPath;
         Set<Integer> classItemsInt = dataset.getConsequentItemsSet().stream()
                 .map(Integer::parseInt)
                 .collect(Collectors.toSet());
 
-        RuleMiner.mine(dataPath, classItemsInt, rulesPath, sampleSize, randomSampleSize);
+        RuleMiner.mine(dataPath, classItemsInt, outputPath, sampleSize, randomSampleSize);
+
+        // Initialize the rankings provider based on the current configuration
+        this.rankingsProvider = new UncertaintyMining(this);
     }
 
     /**

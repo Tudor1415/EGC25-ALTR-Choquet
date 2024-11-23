@@ -100,13 +100,14 @@ def precompute_metrics(results_dir):
         if folder_name.startswith("Exp_ChangePeriod_"):
             try:
                 period = int(folder_name.split("_")[-1])
-                valid_periods.append(period)
-
                 folder_path = os.path.join(results_dir, folder_name, "samples")
                 grouped_files = group_files(folder_path)
 
+                # Process metrics only if there are valid files
                 results = process_files(grouped_files)
-                precomputed_results[period] = results
+                if results:
+                    precomputed_results[period] = results
+                    valid_periods.append(period)
 
             except ValueError:
                 st.warning(f"Invalid period format in directory: {folder_name}")
@@ -127,12 +128,10 @@ if not valid_periods:
     st.stop()
 
 # Sidebar: Select Period
-selected_period = st.sidebar.slider(
+selected_period = st.sidebar.selectbox(
     "Select Period",
-    min_value=min(valid_periods),
-    max_value=max(valid_periods),
-    step=1,
-    value=min(valid_periods),
+    options=valid_periods,
+    format_func=lambda x: f"Period {x}",
 )
 
 # Retrieve precomputed metrics for the selected period
@@ -142,37 +141,65 @@ if not results:
     st.stop()
 
 # Prepare data for plotting
-st.title(f"Uncertainty Plots for Period {selected_period}")
 algorithms = {algo for _, oracles in results.items() for _, algos in oracles.items() for algo in algos.keys()}
+algorithm_color_mapping = {algo: sns.color_palette("bright", len(algorithms))[i] for i, algo in enumerate(algorithms)}
+
+# Retrieve precomputed metrics for the selected period
+results = precomputed_results.get(selected_period, {})
+if not results:
+    st.error(f"No data available for period {selected_period}.")
+    st.stop()
+
+# Sidebar: Select Dataset
+datasets = list(results.keys())
+selected_dataset = st.sidebar.selectbox(
+    "Select Dataset",
+    options=datasets,
+    format_func=lambda x: f"Dataset: {x}",
+)
+
+# Sidebar: Select Oracle
+oracles = list(results[selected_dataset].keys())
+selected_oracle = st.sidebar.selectbox(
+    "Select Oracle",
+    options=oracles,
+    format_func=lambda x: f"Oracle: {x}",
+)
+
+# Filter results by selected dataset and oracle
+filtered_results = results[selected_dataset][selected_oracle]
+
+# Prepare data for plotting
+st.title(f"Uncertainty Plots for Period {selected_period} - {selected_dataset} - {selected_oracle}")
+
+algorithms = list(filtered_results.keys())
 algorithm_color_mapping = {algo: sns.color_palette("bright", len(algorithms))[i] for i, algo in enumerate(algorithms)}
 
 data_precision_1 = []
 data_precision_10 = []
 
-for dataset_name, oracles in results.items():
-    for oracle, algorithms in oracles.items():
-        for algorithm, folds_data in algorithms.items():
-            for fold_id, metrics in folds_data.items():
-                for i, (prec_1, prec_10) in enumerate(zip(metrics["avg_precision_1"], metrics["avg_precision_10"])):
-                    data_precision_1.append({
-                        "Algorithm": algorithm,
-                        "Iteration": i + 1,
-                        "Average Precision 1%": prec_1
-                    })
-                    data_precision_10.append({
-                        "Algorithm": algorithm,
-                        "Iteration": i + 1,
-                        "Average Precision 10%": prec_10
-                    })
+for algorithm, folds_data in filtered_results.items():
+    for fold_id, metrics in folds_data.items():
+        for i, (prec_1, prec_10) in enumerate(zip(metrics["avg_precision_1"], metrics["avg_precision_10"])):
+            data_precision_1.append({
+                "Algorithm": algorithm,
+                "Iteration": i + 1,
+                "Average Precision 1%": prec_1
+            })
+            data_precision_10.append({
+                "Algorithm": algorithm,
+                "Iteration": i + 1,
+                "Average Precision 10%": prec_10
+            })
 
 df_precision_1 = pd.DataFrame(data_precision_1)
 df_precision_10 = pd.DataFrame(data_precision_10)
 
 if df_precision_1.empty or df_precision_10.empty:
-    st.error(f"No data available for period {selected_period}.")
+    st.error(f"No data available for dataset {selected_dataset} and oracle {selected_oracle}.")
     st.stop()
 
-# Left chart: Average Precision at 10%
+# Plot: Average Precision at 10%
 st.subheader("Average Precision at 10%")
 fig1, ax1 = plt.subplots(figsize=(10, 5))
 sns.lineplot(
@@ -184,10 +211,10 @@ sns.lineplot(
     marker="o",
     ax=ax1
 )
-ax1.set_title(f"Average Precision at 10% for Period {selected_period}")
+ax1.set_title(f"Average Precision at 10% for {selected_dataset} - {selected_oracle}")
 st.pyplot(fig1)
 
-# Right chart: Average Precision at 1%
+# Plot: Average Precision at 1%
 st.subheader("Average Precision at 1%")
 fig2, ax2 = plt.subplots(figsize=(10, 5))
 sns.lineplot(
@@ -199,5 +226,5 @@ sns.lineplot(
     marker="o",
     ax=ax2
 )
-ax2.set_title(f"Average Precision at 1% for Period {selected_period}")
+ax2.set_title(f"Average Precision at 1% for {selected_dataset} - {selected_oracle}")
 st.pyplot(fig2)

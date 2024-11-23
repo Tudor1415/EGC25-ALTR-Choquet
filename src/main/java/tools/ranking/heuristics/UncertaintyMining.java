@@ -77,7 +77,7 @@ public class UncertaintyMining implements RankingsProvider {
         try {
             logger.info("Initializing sample from rules path: {}", config.getRulesPath());
 
-            this.sample = RuleUtil.extractRulesFromCSV(config.getRulesPath(), dataset, measureNames);
+            this.sample = RuleUtil.extractRulesFromCSV(config.getOutputPath(), dataset, measureNames);
 
             logger.info("Successfully loaded {} rules from {}", sample.length, config.getRulesPath());
 

@@ -2,8 +2,8 @@ package tools.train.iterative;
 
 import java.io.File;
 import java.util.List;
-import java.util.ArrayList;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.io.IOException;
 import java.io.BufferedWriter;
 import java.util.concurrent.Future;
@@ -117,7 +117,12 @@ public class KappalabIterative extends IterativeRankingLearn {
             KappalabRScriptCaller kappalabRScript = new KappalabRScriptCaller(inputFile, outputFile, input);
     
             // Create a single-threaded executor for running the Kappalab R script
-            ExecutorService executor = Executors.newSingleThreadExecutor();
+            ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> {
+                Thread thread = new Thread(runnable);
+                thread.setPriority(Thread.MAX_PRIORITY);
+                return thread;
+            });
+    
     
             // Record the start time for measuring script execution duration
             long start = System.currentTimeMillis();
