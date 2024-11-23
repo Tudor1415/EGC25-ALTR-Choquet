@@ -4,6 +4,6 @@
     "certaintyType": "ScoreDifference",
     "normalizationMethod": "MIN_MAX_SCALING",
     "nbLearningIterations": 100,
-    "changePeriod": 0,
-    "startUncertainty": false
+    "changePeriod": 100,
+    "startUncertainty": true
 }

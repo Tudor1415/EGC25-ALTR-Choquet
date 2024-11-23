@@ -127,14 +127,14 @@ public class ActiveLearningExperimentRunner {
         synchronized (DatasetLoader.class) {
             String datasetPath = dataDirectory + subDirectory;
             List<Dataset> datasets = DatasetLoader.loadDatasetsFromDirectory(datasetPath, datasetName);
-    
+
             if (datasets.isEmpty()) {
                 throw new Exception("No datasets found in directory: " + datasetPath);
             }
             return datasets;
         }
     }
-    
+
     private List<ArtificialOracle> initializeOracles(Dataset dataset) {
         List<ArtificialOracle> oracles = new ArrayList<>();
 
@@ -232,7 +232,7 @@ public class ActiveLearningExperimentRunner {
                         queryConfig.setUp();
                         queryConfigs.add(queryConfig);
                         break;
-                    case "Mining":
+                    case "UncertaintyMining":
                         queryConfig = new MiningConfig(oracle, dataset, measureNames);
                         queryConfig.loadFromFile(configPath);
                         queryConfig.setUp();
@@ -321,27 +321,35 @@ public class ActiveLearningExperimentRunner {
                     NormalizationMethod.MIN_MAX_SCALING);
 
             // Step 3: Run Learning Algorithms
-            for (IterativeRankingLearn algorithm : algorithms) {
-                logger.info("{} || Running algorithm: {} on dataset {} fold {}", config.getExperimentName(),
-                        algorithm.getName(), datasetName, foldIdx);
+            algorithms.parallelStream().forEach(algorithm -> {
+                try {
+                    logger.info("{} || Running algorithm: {} on dataset {} fold {}", config.getExperimentName(),
+                            algorithm.getName(), datasetName, foldIdx);
 
-                // Attach logger to algorithm
-                algorithm.addObserver(experimentLogger);
+                    // Attach logger to algorithm
+                    algorithm.addObserver(experimentLogger);
 
-                // Run the learning process
-                algorithm.learn();
+                    // Run the learning process
+                    algorithm.learn();
 
-                // Write iteration times
-                experimentLogger.writeIterationTimes(oracle.getTYPE());
+                    // Write iteration times
+                    experimentLogger.writeIterationTimes(oracle.getTYPE());
 
-                if (algorithm instanceof KappalabIterative) {
-                    String filePath = loggingPath + "/input/" + datasetName + "_" + foldIdx + "_" + algorithm.getName()
-                            + ".json";
-                    ((KappalabIterative) algorithm).logCurrentKappalabInput(loggingPath + "/input/", filePath);
-                    logger.info("Logged KappalabIterative input for dataset: {}, fold: {}, algorithm: {}",
-                            datasetName, foldIdx, algorithm.getName());
+                    if (algorithm instanceof KappalabIterative) {
+                        String filePath = loggingPath + "/input/" + datasetName + "_" + foldIdx + "_"
+                                + algorithm.getName()
+                                + ".json";
+                        ((KappalabIterative) algorithm).logCurrentKappalabInput(loggingPath + "/input/", filePath);
+                        logger.info("Logged KappalabIterative input for dataset: {}, fold: {}, algorithm: {}",
+                                datasetName, foldIdx, algorithm.getName());
+                    }
+                } catch (Exception e) {
+                    logger.error("Error occurred while running algorithm: {} on dataset {} fold {}",
+                            algorithm.getName(),
+                            datasetName, foldIdx, e);
                 }
-            }
+            });
+
         } catch (Exception e) {
             logger.error("Error during fold {}: {}", foldIdx + 1, e.getMessage(), e);
         }
