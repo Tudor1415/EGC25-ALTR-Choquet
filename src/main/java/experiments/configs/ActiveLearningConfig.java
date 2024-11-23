@@ -11,4 +11,5 @@ public class ActiveLearningConfig {
     private String experimentConfigFolderPath;
     private List<ActiveLearningExperimentConfig> experimentConfigs;
     private int maxParallelExperiments;
+    private int waitTimeBetweenExp;
 }

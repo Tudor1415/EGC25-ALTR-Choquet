@@ -126,16 +126,17 @@ public class ActiveLearningExperimentRunner {
     }
 
     private List<Dataset> loadDatasets(String dataDirectory, String subDirectory, String datasetName) throws Exception {
-        String datasetPath = dataDirectory + subDirectory;
-        List<Dataset> datasets = DatasetLoader.loadDatasetsFromDirectory(datasetPath, datasetName);
-
-        if (datasets.isEmpty()) {
-            throw new Exception("No datasets found in directory: " + datasetPath);
+        synchronized (DatasetLoader.class) {
+            String datasetPath = dataDirectory + subDirectory;
+            List<Dataset> datasets = DatasetLoader.loadDatasetsFromDirectory(datasetPath, datasetName);
+    
+            if (datasets.isEmpty()) {
+                throw new Exception("No datasets found in directory: " + datasetPath);
+            }
+            return datasets;
         }
-
-        return datasets;
     }
-
+    
     private List<ArtificialOracle> initializeOracles(Dataset dataset) {
         List<ArtificialOracle> oracles = new ArrayList<>();
 

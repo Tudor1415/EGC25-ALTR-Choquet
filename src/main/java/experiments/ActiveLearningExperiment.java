@@ -20,19 +20,25 @@ public class ActiveLearningExperiment {
 
         try {
             ActiveLearningConfig activeLearningConfig = ConfigLoader.loadActiveLearningConfig(config_filepath);
-            // logger.info("Loaded configuration folder path: {}", activeLearningConfig.getExperimentConfigFolderPath());
-            // logger.info("Loaded {} experiment configurations.", activeLearningConfig.getExperimentConfigs().size());
-
             int maxParallelExperiments = activeLearningConfig.getMaxParallelExperiments();
 
             ExecutorService executorService = Executors.newFixedThreadPool(maxParallelExperiments);
-
             List<ActiveLearningExperimentConfig> experimentConfigs = activeLearningConfig.getExperimentConfigs();
+            long waitTimeBetweenExperiments = activeLearningConfig.getWaitTimeBetweenExp(); // Time in milliseconds
 
             for (ActiveLearningExperimentConfig experimentConfig : experimentConfigs) {
                 executorService.submit(() -> {
                     runExperiment(experimentConfig);
                 });
+
+                // Wait for the specified time before launching the next experiment
+                try {
+                    logger.info("Waiting for {} milliseconds before launching the next experiment.", waitTimeBetweenExperiments);
+                    Thread.sleep(waitTimeBetweenExperiments);
+                } catch (InterruptedException e) {
+                    logger.warn("Thread interrupted while waiting between experiments: {}", e.getMessage());
+                    Thread.currentThread().interrupt(); // Restore the interrupted status
+                }
             }
 
             executorService.shutdown();
@@ -45,14 +51,10 @@ public class ActiveLearningExperiment {
     private static void runExperiment(ActiveLearningExperimentConfig experimentConfig) {
         try {
             logger.info("Starting Experiment: {}", experimentConfig.getExperimentName());
-    
-            // logMemoryUsage("Before experiment");
-    
+
             ActiveLearningExperimentRunner experimentRunner = new ActiveLearningExperimentRunner(experimentConfig);
             experimentRunner.run();
-    
-            // logMemoryUsage("After experiment");
-    
+
             logger.info("Completed Experiment: {}", experimentConfig.getExperimentName());
         } catch (OutOfMemoryError e) {
             logger.error("OutOfMemoryError in experiment {}: {}", experimentConfig.getExperimentName(), e.getMessage());
@@ -60,18 +62,17 @@ public class ActiveLearningExperiment {
             logger.error("Error running experiment {}: {}", experimentConfig.getExperimentName(), e.getMessage(), e);
         }
     }
-    
+
     private static void logMemoryUsage(String context) {
         Runtime runtime = Runtime.getRuntime();
         long usedMemory = runtime.totalMemory() - runtime.freeMemory();
         long maxMemory = runtime.maxMemory();
         long freeMemory = runtime.freeMemory();
-    
+
         logger.info("{} - Used Memory: {} MB, Free Memory: {} MB, Max Memory: {} MB",
                 context,
                 usedMemory / (1024 * 1024),
                 freeMemory / (1024 * 1024),
                 maxMemory / (1024 * 1024));
     }
-    
 }
