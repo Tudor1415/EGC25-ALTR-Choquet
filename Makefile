@@ -1,5 +1,5 @@
 DATASETS = bank credit dota toms connect mushroom adult banknote heart ionosphere ilpd magic medical_kaggle mushroom parkinsons pima skin tictactoe transfusion travel-insurance twitter wdbc weatherAUS
-exp_active = results/active_learning
+exp_active = results/
 exp_norm = results/active_normalization
 exp_sample = results/sampling_experiment
 

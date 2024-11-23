@@ -118,7 +118,8 @@ public class UncertaintySampling implements RankingsProvider {
         this.sampler.setScoringFunction(scoreFunction);
 
         // Change sampler behavior after CHANGE_PERIOD iterations
-        if (learningIteration > changePeriod && learningIteration % changePeriod == 0)
+        // if (learningIteration > changePeriod && learningIteration % changePeriod == 0)
+        if (learningIteration > changePeriod)
             sampler.setUncertainty(!sampler.isUncertainty());
 
         // Sample new alternatives from the dataset

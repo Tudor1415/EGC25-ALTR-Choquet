@@ -61,7 +61,7 @@ def main():
 
     # Generate 10 configs
     for i in range(20):
-        change_period = (i + 1) * 5
+        change_period = i*5
         uncertainty_config_path = os.path.join(query_selection_dir, f"uncertainty_sampling_conf_{change_period}.json")
         experiment_config_path = os.path.join(experiments_dir, f"exp_{change_period}.json")
 
@@ -77,7 +77,7 @@ def main():
             experiment_base_config,
             experiment_config_path,
             uncertainty_config_path,
-            f"Exp_ChangePeriod_{(i + 1) * 5}"
+            f"Exp_ChangePeriod_{change_period}"
         )
 
 
