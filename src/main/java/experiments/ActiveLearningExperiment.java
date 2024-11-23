@@ -1,9 +1,8 @@
 package experiments;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
@@ -17,16 +16,29 @@ import experiments.configs.ActiveLearningExperimentConfig;
 public class ActiveLearningExperiment {
     private static final Logger logger = LoggerFactory.getLogger(ActiveLearningExperiment.class.getSimpleName());
 
-    public static void main(String[] args) {
+public static void main(String[] args) {
         String config_filepath = "experimental_configs/active_learning/config.json";
 
         try {
             ActiveLearningConfig activeLearningConfig = ConfigLoader.loadActiveLearningConfig(config_filepath);
             int maxParallelExperiments = activeLearningConfig.getMaxParallelExperiments();
 
-            ExecutorService executorService = Executors.newFixedThreadPool(maxParallelExperiments);
+            // Custom ThreadFactory to set thread priority
+            ThreadFactory threadFactory = new ThreadFactory() {
+                private final ThreadFactory defaultFactory = Executors.defaultThreadFactory();
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread thread = defaultFactory.newThread(r);
+                    thread.setPriority(Thread.NORM_PRIORITY + 3); // Priority 8 (NORM_PRIORITY is 5)
+                    return thread;
+                }
+            };
+
+            // Create an ExecutorService with the custom ThreadFactory
+            ExecutorService executorService = Executors.newFixedThreadPool(maxParallelExperiments, threadFactory);
+
             List<ActiveLearningExperimentConfig> experimentConfigs = activeLearningConfig.getExperimentConfigs();
-            long waitTimeBetweenExperiments = activeLearningConfig.getWaitTimeBetweenExp(); // Time in milliseconds
 
             for (ActiveLearningExperimentConfig experimentConfig : experimentConfigs) {
                 executorService.submit(() -> {
