@@ -1,7 +1,10 @@
 package experiments.utils;
 
+import java.io.File;
 import java.util.Set;
 import java.util.List;
+import java.util.HashSet;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
@@ -11,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import tools.data.Dataset;
+import tools.utils.RuleUtil;
 import sampling.RandomSampler;
 import tools.oracles.OWAOracle;
 import tools.rules.DecisionRule;
@@ -257,19 +261,60 @@ public class ActiveLearningExperimentRunner {
         return queryConfigs;
     }
 
+    /**
+     * Retrieves a list of test rules, ensuring no duplicates with previously mined
+     * rules.
+     *
+     * @param testDataset The dataset to mine rules from.
+     * @param foldIdx     The index of the current fold.
+     * @return A list of unique DecisionRule objects.
+     */
+    public List<DecisionRule> getTestRules(Dataset testDataset, int foldIdx) {
+        String ruleOutputPath = testDataset.getExpDir() + "test_rules_" + foldIdx + ".csv";
+        Set<DecisionRule> existingRules = new HashSet<>();
+
+        // Check if the rules file already exists
+        File ruleFile = new File(ruleOutputPath);
+        if (ruleFile.exists()) {
+            // Load existing rules from the CSV file
+            List<DecisionRule> loadedRules;
+            try {
+                loadedRules = RuleUtil.extractRulesListFromCSV(ruleOutputPath, testDataset, config.getMeasureNames());
+                existingRules.addAll(loadedRules);
+            } catch (IOException e) {
+                logger.error("Failed to load already mined test rule set from {}!",
+                        testDataset.getFilename(), e);
+            }
+        }
+
+        // Generate new rules, ensuring no duplicates
+        RandomSampler sampler = new RandomSampler(testDataset, 3, 3, config.getMeasureNames(), 0.1d);
+        List<DecisionRule> newRules = new ArrayList<>(sampler.sample(
+                config.getTestSetSize(),
+                testDataset.getConsequentItemsSet(),
+                testDataset.getAntecedentItemsSet(),
+                config.getMaxAntSize()));
+
+        // Filter out duplicates
+        newRules.removeIf(existingRules::contains);
+
+        // Merge existing and new rules
+        List<DecisionRule> finalRuleList = new ArrayList<>(existingRules);
+        finalRuleList.addAll(newRules);
+
+        // Save the combined rules to the CSV file
+        RuleUtil.saveRulesToCSV(finalRuleList, ruleOutputPath);
+
+        return finalRuleList;
+    }
+
     private void runExperimentOnFold(String datasetName, Dataset trainDataset, Dataset testDataset,
-            ArtificialOracle oracle,
-            List<IterativeRankingLearn> algorithms, int foldIdx) {
+            ArtificialOracle oracle, List<IterativeRankingLearn> algorithms, int foldIdx) {
         try {
             // Step 1: Extract Test Rules
-            RandomSampler sampler = new RandomSampler(testDataset, 3, 3, config.getMeasureNames(), 0.1d);
-            Set<DecisionRule> sample = sampler.sample(config.getTestSetSize(),
-                    testDataset.getConsequentItemsSet(), testDataset.getAntecedentItemsSet(),
-                    config.getMaxAntSize());
-            sampler.saveRulesToFile(sample, testDataset.getExpDir() + "test_rules_" + foldIdx + ".json");
-            List<DecisionRule> testRuleList = new ArrayList<>(sample);
-
-            logger.info("Mined {} test rules on dataset {} fold {}", testRuleList.size(), datasetName, foldIdx);
+            List<DecisionRule> testRuleList = getTestRules(testDataset, foldIdx);
+            logger.info("Loaded {} test rules on dataset {} fold {}", testRuleList.size(), datasetName, foldIdx);
+           
             // Step 2: Initialize Experiment Logger
             String loggingPath = config.getLoggingPath() + config.getExperimentName();
             ExperimentLogger experimentLogger = new ExperimentLogger(

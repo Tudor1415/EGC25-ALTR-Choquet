@@ -1,20 +1,22 @@
 package tools.utils;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.util.stream.Collectors;
 
 import com.google.gson.annotations.SerializedName;
 
 import lombok.Getter;
+import tools.rules.IRule;
 import tools.data.Dataset;
 import tools.rules.DecisionRule;
-import tools.rules.IRule;
 
 public class RuleUtil {
     /**
@@ -151,6 +153,14 @@ public class RuleUtil {
     public static DecisionRule[] extractRulesFromCSV(String filePath, Dataset dataset, String[] measureNames)
             throws IOException {
 
+        List<DecisionRule> decisionRules = extractRulesListFromCSV(filePath, dataset, measureNames);
+
+        return decisionRules.toArray(new DecisionRule[0]);
+    }
+
+    public static List<DecisionRule> extractRulesListFromCSV(String filePath, Dataset dataset, String[] measureNames)
+            throws IOException {
+
         List<DecisionRule> decisionRules = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -187,8 +197,57 @@ public class RuleUtil {
             }
         }
 
-        return decisionRules.toArray(new DecisionRule[0]);
+        return decisionRules;
     }
+
+    /**
+     * Saves a list of DecisionRule objects to a CSV file.
+     *
+     * @param rules    The list of decision rules to save.
+     * @param filePath The path to save the CSV file.
+     */
+    public static void saveRulesToCSV(List<DecisionRule> rules, String filePath) {
+        try (FileWriter writer = new FileWriter(filePath)) {
+            // Write the CSV header
+            writer.write("antecedent,consequent,freqX,freqY,freqZ\n");
+
+            // Write each rule to the file
+            for (DecisionRule rule : rules) {
+                String antecedent = formatSet(rule.getItemsInX());
+                String consequent = formatItem(rule.getY());
+                writer.write(String.format("%s,%s,%d,%d,%d\n",
+                        antecedent,
+                        consequent,
+                        rule.getFreqX(),
+                        rule.getFreqY(),
+                        rule.getFreqZ()));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Formats a set of items into a semicolon-separated string enclosed in curly
+     * braces.
+     *
+     * @param items The set of items to format.
+     * @return A formatted string representing the set.
+     */
+    private static String formatSet(Set<String> items) {
+        return "{" + items.stream().sorted().collect(Collectors.joining(";")) + "}";
+    }
+
+    /**
+     * Formats a single item as a string enclosed in curly braces.
+     *
+     * @param item The item to format.
+     * @return A formatted string representing the item.
+     */
+    private static String formatItem(String item) {
+        return "{" + item + "}";
+    }
+
     /**
      * Adds an item to the antecedent or consequent of a rule.
      * 

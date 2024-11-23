@@ -23,7 +23,7 @@ r-install:
 exp_active:
 	rm -rf ${exp_active}
 	mkdir -p ${exp_active}
-	mvn exec:java -Dexec.mainClass="experiments.ExperimentActiveLearning"
+	mvn exec:java -Dexec.mainClass="experiments.ActiveLearningExperiment"
 
 exp_norm:
 	rm -rf ${exp_norm}
