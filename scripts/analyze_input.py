@@ -32,25 +32,11 @@ def load_and_aggregate_data(file_dict):
         all_alternatives.extend(data['alternatives'])
     return all_scores, all_alternatives
 
-def compute_global_cdf(scores, distances, p=2):
-    # Combine all scores and distances from each algorithm
-    combined_scores = np.hstack(scores)
-    combined_distances = np.hstack(distances)
-
-    # Compute global CDF for scores
-    sorted_scores = np.sort(combined_scores)
-    score_cdf = np.arange(1, len(sorted_scores) + 1) / len(sorted_scores)
-
-    # Compute global CDF for distances
-    sorted_distances = np.sort(combined_distances)
-    distance_cdf = np.arange(1, len(sorted_distances) + 1) / len(sorted_distances)
-
-    return sorted_scores, score_cdf, sorted_distances, distance_cdf
-
-def plot_cdfs(grouped_files, dataset_name, oracle_name, p=2):
+def plot_cumulative_distributions(grouped_files, dataset_name, oracle_name, p=2, output_dir=None):
     algorithms = grouped_files[dataset_name][oracle_name]
     all_scores = []
     all_distances = []
+    colors = plt.cm.tab10(np.linspace(0, 1, len(algorithms)))  # Color map
 
     # Collect data from each algorithm
     for algo_name, files in algorithms.items():
@@ -59,38 +45,52 @@ def plot_cdfs(grouped_files, dataset_name, oracle_name, p=2):
         distances = [minkowski(alt1, alt2, p) for alt1, alt2 in combinations(alternatives, 2)]
         all_distances.append(np.array(distances))
 
-    # Compute global CDFs
-    sorted_scores, score_cdf, sorted_distances, distance_cdf = compute_global_cdf(all_scores, all_distances, p)
-
-    fig, axes = plt.subplots(1, 2, figsize=(18, 6))
+    # Setup the figure and axes
+    fig, axes = plt.subplots(1, 2, figsize=(18, 7))
     fig.suptitle(f"Dataset: {dataset_name}, Oracle: {oracle_name}")
 
-    # Plot Score CDFs for each algorithm
+    # Plot Score Cumulative Distributions
     for i, algo_name in enumerate(algorithms.keys()):
-        local_scores_sorted = np.sort(all_scores[i])
-        local_score_cdf = np.searchsorted(sorted_scores, local_scores_sorted, side="right") / len(sorted_scores)
-        axes[0].plot(local_scores_sorted, local_score_cdf, label=f"{algo_name} Score CDF")
+        sorted_scores = np.sort(all_scores[i])
+        cdf = np.cumsum(sorted_scores) / np.sum(sorted_scores)
+        axes[0].plot(sorted_scores, cdf / cdf[-1], label=f"{algo_name}", color=colors[i])  # Normalize by the last value
 
-    # Plot Distance CDFs for each algorithm
+    # Plot Distance Cumulative Distributions
     for i, algo_name in enumerate(algorithms.keys()):
-        local_distances_sorted = np.sort(all_distances[i])
-        local_distance_cdf = np.searchsorted(sorted_distances, local_distances_sorted, side="right") / len(sorted_distances)
-        axes[1].plot(local_distances_sorted, local_distance_cdf, label=f"{algo_name} Distance CDF")
+        sorted_distances = np.sort(all_distances[i])
+        cdf = np.cumsum(sorted_distances) / np.sum(sorted_distances)
+        axes[1].plot(sorted_distances, cdf / cdf[-1], label=f"{algo_name}", color=colors[i])  # Normalize by the last value
 
-    axes[0].set_title("Score CDF")
+    axes[0].set_title("Score Cumulative Distribution")
     axes[0].set_xlabel("Score")
-    axes[0].set_ylabel("Cumulative Probability")
-    axes[0].legend()
+    axes[0].set_ylabel("Cumulative Density")
+    axes[0].grid(True)
 
-    axes[1].set_title("Distance CDF")
+    axes[1].set_title("Distance Cumulative Distribution")
     axes[1].set_xlabel(f"L{p} Distance")
-    axes[1].set_ylabel("Cumulative Probability")
-    axes[1].legend()
+    axes[1].set_ylabel("Cumulative Density")
+    axes[1].grid(True)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.95])  # Adjust subplots to fit the figure title
-    plt.show()
+    # Place a single legend below the plots
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=3)
+
+    plt.tight_layout(rect=[0, 0.1, 1, 0.95])  # Increase bottom margin
+    # Save the plot if an output directory is specified
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+        save_path = os.path.join(output_dir, f"{dataset_name}_{oracle_name}_cumulative_plots.png")
+        plt.savefig(save_path)
+        print(f"Saved plot to {save_path}")
+
+    # plt.show()
 
 # Example usage
-directory_path = "results/ExpAllDatasets/input"
+# Example usage
+directory_path = "results_ab/ExpAllDatasets/input"
+output_directory_path = os.path.join(directory_path, "output_plots")
 grouped_files = regroup_files_by_metadata(directory_path)
-plot_cdfs(grouped_files, "bank", "InformationGain", p=2)
+plot_cumulative_distributions(grouped_files, "bank", "chiSquared", p=2, output_dir=output_directory_path)
+plot_cumulative_distributions(grouped_files, "bank", "InformationGain", p=2, output_dir=output_directory_path)
+plot_cumulative_distributions(grouped_files, "credit", "chiSquared", p=2, output_dir=output_directory_path)
+plot_cumulative_distributions(grouped_files, "credit", "InformationGain", p=2, output_dir=output_directory_path)
