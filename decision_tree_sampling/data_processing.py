@@ -1,6 +1,7 @@
 from collections import Counter
 from sklearn.tree import DecisionTreeClassifier
 import numpy as np
+from aix360.algorithms.rule_induction import BRCG
 
 def extract_decision_tree_rules(X, y, max_depth = 5):
     """
@@ -45,7 +46,90 @@ def extract_decision_tree_rules(X, y, max_depth = 5):
     # Extract all decision rules
     return extract_rules(0, [])
 
-def freqX(X, rules):
+def extract_brl_rules(X, y):
+    """
+    Fit a Bayesian Rule List model and extract all decision rules as list of rules.
+
+    Parameters:
+    X (pandas.DataFrame): Feature data
+    y (pandas.Series): Target data
+
+    Returns:
+    list: A list of decision rules, where each rule is a dictionary with 'rule' and 'probability' keys.
+    """
+    # Fit the BRCG model
+    model = BRCG()
+    model.fit(X, y)
+
+    # Capture the model string output to parse it
+    import io
+    buf = io.StringIO()
+    model.print_model(buf)
+    model_str = buf.getvalue()
+
+    # Process the captured string to extract rules
+    rules = []
+    for line in model_str.split('\n'):
+        if 'IF' in line:  # Identify lines that contain rules
+            # Extract rule and probability
+            rule_part = line.split(' THEN ')[0].strip()
+            outcome_part = line.split(' THEN ')[1].strip()
+            prob_part = outcome_part.split(' ')[-1].strip('()')
+            class_label = outcome_part.split(' ')[1]
+            
+            # Parse the rule part
+            conditions = rule_part.replace('IF ', '').split(' AND ')
+            parsed_conditions = [cond.strip() for cond in conditions]
+            
+            # Store the rule with its conditions and probability
+            rules.append({'rule': parsed_conditions, 'class_label': class_label, 'probability': float(prob_part)})
+
+    return rules
+
+def freqX_BRL(X, rules):
+    """
+    Count the number of transactions in X that satisfy all conditions in each BRL rule.
+
+    Parameters:
+    X (pandas.DataFrame): Feature data
+    rules (list): A list of decision rules, where each rule is a dictionary with 'rule', 'class_label', and 'probability' keys.
+
+    Returns:
+    dict: A dictionary where the keys are the rule descriptions and the values are the counts of transactions satisfying each rule.
+    """
+    rule_counts = {}
+
+    # Iterate through each rule in the rules list
+    for rule_dict in rules:
+        rule_description = ' AND '.join(rule_dict['rule']) + f" THEN {rule_dict['class_label']}"
+
+        # Start with a mask that marks all rows as True
+        mask = pd.Series([True] * len(X))
+
+        # Apply each condition in the rule
+        for condition in rule_dict['rule']:
+            feature, operation, value = condition.split(' ')
+            value = eval(value)  # Convert value from string to appropriate type (e.g., int, float)
+
+            if operation == '=':
+                mask &= (X[feature] == value)
+            elif operation == '<=':
+                mask &= (X[feature] <= value)
+            elif operation == '>':
+                mask &= (X[feature] > value)
+            elif operation == '<':
+                mask &= (X[feature] < value)
+            elif operation == '!=':
+                mask &= (X[feature] != value)
+            elif operation == '>=':
+                mask &= (X[feature] >= value)
+
+        # Count the number of True values in the mask (i.e., the number of rows in X that satisfy the rule)
+        rule_counts[rule_description] = mask.sum()
+
+    return rule_counts
+
+def freqX_DT(X, rules):
     """
     Count the number of transactions in X that satisfy all conditions in each decision tree rule.
 
@@ -73,7 +157,7 @@ def freqX(X, rules):
 
     return rule_counts
 
-def freqY(y, rules, class_values):
+def freqY_DT(y, rules, class_values):
     """
     Count the number of times each class label appears in the target variable y.
 
@@ -96,7 +180,7 @@ def freqY(y, rules, class_values):
 
     return rule_counts
 
-def freqZ(X, y, rules, class_values):
+def freqZ_DT(X, y, rules, class_values):
     """
     Count the number of times each class label appears in the target variable y.
 
