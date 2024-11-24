@@ -108,10 +108,10 @@ public class ActiveLearningExperimentRunner {
             }
 
             executor.shutdown();
-            if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
-                executor.shutdownNow();
-                logger.warn("Timeout reached. Forced shutdown of remaining tasks.");
-            }
+            // if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
+            //     executor.shutdownNow();
+            //     logger.warn("Timeout reached. Forced shutdown of remaining tasks.");
+            // }
 
             logger.info("Experiment '{}' completed successfully.", config.getExperimentName());
         } catch (Exception e) {

@@ -1,4 +1,5 @@
 import os
+import shutil
 import json
 
 def generate_uncertainty_sampling_config(base_config, output_path, change_period):
@@ -22,11 +23,27 @@ def generate_experiment_config(base_config, output_path, uncertainty_config_path
     print(f"Generated ExperimentConfig referencing {uncertainty_config_path} at {output_path}")
 
 
+def delete_folders(base_dir):
+    """
+    Deletes 'query_selection' and 'experiments' folders from the given base directory.
+    """
+    folders_to_delete = ["query_selection", "experiments"]
+    for folder_name in folders_to_delete:
+        folder_path = os.path.join(base_dir, folder_name)
+        if os.path.exists(folder_path):
+            try:
+                shutil.rmtree(folder_path)
+                print(f"Deleted folder: {folder_path}")
+            except Exception as e:
+                print(f"Failed to delete folder: {folder_path}. Error: {e}")
+        else:
+            print(f"Folder does not exist: {folder_path}")
+            
 def main():
     # Base configuration templates
     uncertainty_base_config = {
         "noise": 0.0,
-        "maximumIterations": 1000,
+        "maximumIterations": 250,
         "certaintyType": "Sensitivity",
         "normalizationMethod": "MIN_MAX_SCALING",
         "nbLearningIterations": 100,
@@ -54,13 +71,14 @@ def main():
     base_dir = "experimental_configs/active_learning"
     query_selection_dir = os.path.join(base_dir, "query_selection")
     experiments_dir = os.path.join(base_dir, "experiments")
-
+    delete_folders(base_dir)
+    
     # Ensure directories exist
     os.makedirs(query_selection_dir, exist_ok=True)
     os.makedirs(experiments_dir, exist_ok=True)
 
     # Generate 10 configs
-    for i in range(6):
+    for i in range(1, 4):
         change_period = i*10
         uncertainty_config_path = os.path.join(query_selection_dir, f"uncertainty_sampling_conf_{change_period}.json")
         experiment_config_path = os.path.join(experiments_dir, f"exp_{change_period}.json")

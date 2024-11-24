@@ -18,7 +18,7 @@ public class ActiveLearningExperiment {
     private static final Logger logger = LoggerFactory.getLogger(ActiveLearningExperiment.class.getSimpleName());
 
     public static void main(String[] args) {
-        String config_filepath = "experimental_configs/active_learning/config.json";
+        String config_filepath = "experimental_configs/active_learning_all_datasets/config.json";
 
         try {
             ActiveLearningConfig activeLearningConfig = ConfigLoader.loadActiveLearningConfig(config_filepath);
