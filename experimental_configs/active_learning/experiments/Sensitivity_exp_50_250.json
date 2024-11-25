@@ -1,0 +1,35 @@
+{
+    "experimentName": "Sensitivity_ChangePeriod_50_MaxIter_250",
+    "dataDirectory": "data/folds/",
+    "loggingPath": "results/",
+    "datasetNames": [
+        "adult",
+        "bank",
+        "connect"
+    ],
+    "measureNames": [
+        "yuleQ",
+        "cosine",
+        "kruskal",
+        "pavillon",
+        "certainty"
+    ],
+    "oracles": [
+        "ChiSquaredOracle",
+        "InformationGainOracle"
+    ],
+    "learningToRankAlgorithms": [
+        "KappalabIterative"
+    ],
+    "querySelectionAlgorithms": [
+        "UncertaintySampling"
+    ],
+    "querySelectionConfigPaths": [
+        "experimental_configs/active_learning/query_selection/Sensitivity_uncertainty_50_250.json"
+    ],
+    "nbLearningIterations": 100,
+    "nbParallelThreads": 10,
+    "testSetSize": 1000,
+    "maxAntSize": 10,
+    "logToFile": true
+}

@@ -1,0 +1,10 @@
+{
+    "noise": 0.0,
+    "randomSampleSize": 50,
+    "sampleSize": 10000,
+    "minSup": 10,
+    "minConf": 80,
+    "normalizationMethod": "MIN_MAX_SCALING",
+    "rulesPath": "mined_rules/"
+  }
+  

@@ -1,4 +1,4 @@
-package tools.functions.multivariate;
+package tools.functions.multivariate.outRankingCertainties;
 
 import static java.lang.Math.abs;
 
@@ -6,16 +6,17 @@ import lombok.Getter;
 import lombok.Setter;
 import tools.rules.DecisionRule;
 import tools.alternatives.IAlternative;
+import tools.functions.multivariate.CertaintyFunction;
 import tools.functions.singlevariate.ISinglevariateFunction;
 
 @Getter
 @Setter
-public class PairwiseSensitivity implements CertaintyFunction {
+public class Sensitivity implements CertaintyFunction {
 
     private String Name;
     private ISinglevariateFunction scoreFunction;
 
-    public PairwiseSensitivity(String name, ISinglevariateFunction scoreFunction) {
+    public Sensitivity(String name, ISinglevariateFunction scoreFunction) {
         Name = name;
         this.scoreFunction = scoreFunction;
     }

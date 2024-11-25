@@ -33,12 +33,10 @@ public class CoordinateGap implements ISinglevariateFunction {
         double score = 0.0;
 
         int n = alternative.getVector().length;
-        for (int i = 0; i < n; i++) {
-            if (getCoordinates().contains(i))
-                score += alternative.getVector()[i];
-            else
-                score -= alternative.getVector()[i];
-        }
+        for (int i : getCoordinates())
+            for (int j = 0; j < n; j++)
+                if(!getCoordinates().contains(j))
+                    score += alternative.getVector()[i] - alternative.getVector()[j];
 
         return score;
     }

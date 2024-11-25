@@ -1,14 +1,11 @@
 {
-    "experimentName": "Exp_ChangePeriod_20",
+    "experimentName": "Sensitivity_ChangePeriod_10_MaxIter_500",
     "dataDirectory": "data/folds/",
     "loggingPath": "results/",
     "datasetNames": [
         "adult",
         "bank",
-        "connect",
-        "credit",
-        "dota",
-        "toms"
+        "connect"
     ],
     "measureNames": [
         "yuleQ",
@@ -28,7 +25,7 @@
         "UncertaintySampling"
     ],
     "querySelectionConfigPaths": [
-        "experimental_configs/active_learning/query_selection/uncertainty_sampling_conf_20.json"
+        "experimental_configs/active_learning/query_selection/Sensitivity_uncertainty_10_500.json"
     ],
     "nbLearningIterations": 100,
     "nbParallelThreads": 10,

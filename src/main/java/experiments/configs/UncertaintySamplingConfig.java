@@ -32,6 +32,7 @@ public class UncertaintySamplingConfig implements QuerySelectionConfig {
     private int nbLearningIterations;
     private int changePeriod;
     private boolean startUncertainty;
+    private String regularizationType; // New parameter for regularization type
 
     private String name = "UncertaintySampling";
     private RankingsProvider rankingsProvider;
@@ -84,6 +85,7 @@ public class UncertaintySamplingConfig implements QuerySelectionConfig {
             this.nbLearningIterations = parameters.getNbLearningIterations();
             this.startUncertainty = parameters.isStartUncertainty();
             this.changePeriod = parameters.getChangePeriod();
+            this.regularizationType = parameters.getRegularizationType(); // Load regularization type
         }
     }
 
@@ -100,6 +102,7 @@ public class UncertaintySamplingConfig implements QuerySelectionConfig {
         private int nbLearningIterations = 100;
         private int changePeriod = 10;
         private boolean startUncertainty = false;
+        private String regularizationType = "Cosine";
 
         /**
          * Converts the normalization method string into the corresponding enum value.

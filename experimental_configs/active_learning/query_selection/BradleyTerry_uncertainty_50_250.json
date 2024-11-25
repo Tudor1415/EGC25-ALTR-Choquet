@@ -1,9 +1,9 @@
 {
     "noise": 0.0,
     "maximumIterations": 250,
-    "certaintyType": "Sensitivity",
+    "certaintyType": "BradleyTerry",
     "normalizationMethod": "MIN_MAX_SCALING",
     "nbLearningIterations": 100,
-    "changePeriod": 20,
+    "changePeriod": 50,
     "startUncertainty": false
 }

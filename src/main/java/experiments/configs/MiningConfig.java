@@ -64,7 +64,7 @@ public class MiningConfig implements QuerySelectionConfig {
         this.dataPath = dataset.getExpDir() + dataset.getFilename();
 
         String csvFilename = dataset.getFilename().replaceAll("\\.dat$", ".csv");
-        this.outputPath = dataset.getExpDir() + "/" + rulesPath + "rules_" + csvFilename;
+        this.outputPath = dataset.getExpDir() + rulesPath + "rules_" + csvFilename;
 
         // Ensure the output path exists
         Path outputDir = Paths.get(outputPath).getParent();

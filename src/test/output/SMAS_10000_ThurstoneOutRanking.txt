@@ -1,0 +1,17 @@
+Maximizing Rule:
+Antecedents: [672, 366, 279, 842, 656, 239, 260, 371]
+Consequent: 911
+Measures: 1.475030  0.999999  0.000035  0.999996  0.000000  
+Score: 1.5249187404232272
+
+Cumulative Distribution of Score History (10 bins):
+Bin  1 [   -3.6465 -    -3.1293]: 3 (Cumulative: 3)
+Bin  2 [   -3.1293 -    -2.6122]: 7 (Cumulative: 10)
+Bin  3 [   -2.6122 -    -2.0950]: 4 (Cumulative: 14)
+Bin  4 [   -2.0950 -    -1.5779]: 8 (Cumulative: 22)
+Bin  5 [   -1.5779 -    -1.0608]: 24 (Cumulative: 46)
+Bin  6 [   -1.0608 -    -0.5436]: 195 (Cumulative: 241)
+Bin  7 [   -0.5436 -    -0.0265]: 6130 (Cumulative: 6371)
+Bin  8 [   -0.0265 -     0.4906]: 12 (Cumulative: 6383)
+Bin  9 [    0.4906 -     1.0078]: 15 (Cumulative: 6398)
+Bin 10 [    1.0078 -     1.5249]: 3602 (Cumulative: 10000)

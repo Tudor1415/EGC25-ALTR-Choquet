@@ -2,31 +2,32 @@ package sampling;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.util.Set;
+import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
-import tools.alternatives.IAlternative;
 import tools.data.Dataset;
-import tools.functions.multivariate.CertaintyFunction;
-import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
-import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
-import tools.functions.multivariate.outRankingCertainties.Thurstone;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.functions.singlevariate.OWA.OWAScoreFunction;
-import tools.normalization.Normalizer.NormalizationMethod;
+import tools.utils.RuleUtil;
 import tools.rules.DecisionRule;
 import tools.utils.AlternativeUtil;
-import tools.utils.RuleUtil;
+import tools.alternatives.IAlternative;
+import tools.functions.singlevariate.CoordinateGap;
+import tools.functions.multivariate.CertaintyFunction;
+import tools.functions.singlevariate.OWA.OWAScoreFunction;
+import tools.normalization.Normalizer.NormalizationMethod;
+import tools.functions.singlevariate.ISinglevariateFunction;
+import tools.functions.multivariate.outRankingCertainties.Thurstone;
+import tools.functions.multivariate.outRankingCertainties.BradleyTerry;
+import tools.functions.multivariate.outRankingCertainties.ScoreDifference;
 
 class SMASTest {
 
@@ -51,27 +52,27 @@ class SMASTest {
 
         double[] weights = new double[measureNames.length];
         Arrays.fill(weights, 1.0 / measureNames.length);
-        scoringFunction = new OWAScoreFunction(weights);
+        scoringFunction = new CoordinateGap(new HashSet<>(Arrays.asList(3)));
     }
 
     @Test
     void testSMASRunsCertainty() throws IOException {
-        int maxIterations = 10;
+        int maxIterations = 10000;
         String outputDir = "src/test/output/";
 
-        List<SMAS> samplerList = new ArrayList<>();
-        // Create SMAS instance with specific normalization method
-        SMAS smasSD = new SMAS(maxIterations, dataset, new ScoreDifference(scoringFunction), scoringFunction,
+        List<BatchSampler> samplerList = new ArrayList<>();
+        // Create BatchSampler instance with specific normalization method
+        BatchSampler BatchSamplerSD = new BatchSampler(maxIterations, dataset, scoringFunction,
                 measureNames,
-                smoothCounts, 1);
-        SMAS smasBT = new SMAS(maxIterations, dataset, new BradleyTerry(scoringFunction), scoringFunction, measureNames,
-                smoothCounts, 1);
-        SMAS smasTh = new SMAS(maxIterations, dataset, new Thurstone(scoringFunction), scoringFunction, measureNames,
-                smoothCounts, 1);
+                1);
+        // BatchSampler BatchSamplerBT = new BatchSampler(maxIterations, dataset, scoringFunction, measureNames,
+        //         1);
+        // BatchSampler BatchSamplerTh = new BatchSampler(maxIterations, dataset, scoringFunction, measureNames,
+        //         1);
 
-        samplerList.add(smasSD);
-        samplerList.add(smasBT);
-        samplerList.add(smasTh);
+        samplerList.add(BatchSamplerSD);
+        // samplerList.add(BatchSamplerBT);
+        // samplerList.add(BatchSamplerTh);
 
         for (SMAS smas : samplerList) {
             smas.setScoringFunction(scoringFunction);

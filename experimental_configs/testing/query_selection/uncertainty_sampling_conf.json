@@ -2,9 +2,9 @@
     "noise": 0.0,
     "maximumIterations": 1000,
     "certaintyType": "BradleyTerry",
-    "regularizationType": "Cosine",
+    "regularizationType": "RandomDomination",
     "normalizationMethod": "MIN_MAX_SCALING",
     "nbLearningIterations": 100,
-    "changePeriod": 100,
+    "changePeriod": 10,
     "startUncertainty": true
 }

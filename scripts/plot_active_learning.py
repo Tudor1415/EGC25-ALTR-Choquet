@@ -188,7 +188,7 @@ def plot_metrics(results, algorithm_color_mapping, cumulative, use_latex):
                     palette=algorithm_color_mapping,
                     marker='o'
                 )
-
+                axes[0].set_ylim(0, 1) 
                 sns.lineplot(
                     ax=axes[1],
                     x='Iteration',
@@ -198,7 +198,7 @@ def plot_metrics(results, algorithm_color_mapping, cumulative, use_latex):
                     palette=algorithm_color_mapping,
                     marker='o'
                 )
-
+                axes[1].set_ylim(0, 1) 
                 output_dir = "results/output_plots/"
                 os.makedirs(output_dir, exist_ok=True)
                 output_filename = os.path.join(output_dir, f"{datasetName}_{oracle}_precision.pdf")
@@ -206,7 +206,7 @@ def plot_metrics(results, algorithm_color_mapping, cumulative, use_latex):
                 logger.info(f"Saved plot: {output_filename}")
                 plt.close()
 
-def plot_metrics_single_figure(results, algorithm_color_mapping, cumulative, use_latex):
+def plot_metrics_single_figure(results, algorithm_color_mapping, output_dir, cumulative, use_latex):
     """
     Generates and saves plots for average precision with all algorithms on the same figure for each dataset and oracle.
     """
@@ -252,6 +252,7 @@ def plot_metrics_single_figure(results, algorithm_color_mapping, cumulative, use
                 palette=algorithm_color_mapping,
                 marker='o'
             )
+            axes[0].set_ylim(0, 1) 
             axes[0].set_title(f"{datasetName} - {oracle} - Average Precision 1%")
             axes[0].legend(title='Algorithm', bbox_to_anchor=(1.05, 1), loc='upper left')
 
@@ -264,11 +265,11 @@ def plot_metrics_single_figure(results, algorithm_color_mapping, cumulative, use
                 palette=algorithm_color_mapping,
                 marker='o'
             )
+            axes[1].set_ylim(0, 1) 
             axes[1].set_title(f"{datasetName} - {oracle} - Average Precision 10%")
             axes[1].legend(title='Algorithm', bbox_to_anchor=(1.05, 1), loc='upper left')
 
             # Save plots
-            output_dir = "results/output_plots/"
             os.makedirs(output_dir, exist_ok=True)
             output_filename = os.path.join(output_dir, f"{datasetName}_{oracle}_precision_all_algorithms.pdf")
             plt.savefig(output_filename, format='pdf', bbox_inches='tight')
@@ -291,7 +292,8 @@ def main():
     algorithms = {algo for _, oracles in results.items() for _, algos in oracles.items() for algo in algos.keys()}
     algorithm_color_mapping = {algo: sns.color_palette("bright", len(algorithms))[i] for i, algo in enumerate(algorithms)}
 
-    plot_metrics_single_figure(results, algorithm_color_mapping, args.cumulative, args.use_latex)
+    output_dir = args.directory + "output_plots/"
+    plot_metrics_single_figure(results, algorithm_color_mapping, output_dir, args.cumulative, args.use_latex)
     logger.info("Script finished successfully.")
 
 

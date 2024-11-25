@@ -190,7 +190,7 @@ public class RuleUtil {
                 String consequent = consequentItems[0].trim();
 
                 // Create and configure the decision rule
-                DecisionRule rule = new DecisionRule(itemsInX, consequent, dataset, 100, 100, 1e-6, measureNames);
+                DecisionRule rule = new DecisionRule(itemsInX, consequent, dataset, 100, 100, 0.01d, measureNames);
 
                 // Add the decision rule to the list
                 decisionRules.add(rule);

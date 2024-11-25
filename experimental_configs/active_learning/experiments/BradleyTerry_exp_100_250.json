@@ -1,14 +1,11 @@
 {
-    "experimentName": "Exp_ChangePeriod_10",
+    "experimentName": "BradleyTerry_ChangePeriod_100_MaxIter_250",
     "dataDirectory": "data/folds/",
     "loggingPath": "results/",
     "datasetNames": [
         "adult",
         "bank",
-        "connect",
-        "credit",
-        "dota",
-        "toms"
+        "connect"
     ],
     "measureNames": [
         "yuleQ",
@@ -28,7 +25,7 @@
         "UncertaintySampling"
     ],
     "querySelectionConfigPaths": [
-        "experimental_configs/active_learning/query_selection/uncertainty_sampling_conf_10.json"
+        "experimental_configs/active_learning/query_selection/BradleyTerry_uncertainty_100_250.json"
     ],
     "nbLearningIterations": 100,
     "nbParallelThreads": 10,

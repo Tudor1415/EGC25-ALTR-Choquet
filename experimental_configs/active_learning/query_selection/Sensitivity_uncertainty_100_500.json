@@ -1,8 +1,7 @@
 {
     "noise": 0.0,
-    "maximumIterations": 1000,
-    "certaintyType": "BradleyTerry",
-    "regularizationType": "Cosine",
+    "maximumIterations": 500,
+    "certaintyType": "Sensitivity",
     "normalizationMethod": "MIN_MAX_SCALING",
     "nbLearningIterations": 100,
     "changePeriod": 100,
