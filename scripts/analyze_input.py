@@ -119,7 +119,9 @@ def compute_domination_vectors_and_histogram(algorithm_files, output_dir=None, p
         print(f"Saved histogram to {save_path}")
     plt.show()
 
-    print(f"Entropy of domination distribution: {dom_entropy:.4f}")
+    print(f"Entropy of normalized domination distribution: {dom_entropy:.4f}")
+    print(f"Number of distinct domination vectors: {len(domination_counts)}")
+
     return domination_counts, dom_entropy
 
 def compute_normalized_domination_vectors_and_histogram(algorithm_files, output_dir=None, p=2):
@@ -187,11 +189,11 @@ def compute_normalized_domination_vectors_and_histogram(algorithm_files, output_
     return domination_counts, dom_entropy
 
 # Example usage
-# directory_path = "results/ExpAllDatasets/input"
-# dataset_name, oracle_name, algorithm_name = "bank", "InformationGain", "KappalabIterative-UncertaintySampling"
-
-directory_path = "results_ablation/BradleyTerry_ChangePeriod_10_MaxIter_250/input"
+directory_path = "results/ExpAllDatasets/input"
 dataset_name, oracle_name, algorithm_name = "bank", "InformationGain", "KappalabIterative-UncertaintySampling"
+
+# directory_path = "results_ablation/BradleyTerry_ChangePeriod_10_MaxIter_250/input"
+# dataset_name, oracle_name, algorithm_name = "bank", "InformationGain", "KappalabIterative-UncertaintySampling"
 
 output_directory_path = os.path.join(directory_path, "output_plots")
 grouped_files = regroup_files_by_metadata(directory_path)
