@@ -190,7 +190,7 @@ def compute_normalized_domination_vectors_and_histogram(algorithm_files, output_
 
 # Example usage
 directory_path = "results/ExpMaximumEntropy/input"
-dataset_name, oracle_name, algorithm_name = "bank", "InformationGain", "KappalabIterative-MaximumEntropySampling"
+dataset_name, oracle_name, algorithm_name = "bank", "chiSquared", "KappalabIterative-MaximumEntropySampling"
 print(dataset_name, oracle_name, algorithm_name)
 # directory_path = "results_ablation/BradleyTerry_ChangePeriod_10_MaxIter_250/input"
 # dataset_name, oracle_name, algorithm_name = "bank", "InformationGain", "KappalabIterative-UncertaintySampling"

@@ -92,14 +92,14 @@ public class ActiveLearningExperimentRunner {
                             runExperimentOnFold(datasetName, trainDataset, testDataset, testOracle, learningAlgorithms,
                                     currentFoldIdx);
                         });
-
-                        executor.shutdown();
-                        if (!executor.awaitTermination(24, TimeUnit.HOURS)) {
-                            executor.shutdownNow();
-                            logger.warn("Timeout reached. Forced shutdown of remaining tasks.");
-                        }
                     }
                 }
+            }
+
+            executor.shutdown();
+            if (!executor.awaitTermination(24, TimeUnit.HOURS)) {
+                executor.shutdownNow();
+                logger.warn("Timeout reached. Forced shutdown of remaining tasks.");
             }
 
         } catch (Exception e) {
