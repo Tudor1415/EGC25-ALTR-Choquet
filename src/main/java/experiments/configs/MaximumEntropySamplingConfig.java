@@ -96,8 +96,6 @@ public class MaximumEntropySamplingConfig implements QuerySelectionConfig {
             logger.info("Sample already contains {} rules. Skipping mining process.", sample.length);
         }
 
-        RuleMiner.mine(dataPath, classItemsInt, outputPath, minSup, minConf);
-
         // Initialize the rankings provider based on the current configuration
         this.rankingsProvider = new MaximumEntropySampling(this);
     }

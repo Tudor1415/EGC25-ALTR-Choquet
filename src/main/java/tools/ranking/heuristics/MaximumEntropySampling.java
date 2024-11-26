@@ -8,10 +8,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.stream.Collectors;import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;import org.slf4j.LoggerFactory;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +29,7 @@ import tools.ranking.RankingsProvider;
 import tools.alternatives.IAlternative;
 import experiments.configs.MaximumEntropySamplingConfig;
 import tools.normalization.Normalizer.NormalizationMethod;
-import tools.functions.singlevariate.ISinglevariateFunction;
+import tools.functions.singlevariate.ISinglevariateFunction;levariate.ISinglevariateFunction;
 
 @Getter
 @Setter
@@ -136,12 +136,25 @@ public class MaximumEntropySampling implements RankingsProvider {
         DominationVector targetVector = null;
         DecisionRule[] selectedPair = null;
 
-        // Find a valid target vector with a non-empty list
+        // Calculate entropy of domination counts
+        double maxEntropy = Double.NEGATIVE_INFINITY;
+
         for (Map.Entry<DominationVector, List<DecisionRule[]>> entry : dominationMap.entrySet()) {
-            if (!entry.getValue().isEmpty()) {
-                targetVector = entry.getKey();
-                selectedPair = entry.getValue().remove(0);
-                break;
+            List<DecisionRule[]> pairs = entry.getValue();
+
+            // Skip empty lists
+            if (pairs.isEmpty())
+                continue;
+
+            // Calculate current entropy
+            DominationVector vector = entry.getKey();
+            double entropy = calculateEntropy(dominationCounts);
+
+            // Select the vector with maximum entropy
+            if (entropy > maxEntropy) {
+                maxEntropy = entropy;
+                targetVector = vector;
+                selectedPair = pairs.get(0); // Don't remove yet; only selecting
             }
         }
 
@@ -149,6 +162,9 @@ public class MaximumEntropySampling implements RankingsProvider {
         if (selectedPair == null) {
             throw new IllegalStateException("No valid decision rule pair found in domination map!");
         }
+
+        // Remove the selected pair from the map
+        dominationMap.get(targetVector).remove(0);
 
         // Update domination counts
         dominationCounts.put(targetVector, dominationCounts.get(targetVector) + 1);
@@ -170,6 +186,21 @@ public class MaximumEntropySampling implements RankingsProvider {
         }
 
         return rankings;
+    }
+
+    private double calculateEntropy(Map<DominationVector, Integer> counts) {
+        double total = counts.values().stream().mapToDouble(Integer::doubleValue).sum();
+
+        // If total is 0, entropy is undefined; handle gracefully
+        if (total == 0)
+            return 0;
+
+        return counts.values().stream()
+                .mapToDouble(count -> {
+                    double probability = count / total;
+                    return probability > 0 ? -probability * Math.log(probability) : 0;
+                })
+                .sum();
     }
 
     private int[] computeDominationVector(IAlternative alt1, IAlternative alt2) {
