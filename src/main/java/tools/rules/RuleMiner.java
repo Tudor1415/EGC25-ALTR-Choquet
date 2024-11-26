@@ -1,21 +1,21 @@
 package tools.rules;
 
-import java.io.FileWriter;
+import java.util.Map;
+import java.util.Set;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.FileWriter;
 import java.util.stream.IntStream;
 
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solver;
-import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
+import org.chocosolver.solver.variables.BoolVar;
 
-import io.gitlab.chaver.mining.patterns.constraints.factory.ConstraintFactory;
 import io.gitlab.chaver.mining.patterns.io.DatReader;
 import io.gitlab.chaver.mining.patterns.io.TransactionalDatabase;
+import io.gitlab.chaver.mining.patterns.constraints.factory.ConstraintFactory;
 
 public class RuleMiner {
 

@@ -292,7 +292,7 @@ def main():
     algorithms = {algo for _, oracles in results.items() for _, algos in oracles.items() for algo in algos.keys()}
     algorithm_color_mapping = {algo: sns.color_palette("bright", len(algorithms))[i] for i, algo in enumerate(algorithms)}
 
-    output_dir = args.directory + "output_plots/"
+    output_dir = args.directory + "/output_plots/"
     plot_metrics_single_figure(results, algorithm_color_mapping, output_dir, args.cumulative, args.use_latex)
     logger.info("Script finished successfully.")
 

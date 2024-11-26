@@ -1,5 +1,6 @@
 package experiments.configs;
 
+
 import java.util.Set;
 import java.io.FileReader;
 import java.nio.file.Path;
@@ -22,14 +23,14 @@ import tools.rules.RuleMiner;
 import tools.rules.DecisionRule;
 import tools.oracles.ArtificialOracle;
 import tools.ranking.RankingsProvider;
-import tools.ranking.heuristics.UncertaintyMining;
+import tools.ranking.heuristics.MaximumEntropySampling;
 import tools.normalization.Normalizer.NormalizationMethod;
 
 @Getter
 @Setter
-public class MiningConfig implements QuerySelectionConfig {
+public class MaximumEntropySamplingConfig implements QuerySelectionConfig {
     // Logger for the class
-    private static final Logger logger = LoggerFactory.getLogger(MiningConfig.class.getSimpleName());
+    private static final Logger logger = LoggerFactory.getLogger(MaximumEntropySamplingConfig.class.getSimpleName());
 
     // Required components
     private ArtificialOracle oracle;
@@ -47,17 +48,17 @@ public class MiningConfig implements QuerySelectionConfig {
     private String dataPath;
     private String outputPath;
 
-    private String name = "Mining";
+    private String name = "MaximumEntropySampling";
     private RankingsProvider rankingsProvider;
 
     /**
-     * Constructor for MiningConfig.
+     * Constructor for MaximumEntropySamplingConfig.
      *
      * @param oracle       The oracle to use for ranking.
      * @param dataset      The dataset to use for sampling.
      * @param measureNames The measure names for normalization.
      */
-    public MiningConfig(ArtificialOracle oracle, Dataset dataset, String[] measureNames) {
+    public MaximumEntropySamplingConfig(ArtificialOracle oracle, Dataset dataset, String[] measureNames) {
         if (oracle == null || dataset == null || measureNames == null || measureNames.length == 0) {
             throw new IllegalArgumentException("Oracle, dataset, and measure names must not be null or empty.");
         }
@@ -95,8 +96,10 @@ public class MiningConfig implements QuerySelectionConfig {
             logger.info("Sample already contains {} rules. Skipping mining process.", sample.length);
         }
 
+        RuleMiner.mine(dataPath, classItemsInt, outputPath, minSup, minConf);
+
         // Initialize the rankings provider based on the current configuration
-        this.rankingsProvider = new UncertaintyMining(this);
+        this.rankingsProvider = new MaximumEntropySampling(this);
     }
 
     /**
@@ -115,7 +118,7 @@ public class MiningConfig implements QuerySelectionConfig {
 
         try (FileReader reader = new FileReader(filePath)) {
             // Load the JSON configuration into a parameters object
-            MinGapsRankingParameters parameters = gson.fromJson(reader, MinGapsRankingParameters.class);
+            EntropySamplingParameters parameters = gson.fromJson(reader, EntropySamplingParameters.class);
 
             // Update configurable parameters
             this.noise = parameters.getNoise();
@@ -131,11 +134,11 @@ public class MiningConfig implements QuerySelectionConfig {
     }
 
     /**
-     * Helper class to represent configurable parameters for MinGapsRanking.
+     * Helper class to represent configurable parameters for MaximumEntropySampling.
      */
     @Getter
     @Setter
-    private static class MinGapsRankingParameters {
+    private static class EntropySamplingParameters {
         private double noise = 0.0;
         private int randomSampleSize = 50;
         private int sampleSize = 1000;

@@ -26,6 +26,7 @@ import tools.train.iterative.KappalabIterative;
 import experiments.configs.QuerySelectionConfig;
 import experiments.configs.HighScoreSamplingConfig;
 import experiments.configs.UncertaintySamplingConfig;
+import experiments.configs.MaximumEntropySamplingConfig;
 import tools.functions.singlevariate.LinearScoreFunction;
 import experiments.configs.ActiveLearningExperimentConfig;
 import tools.normalization.Normalizer.NormalizationMethod;
@@ -221,6 +222,12 @@ public class ActiveLearningExperimentRunner {
                         break;
                     case "UncertaintyMining":
                         queryConfig = new MiningConfig(oracle, dataset, measureNames);
+                        queryConfig.loadFromFile(configPath);
+                        queryConfig.setUp();
+                        queryConfigs.add(queryConfig);
+                        break;
+                    case "MaximumEntropySampling":
+                        queryConfig = new MaximumEntropySamplingConfig(oracle, dataset, measureNames);
                         queryConfig.loadFromFile(configPath);
                         queryConfig.setUp();
                         queryConfigs.add(queryConfig);

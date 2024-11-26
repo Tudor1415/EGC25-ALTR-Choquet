@@ -3,10 +3,12 @@ package tools.ranking.heuristics;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +27,7 @@ import tools.normalization.Normalizer;
 import tools.oracles.ArtificialOracle;
 import tools.ranking.RankingsProvider;
 import tools.alternatives.IAlternative;
-import experiments.configs.MiningConfig;
+import experiments.configs.MaximumEntropySamplingConfig;
 import tools.normalization.Normalizer.NormalizationMethod;
 import tools.functions.singlevariate.ISinglevariateFunction;
 
@@ -50,11 +52,14 @@ public class MaximumEntropySampling implements RankingsProvider {
     private ISinglevariateFunction scoreFunction;
 
     // State
+    private Map<DominationVector, List<DecisionRule[]>> dominationMap = new HashMap<>();
+    private Map<DominationVector, Integer> dominationCounts = new HashMap<>();
     private Set<IAlternative[]> selectedPairs = new HashSet<>();
+    private Set<int[]> normalizedDominationVectors;
     private List<Ranking<IAlternative>> rankings = new ArrayList<>();
-    private static final Logger logger = LoggerFactory.getLogger(MiningConfig.class.getSimpleName());
+    private static final Logger logger = LoggerFactory.getLogger(MaximumEntropySampling.class.getSimpleName());
 
-    public MaximumEntropySampling(MiningConfig config) {
+    public MaximumEntropySampling(MaximumEntropySamplingConfig config) {
         // Set configurable parameters
         this.noise = config.getNoise();
         this.randomSampleSize = config.getRandomSampleSize();
@@ -69,49 +74,41 @@ public class MaximumEntropySampling implements RankingsProvider {
         this.normalizer = new Normalizer();
         this.random = RandomUtil.getInstance();
 
-        // Initialize sample
+        // Initialize sample and domination map
         initializeSample(config);
+        setupDominationMap();
     }
 
-    private int[] normalizeDominationVector(int[] dominationVector) {
-        int[] negationVector = new int[dominationVector.length];
-        for (int i = 0; i < dominationVector.length; i++) {
-            negationVector[i] = -dominationVector[i];
-        }
-        // Choose the lexicographically larger vector as the canonical form
-        for (int i = 0; i < dominationVector.length; i++) {
-            if (dominationVector[i] > negationVector[i]) {
-                return dominationVector;
-            } else if (dominationVector[i] < negationVector[i]) {
-                return negationVector;
+    private void setupDominationMap() {
+        logger.info("Setting up domination map...");
+
+        // Initialize dominationMap and dominationCounts
+        dominationMap = new HashMap<>();
+        dominationCounts = new HashMap<>();
+
+        // Populate map with decision rule pairs
+        for (int i = 0; i < sample.length; i++) {
+            for (int j = i + 1; j < sample.length; j++) {
+                IAlternative alt1 = sample[i].getAlternative();
+                IAlternative alt2 = sample[j].getAlternative();
+
+                // Normalize the domination vector
+                DominationVector dominationVector = new DominationVector(
+                        normalizeDominationVector(computeDominationVector(alt1, alt2)));
+
+                // Initialize map entries if they don't exist
+                dominationMap.computeIfAbsent(dominationVector, k -> new ArrayList<>());
+                dominationCounts.putIfAbsent(dominationVector, 0);
+
+                // Add the rule pair
+                dominationMap.get(dominationVector).add(new DecisionRule[] { sample[i], sample[j] });
             }
         }
-        return dominationVector; // They are equal
+
+        logger.info("Domination map setup completed. Total vectors: {}", dominationMap.size());
     }
 
-    private double calculateNormalizedEntropy(Map<int[], Integer> dominationCounts) {
-        // Create a new map for normalized domination vectors
-        Map<int[], Integer> normalizedCounts = new HashMap<>();
-
-        // Aggregate counts for normalized domination vectors
-        for (Map.Entry<int[], Integer> entry : dominationCounts.entrySet()) {
-            int[] normalizedVector = normalizeDominationVector(entry.getKey());
-            normalizedCounts.put(
-                    normalizedVector,
-                    normalizedCounts.getOrDefault(normalizedVector, 0) + entry.getValue());
-        }
-
-        // Compute entropy for the normalized counts
-        double total = normalizedCounts.values().stream().mapToInt(Integer::intValue).sum();
-        return -normalizedCounts.values().stream()
-                .mapToDouble(count -> {
-                    double prob = count / total;
-                    return prob * Math.log(prob);
-                })
-                .sum();
-    }
-
-    private void initializeSample(MiningConfig config) {
+    private void initializeSample(MaximumEntropySamplingConfig config) {
         try {
             logger.info("Initializing sample from rules path: {}", config.getOutputPath());
 
@@ -131,97 +128,50 @@ public class MaximumEntropySampling implements RankingsProvider {
         }
     }
 
-    private int[] randomSample(int size, int sampleSize) {
-        return random.kFolds(1, size, sampleSize)[0];
-    }
-
     @Override
     public List<Ranking<IAlternative>> provideRankings(LearnStep step) {
         // Retrieve the state of the approximation function at the current iteration
         scoreFunction = step.getCurrentScoreFunction();
-    
-        // Ensure randomSampleSize is valid
-        int sampleLength = sample.length;
-        int actualSampleSize = Math.min(sampleLength, randomSampleSize);
-    
-        // Get random indices from the sample
-        int[] randomSampleIndices = randomSample(sampleLength, actualSampleSize);
-    
-        // Initialize current domination counts
-        Map<int[], Integer> dominationCounts = new HashMap<>();
-        for (IAlternative[] pair : selectedPairs) {
-            int[] dominationVector = computeDominationVector(pair[0], pair[1]);
-            dominationCounts.put(dominationVector, dominationCounts.getOrDefault(dominationVector, 0) + 1);
-        }
-    
-        // Variables to track the best pair
-        double maxEntropy = Double.NEGATIVE_INFINITY;
-        int bestAIndex = -1;
-        int bestBIndex = -1;
-    
-        // Iterate over all pairs in the random sample
-        for (int i = 0; i < actualSampleSize; i++) {
-            for (int j = i + 1; j < actualSampleSize; j++) {
-                int iIndex = randomSampleIndices[i];
-                int jIndex = randomSampleIndices[j];
-    
-                IAlternative alt1 = sample[iIndex].getAlternative();
-                IAlternative alt2 = sample[jIndex].getAlternative();
-    
-                // Skip if the pair has already been selected
-                if (selectedPairs.contains(new IAlternative[] { alt1, alt2 })) {
-                    continue;
-                }
-    
-                // Compute domination vector and updated counts
-                int[] dominationVector = computeDominationVector(alt1, alt2);
-                dominationCounts.put(dominationVector, dominationCounts.getOrDefault(dominationVector, 0) + 1);
-    
-                // Calculate the entropy with the updated counts
-                double entropy = calculateNormalizedEntropy(dominationCounts);
-    
-                // Update the best pair if this entropy is higher
-                if (entropy > maxEntropy) {
-                    maxEntropy = entropy;
-                    bestAIndex = iIndex;
-                    bestBIndex = jIndex;
-                }
-    
-                // Revert the domination count for the current pair
-                dominationCounts.put(dominationVector, dominationCounts.get(dominationVector) - 1);
+
+        DominationVector targetVector = null;
+        DecisionRule[] selectedPair = null;
+
+        // Find a valid target vector with a non-empty list
+        for (Map.Entry<DominationVector, List<DecisionRule[]>> entry : dominationMap.entrySet()) {
+            if (!entry.getValue().isEmpty()) {
+                targetVector = entry.getKey();
+                selectedPair = entry.getValue().remove(0);
+                break;
             }
         }
-    
-        // If no suitable pair found, select the first two alternatives
-        if (bestAIndex == -1 || bestBIndex == -1) {
-            bestAIndex = 0;
-            bestBIndex = 1;
+
+        // Handle case where no valid pair is found
+        if (selectedPair == null) {
+            throw new IllegalStateException("No valid decision rule pair found in domination map!");
         }
-    
-        // Prepare the selected alternatives
+
+        // Update domination counts
+        dominationCounts.put(targetVector, dominationCounts.get(targetVector) + 1);
+
+        // Normalize and prepare alternatives
         IAlternative normA = new Alternative(
-                normalizer.normalize(sample[bestAIndex].getAlternative().getVector(), normalizationMethod, false));
+                normalizer.normalize(selectedPair[0].getAlternative().getVector(), normalizationMethod, false));
         IAlternative normB = new Alternative(
-                normalizer.normalize(sample[bestBIndex].getAlternative().getVector(), normalizationMethod, false));
-    
+                normalizer.normalize(selectedPair[1].getAlternative().getVector(), normalizationMethod, false));
+
         IAlternative[] alternativePair = new IAlternative[] { normA, normB };
-        List<DecisionRule> rulePair = new ArrayList<>();
-        rulePair.add(sample[bestAIndex]);
-        rulePair.add(sample[bestBIndex]);
-    
         selectedPairs.add(alternativePair);
-    
+
         // Compute the ranking for the selected pair using the oracle
         if (noise == 0) {
-            rankings.add(RankingUtil.computeRankingWithOracle(oracle, rulePair, alternativePair));
+            rankings.add(RankingUtil.computeRankingWithOracle(oracle, Arrays.asList(selectedPair), alternativePair));
         } else {
-            rankings.add(RankingUtil.computeNoisyRankingWithOracle(oracle, rulePair, noise));
+            rankings.add(RankingUtil.computeNoisyRankingWithOracle(oracle, Arrays.asList(selectedPair), noise));
         }
-    
-        // Return all the computed rankings
+
         return rankings;
     }
-    
+
     private int[] computeDominationVector(IAlternative alt1, IAlternative alt2) {
         int[] dominationVector = new int[alt1.getVector().length];
         for (int i = 0; i < alt1.getVector().length; i++) {
@@ -234,5 +184,50 @@ public class MaximumEntropySampling implements RankingsProvider {
             }
         }
         return dominationVector;
+    }
+
+    private int[] normalizeDominationVector(int[] dominationVector) {
+        int[] negationVector = new int[dominationVector.length];
+        for (int i = 0; i < dominationVector.length; i++) {
+            negationVector[i] = -dominationVector[i];
+        }
+        for (int i = 0; i < dominationVector.length; i++) {
+            if (dominationVector[i] > negationVector[i]) {
+                return dominationVector;
+            } else if (dominationVector[i] < negationVector[i]) {
+                return negationVector;
+            }
+        }
+        return dominationVector; // They are equal
+    }
+}
+
+@Getter
+@Setter
+class DominationVector {
+    private final int[] vector;
+
+    public DominationVector(int[] vector) {
+        this.vector = vector;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        DominationVector that = (DominationVector) o;
+        return Arrays.equals(vector, that.vector);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(vector);
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(vector);
     }
 }
