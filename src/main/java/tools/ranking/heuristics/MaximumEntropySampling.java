@@ -8,10 +8,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.stream.Collectors;import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +28,7 @@ import tools.ranking.RankingsProvider;
 import tools.alternatives.IAlternative;
 import experiments.configs.MaximumEntropySamplingConfig;
 import tools.normalization.Normalizer.NormalizationMethod;
-import tools.functions.singlevariate.ISinglevariateFunction;levariate.ISinglevariateFunction;
+import tools.functions.singlevariate.ISinglevariateFunction;
 
 @Getter
 @Setter
@@ -146,9 +145,15 @@ public class MaximumEntropySampling implements RankingsProvider {
             if (pairs.isEmpty())
                 continue;
 
-            // Calculate current entropy
+            // Temporarily update the domination counts
             DominationVector vector = entry.getKey();
+            dominationCounts.put(vector, dominationCounts.getOrDefault(vector, 0) + 1);
+
+            // Calculate the entropy with the updated counts
             double entropy = calculateEntropy(dominationCounts);
+
+            // Revert the domination counts to the original state
+            dominationCounts.put(vector, dominationCounts.get(vector) - 1);
 
             // Select the vector with maximum entropy
             if (entropy > maxEntropy) {
@@ -230,35 +235,5 @@ public class MaximumEntropySampling implements RankingsProvider {
             }
         }
         return dominationVector; // They are equal
-    }
-}
-
-@Getter
-@Setter
-class DominationVector {
-    private final int[] vector;
-
-    public DominationVector(int[] vector) {
-        this.vector = vector;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        DominationVector that = (DominationVector) o;
-        return Arrays.equals(vector, that.vector);
-    }
-
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(vector);
-    }
-
-    @Override
-    public String toString() {
-        return Arrays.toString(vector);
     }
 }
