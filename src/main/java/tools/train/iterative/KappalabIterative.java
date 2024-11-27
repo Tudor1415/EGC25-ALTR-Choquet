@@ -51,8 +51,9 @@ public class KappalabIterative extends IterativeRankingLearn {
     @Setter
     private String approachType = "Generalized Least Squares";
 
-    // Class variable to store the last KappalabInput
+    // Class variables to store the last KappalabInput and FunctionParameters
     private KappalabInput lastKappalabInput;
+    private FunctionParameters lastFunctionParameters;
 
     public KappalabIterative(int nbIterations, RankingsProvider rankingsProvider, ISinglevariateFunction func,
             int nbMeasures) {
@@ -62,10 +63,6 @@ public class KappalabIterative extends IterativeRankingLearn {
     /**
      * Logs the current KappalabInput to a specified directory as a JSON file.
      * Creates the directory if it does not exist.
-     *
-     * @param directoryPath The directory where the input JSON file should be saved.
-     * @param filePath      The full file path where the JSON should be saved.
-     * @throws IOException If an error occurs during file writing.
      */
     public void logCurrentKappalabInput(String directoryPath, String filePath) throws IOException {
         if (lastKappalabInput == null) {
@@ -73,78 +70,80 @@ public class KappalabIterative extends IterativeRankingLearn {
             return;
         }
 
+        logObjectToFile(directoryPath, filePath, lastKappalabInput);
+    }
+
+    /**
+     * Logs the current FunctionParameters to a specified directory as a JSON file.
+     * Creates the directory if it does not exist.
+     */
+    public void logCurrentFunctionParameters(String directoryPath, String filePath) throws IOException {
+        if (lastFunctionParameters == null) {
+            System.err.println("No FunctionParameters available to log.");
+            return;
+        }
+
+        logObjectToFile(directoryPath, filePath, lastFunctionParameters);
+    }
+
+    /**
+     * Helper method to log an object to a JSON file.
+     */
+    private void logObjectToFile(String directoryPath, String filePath, Object object) throws IOException {
         // Ensure the directory exists
         File directory = new File(directoryPath);
-        if (!directory.exists()) {
-            if (!directory.mkdirs()) {
-                throw new IOException("Failed to create directory: " + directoryPath);
-            }
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw new IOException("Failed to create directory: " + directoryPath);
         }
 
         // Create the JSON file
         File jsonFile = new File(filePath);
 
-        // Write the KappalabInput to the JSON file
+        // Write the object to the JSON file
         Gson gson = new Gson();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFile))) {
-            writer.write(gson.toJson(lastKappalabInput));
+            writer.write(gson.toJson(object));
         }
 
-        System.out.println("Kappalab input logged to: " + filePath);
+        System.out.println("Logged to: " + filePath);
     }
 
     @Override
     public FunctionParameters learnFromRankings(List<Ranking<IAlternative>> rankings) throws Exception {
-        // Create a copy of the rankings to modify if needed
         List<Ranking<IAlternative>> rankingsCopy = new ArrayList<>(rankings);
 
         while (!rankingsCopy.isEmpty()) {
             KappalabInput input = new KappalabInput(kAdditivity, approachType);
 
-            // Add each ranking to the Kappalab input
             for (Ranking<IAlternative> ranking : rankingsCopy) {
                 KappalabUtils.addRankingToKappalabInput(ranking, input, delta);
             }
 
-            // Store the input as the last KappalabInput
             lastKappalabInput = input;
 
-            // Create temporary files to store Kappalab input and output data
             File inputFile = File.createTempFile("kappalab_input", ".json");
             File outputFile = File.createTempFile("kappalab_output", ".json");
 
-            // We use this to call the R script
             KappalabRScriptCaller kappalabRScript = new KappalabRScriptCaller(inputFile, outputFile, input);
 
-            // Create a single-threaded executor for running the Kappalab R script
-            ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> {
-                Thread thread = new Thread(runnable);
-                thread.setPriority(Thread.MAX_PRIORITY);
-                return thread;
-            });
-
-            // Record the start time for measuring script execution duration
+            ExecutorService executor = Executors.newSingleThreadExecutor();
             long start = System.currentTimeMillis();
 
-            // Submit the Kappalab R script execution for asynchronous processing
             Future<KappalabOutput> res = executor.submit(kappalabRScript);
 
             try {
-                // Retrieve the KappalabOutput
                 KappalabOutput output = timeLimit == 0 ? res.get() : res.get(timeRemaining, TimeUnit.MILLISECONDS);
-
-                // Measure the time taken for script execution
                 long time = System.currentTimeMillis() - start;
                 timeRemaining -= time;
 
-                // If there are error messages in the output, log them
                 if (output.getErrorMessages() != null) {
                     return FunctionUtil.logErrorFunction(output.getErrorMessages());
                 }
 
-                // Return learned capacities and time taken
-                return FunctionUtil.getFunctionParameters(
+                lastFunctionParameters = FunctionUtil.getFunctionParameters(
                         ChoquetMobiusScoreFunction.TYPE, nbMeasures, kAdditivity, output.getCapacities(), time / 1000d);
+
+                return lastFunctionParameters;
 
             } catch (TimeoutException e) {
                 String[] errorMessages = { "Timeout while waiting for Kappalab R script to finish." };
@@ -157,7 +156,6 @@ public class KappalabIterative extends IterativeRankingLearn {
 
             } catch (ExecutionException | CancellationException e) {
                 String causeMessage = e.getCause() != null ? e.getCause().getMessage() : "Unknown error";
-                System.err.println("Error in Kappalab: " + causeMessage);
                 String[] errorMessages = { "Execution or cancellation error: " + causeMessage };
                 return FunctionUtil.logErrorFunction(errorMessages);
 
@@ -166,8 +164,6 @@ public class KappalabIterative extends IterativeRankingLearn {
             }
         }
 
-        // If we exit the loop, it means we couldn't succeed
-        System.err.println("Failed to learn from rankings. All alternatives have been removed.");
         String[] errorMessages = { "Failed to learn from rankings. All alternatives have been removed." };
         return FunctionUtil.logErrorFunction(errorMessages);
     }

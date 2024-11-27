@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,7 @@ public class MaximumEntropySampling implements RankingsProvider {
     private Set<int[]> normalizedDominationVectors;
     private List<Ranking<IAlternative>> rankings = new ArrayList<>();
     private static final Logger logger = LoggerFactory.getLogger(MaximumEntropySampling.class.getSimpleName());
+    private static final int MAX_PAIRS_PER_VECTOR = 100;
 
     public MaximumEntropySampling(MaximumEntropySamplingConfig config) {
         // Set configurable parameters
@@ -81,6 +83,11 @@ public class MaximumEntropySampling implements RankingsProvider {
     private void setupDominationMap() {
         logger.info("Setting up domination map...");
 
+        // Shuffle the sample array to randomize pair selection
+        List<DecisionRule> sampleList = Arrays.asList(sample);
+        Collections.shuffle(sampleList);
+        sample = sampleList.toArray(new DecisionRule[0]);
+
         // Initialize dominationMap and dominationCounts
         dominationMap = new HashMap<>();
         dominationCounts = new HashMap<>();
@@ -96,11 +103,13 @@ public class MaximumEntropySampling implements RankingsProvider {
                         normalizeDominationVector(computeDominationVector(alt1, alt2)));
 
                 // Initialize map entries if they don't exist
-                dominationMap.computeIfAbsent(dominationVector, k -> new ArrayList<>());
+                List<DecisionRule[]> pairs = dominationMap.computeIfAbsent(dominationVector, k -> new ArrayList<>());
                 dominationCounts.putIfAbsent(dominationVector, 0);
 
-                // Add the rule pair
-                dominationMap.get(dominationVector).add(new DecisionRule[] { sample[i], sample[j] });
+                // Add the rule pair only if the max size has not been reached
+                if (pairs.size() < MAX_PAIRS_PER_VECTOR) {
+                    pairs.add(new DecisionRule[] { sample[i], sample[j] });
+                }
             }
         }
 

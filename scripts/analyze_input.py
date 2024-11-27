@@ -9,16 +9,16 @@ from scipy.stats import entropy
 def regroup_files_by_metadata(directory_path):
     grouped_files = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
     for filename in os.listdir(directory_path):
-        if not filename.endswith('.json'):
+        if not (filename.endswith('.json') or "_input" in filename):
             continue
         try:
+            filename = filename.split("_input")[0]
             dataset_name, fold_idx, algorithm_name, oracle_name_with_ext = filename.split('_')
-            oracle_name = oracle_name_with_ext.split('.json')[0]
             fold_idx = int(fold_idx.replace('fold', ''))
         except ValueError:
             print(f"Skipping invalid filename format: {filename}")
             continue
-        file_path = os.path.join(directory_path, filename)
+        file_path = os.path.join(directory_path, filename + "_input.json")
         grouped_files[dataset_name][oracle_name][algorithm_name][fold_idx] = file_path
     return {dataset: {oracle: dict(algo) for oracle, algo in algos.items()} for dataset, algos in grouped_files.items()}
 

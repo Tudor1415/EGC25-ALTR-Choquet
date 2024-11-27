@@ -92,16 +92,16 @@ public class ActiveLearningExperimentRunner {
                             runExperimentOnFold(datasetName, trainDataset, testDataset, testOracle, learningAlgorithms,
                                     currentFoldIdx);
                         });
+
                     }
                 }
             }
-
             executor.shutdown();
+
             if (!executor.awaitTermination(24, TimeUnit.HOURS)) {
                 executor.shutdownNow();
                 logger.warn("Timeout reached. Forced shutdown of remaining tasks.");
             }
-
         } catch (Exception e) {
             logger.error("Error running experiment '{}': {}", config.getExperimentName(), e.getMessage(), e);
         } finally {
@@ -331,9 +331,13 @@ public class ActiveLearningExperimentRunner {
 
                     // Step 2.3: Handle specific behavior for KappalabIterative
                     if (algorithm instanceof KappalabIterative) {
-                        String filePath = loggingPath + "/input/" + datasetName + "_" + foldIdx + "_"
-                                + algorithm.getName() + "_" + oracle.getTYPE() + ".json";
-                        ((KappalabIterative) algorithm).logCurrentKappalabInput(loggingPath + "/input/", filePath);
+                        String filePathInput = loggingPath + "/input/" + datasetName + "_" + foldIdx + "_"
+                                + algorithm.getName() + "_" + oracle.getTYPE() + "_input.json";
+                        String filePathParams = loggingPath + "/input/" + datasetName + "_" + foldIdx + "_"
+                                + algorithm.getName() + "_" + oracle.getTYPE() + "_params.json";
+                        ((KappalabIterative) algorithm).logCurrentKappalabInput(loggingPath + "/input/", filePathInput);
+                        ((KappalabIterative) algorithm).logCurrentFunctionParameters(loggingPath + "/input/",
+                                filePathParams);
                         logger.info("Logged KappalabIterative input for dataset: {}, fold: {}, algorithm: {}",
                                 datasetName, foldIdx, algorithm.getName());
                     }

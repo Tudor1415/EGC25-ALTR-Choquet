@@ -70,35 +70,52 @@ public class MaximumEntropySamplingConfig implements QuerySelectionConfig {
     @Override
     public void setUp() throws Exception {
         this.dataPath = dataset.getExpDir() + dataset.getFilename();
-
+    
         String csvFilename = dataset.getFilename().replaceAll("\\.dat$", ".csv");
         this.outputPath = dataset.getExpDir() + rulesPath + "rules_" + csvFilename;
-
+    
         // Ensure the output path exists
         Path outputDir = Paths.get(outputPath).getParent();
         if (outputDir != null && !Files.exists(outputDir)) {
             Files.createDirectories(outputDir);
         }
-
+    
         Set<Integer> classItemsInt = dataset.getConsequentItemsSet().stream()
                 .map(Integer::parseInt)
                 .collect(Collectors.toSet());
-
-        DecisionRule[] sample = RuleUtil.extractRulesFromCSV(getOutputPath(), dataset, measureNames);
-
+    
+        DecisionRule[] sample;
+        try {
+            // Attempt to extract rules from CSV
+            sample = RuleUtil.extractRulesFromCSV(getOutputPath(), dataset, measureNames);
+        } catch (IOException e) {
+            if (e instanceof java.io.FileNotFoundException) {
+                logger.warn("CSV file not found. Starting mining process to generate rules: {}", e.getMessage());
+                
+                // Mine rules if the file doesn't exist
+                RuleMiner.mine(dataPath, classItemsInt, outputPath, minSup, minConf);
+    
+                // Re-attempt to extract rules after mining
+                sample = RuleUtil.extractRulesFromCSV(getOutputPath(), dataset, measureNames);
+            } else {
+                // Rethrow other IOExceptions
+                throw e;
+            }
+        }
+    
         if (sample.length < getSampleSize() / 2) {
             logger.info("Sample contains {} rules. Starting mining process to reach the threshold.", sample.length);
             RuleMiner.mine(dataPath, classItemsInt, outputPath, minSup, minConf);
-
+    
             // Re-extract the rules after mining
             sample = RuleUtil.extractRulesFromCSV(getOutputPath(), dataset, measureNames);
         } else {
             logger.info("Sample already contains {} rules. Skipping mining process.", sample.length);
         }
-
+    
         // Initialize the rankings provider based on the current configuration
         this.rankingsProvider = new MaximumEntropySampling(this);
-    }
+    }    
 
     /**
      * Loads configurable parameters from a JSON file into the current instance.
