@@ -27,21 +27,52 @@
         "documentation": {}
     },
     {
-        "label": "re",
+        "label": "json",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "re",
-        "description": "re",
-        "detail": "re",
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
         "documentation": {}
     },
     {
-        "label": "argparse",
-        "kind": 6,
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
         "isExtraImport": true,
-        "importPath": "argparse",
-        "description": "argparse",
-        "detail": "argparse",
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
         "documentation": {}
     },
     {
@@ -54,21 +85,28 @@
         "documentation": {}
     },
     {
-        "label": "seaborn",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "seaborn",
-        "description": "seaborn",
-        "detail": "seaborn",
-        "documentation": {}
-    },
-    {
         "label": "matplotlib.pyplot",
         "kind": 6,
         "isExtraImport": true,
         "importPath": "matplotlib.pyplot",
         "description": "matplotlib.pyplot",
         "detail": "matplotlib.pyplot",
+        "documentation": {}
+    },
+    {
+        "label": "minkowski",
+        "importPath": "scipy.spatial.distance",
+        "description": "scipy.spatial.distance",
+        "isExtraImport": true,
+        "detail": "scipy.spatial.distance",
+        "documentation": {}
+    },
+    {
+        "label": "entropy",
+        "importPath": "scipy.stats",
+        "description": "scipy.stats",
+        "isExtraImport": true,
+        "detail": "scipy.stats",
         "documentation": {}
     },
     {
@@ -96,27 +134,65 @@
         "documentation": {}
     },
     {
-        "label": "defaultdict",
-        "importPath": "collections",
-        "description": "collections",
+        "label": "seaborn",
+        "kind": 6,
         "isExtraImport": true,
-        "detail": "collections",
+        "importPath": "seaborn",
+        "description": "seaborn",
+        "detail": "seaborn",
         "documentation": {}
     },
     {
-        "label": "defaultdict",
-        "importPath": "collections",
-        "description": "collections",
+        "label": "streamlit",
+        "kind": 6,
         "isExtraImport": true,
-        "detail": "collections",
+        "importPath": "streamlit",
+        "description": "streamlit",
+        "detail": "streamlit",
         "documentation": {}
     },
     {
-        "label": "defaultdict",
-        "importPath": "collections",
-        "description": "collections",
+        "label": "group_files",
+        "importPath": "plot_active_learning",
+        "description": "plot_active_learning",
         "isExtraImport": true,
-        "detail": "collections",
+        "detail": "plot_active_learning",
+        "documentation": {}
+    },
+    {
+        "label": "shutil",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "shutil",
+        "description": "shutil",
+        "detail": "shutil",
+        "documentation": {}
+    },
+    {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
+        "documentation": {}
+    },
+    {
+        "label": "logging",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "logging",
+        "description": "logging",
+        "detail": "logging",
+        "documentation": {}
+    },
+    {
+        "label": "argparse",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "argparse",
+        "description": "argparse",
+        "detail": "argparse",
         "documentation": {}
     },
     {
@@ -236,11 +312,398 @@
         "documentation": {}
     },
     {
+        "label": "regroup_files_by_metadata",
+        "kind": 2,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "def regroup_files_by_metadata(directory_path):\n    grouped_files = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))\n    for filename in os.listdir(directory_path):\n        if not (filename.endswith('.json') or \"_input\" in filename):\n            continue\n        try:\n            filename = filename.split(\"_input\")[0]\n            dataset_name, fold_idx, algorithm_name, oracle_name_with_ext = filename.split('_')\n            fold_idx = int(fold_idx.replace('fold', ''))\n        except ValueError:",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "load_and_aggregate_data",
+        "kind": 2,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "def load_and_aggregate_data(file_dict):\n    all_data = []\n    for file_path in file_dict.values():\n        with open(file_path, 'r') as f:\n            data = json.load(f)\n        all_data.append(data)\n    return all_data\ndef compute_preference_distances(all_data, p=2):\n    distances = []\n    for data in all_data:",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "compute_preference_distances",
+        "kind": 2,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "def compute_preference_distances(all_data, p=2):\n    distances = []\n    for data in all_data:\n        preferences = data[\"preferences\"]\n        alternatives = data[\"alternatives\"]\n        for pref in preferences:\n            index1, index2, _ = pref\n            alt1 = alternatives[index1 - 1]  # Adjust if indices are 0-based, assuming 1-based\n            alt2 = alternatives[index2 - 1]\n            distance = minkowski(alt1, alt2, p)",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "min_max_normalize",
+        "kind": 2,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "def min_max_normalize(data):\n    min_val, max_val = np.min(data), np.max(data)\n    return (data - min_val) / (max_val - min_val) if max_val > min_val else data\ndef plot_cdf(data, labels, title=\"CDF Plot\", xlabel=\"Distance\", ylabel=\"CDF\", output_dir=None, filename=\"cdf_plot.png\"):\n    plt.figure(figsize=(10, 5))\n    for dist, label in zip(data, labels):\n        sorted_data = np.sort(dist)\n        cdf = np.cumsum(sorted_data) / np.sum(sorted_data)\n        plt.plot(sorted_data, cdf, label=label)\n    plt.title(title)",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "plot_cdf",
+        "kind": 2,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "def plot_cdf(data, labels, title=\"CDF Plot\", xlabel=\"Distance\", ylabel=\"CDF\", output_dir=None, filename=\"cdf_plot.png\"):\n    plt.figure(figsize=(10, 5))\n    for dist, label in zip(data, labels):\n        sorted_data = np.sort(dist)\n        cdf = np.cumsum(sorted_data) / np.sum(sorted_data)\n        plt.plot(sorted_data, cdf, label=label)\n    plt.title(title)\n    plt.xlabel(xlabel)\n    plt.ylabel(ylabel)\n    plt.grid(True)",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "compute_domination_vectors_and_histogram",
+        "kind": 2,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "def compute_domination_vectors_and_histogram(algorithm_files, output_dir=None, p=2):\n    \"\"\"\n    Compute domination vectors for a given algorithm and dataset, plot histogram, and compute entropy.\n    \"\"\"\n    domination_counts = defaultdict(int)\n    for fold_idx, file_path in algorithm_files.items():\n        with open(file_path, 'r') as f:\n            data = json.load(f)\n        preferences = data[\"preferences\"]\n        alternatives = data[\"alternatives\"]",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "compute_normalized_domination_vectors_and_histogram",
+        "kind": 2,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "def compute_normalized_domination_vectors_and_histogram(algorithm_files, output_dir=None, p=2):\n    \"\"\"\n    Compute normalized domination vectors (treating vector and -vector as equivalent) for a given algorithm and dataset,\n    plot histogram, and compute entropy.\n    \"\"\"\n    domination_counts = defaultdict(int)\n    for fold_idx, file_path in algorithm_files.items():\n        with open(file_path, 'r') as f:\n            data = json.load(f)\n        preferences = data[\"preferences\"]",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "directory_path",
+        "kind": 5,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "directory_path = \"results/ExpMaximumEntropy/input\"\ndataset_name, oracle_name, algorithm_name = \"bank\", \"chiSquared\", \"KappalabIterative-MaximumEntropySampling\"\nprint(dataset_name, oracle_name, algorithm_name)\n# directory_path = \"results_ablation/BradleyTerry_ChangePeriod_10_MaxIter_250/input\"\n# dataset_name, oracle_name, algorithm_name = \"bank\", \"InformationGain\", \"KappalabIterative-UncertaintySampling\"\noutput_directory_path = os.path.join(directory_path, \"output_plots\")\ngrouped_files = regroup_files_by_metadata(directory_path)\n# algorithm_files = grouped_files[dataset_name][oracle_name]\n# distances = []\n# labels = []",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "output_directory_path",
+        "kind": 5,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "output_directory_path = os.path.join(directory_path, \"output_plots\")\ngrouped_files = regroup_files_by_metadata(directory_path)\n# algorithm_files = grouped_files[dataset_name][oracle_name]\n# distances = []\n# labels = []\n# for algorithm, files in algorithm_files.items():\n#     all_data = load_and_aggregate_data(files)\n#     dist = compute_preference_distances(all_data)\n#     distances.append(dist)\n#     labels.append(algorithm)",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "grouped_files",
+        "kind": 5,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "grouped_files = regroup_files_by_metadata(directory_path)\n# algorithm_files = grouped_files[dataset_name][oracle_name]\n# distances = []\n# labels = []\n# for algorithm, files in algorithm_files.items():\n#     all_data = load_and_aggregate_data(files)\n#     dist = compute_preference_distances(all_data)\n#     distances.append(dist)\n#     labels.append(algorithm)\n# plot_cdf(distances, labels, title=f\"All Algorithms Distance CDF ({dataset_name}, {oracle_name})\", output_dir=output_directory_path, filename=f\"{dataset_name}_{oracle_name}_all_algorithms_cdf.png\")",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "algorithm_files",
+        "kind": 5,
+        "importPath": "scripts.analyze_input",
+        "description": "scripts.analyze_input",
+        "peekOfCode": "algorithm_files = grouped_files[dataset_name][oracle_name][algorithm_name]\ndomination_counts, dom_entropy = compute_normalized_domination_vectors_and_histogram(algorithm_files, output_dir=output_directory_path)",
+        "detail": "scripts.analyze_input",
+        "documentation": {}
+    },
+    {
+        "label": "initialize_results_structure",
+        "kind": 2,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "def initialize_results_structure():\n    \"\"\"\n    Creates an explicitly initialized nested dictionary for storing metrics.\n    \"\"\"\n    return {\n        \"avg_precision_1\": [],\n        \"avg_precision_10\": [],\n        \"timestamps\": []\n    }\ndef process_files(grouped_files, cumulative=False):",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "process_files",
+        "kind": 2,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "def process_files(grouped_files, cumulative=False):\n    \"\"\"\n    Processes files and computes metrics with explicitly initialized dictionaries.\n    \"\"\"\n    results = {}\n    top_percentage_1 = 0.01\n    top_percentage_10 = 0.10\n    for dataset_name, oracles in grouped_files.items():\n        if dataset_name not in results:\n            results[dataset_name] = {}",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "precompute_metrics",
+        "kind": 2,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "def precompute_metrics(results_dir):\n    \"\"\"\n    Precomputes all metrics for valid periods in the results directory.\n    Returns a dictionary of precomputed results and a sorted list of valid periods.\n    \"\"\"\n    precomputed_results = {}\n    valid_periods = []\n    for folder_name in os.listdir(results_dir):\n        if folder_name.startswith(\"Exp_ChangePeriod_\"):\n            try:",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "RESULTS_DIR",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "RESULTS_DIR = \"results\"\ndef initialize_results_structure():\n    \"\"\"\n    Creates an explicitly initialized nested dictionary for storing metrics.\n    \"\"\"\n    return {\n        \"avg_precision_1\": [],\n        \"avg_precision_10\": [],\n        \"timestamps\": []\n    }",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "selected_period",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "selected_period = st.sidebar.selectbox(\n    \"Select Period\",\n    options=valid_periods,\n    format_func=lambda x: f\"Period {x}\",\n)\n# Retrieve precomputed metrics for the selected period\nresults = precomputed_results.get(selected_period, {})\nif not results:\n    st.error(f\"No data available for period {selected_period}.\")\n    st.stop()",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "results",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "results = precomputed_results.get(selected_period, {})\nif not results:\n    st.error(f\"No data available for period {selected_period}.\")\n    st.stop()\n# Prepare data for plotting\nalgorithms = {algo for _, oracles in results.items() for _, algos in oracles.items() for algo in algos.keys()}\nalgorithm_color_mapping = {algo: sns.color_palette(\"bright\", len(algorithms))[i] for i, algo in enumerate(algorithms)}\n# Retrieve precomputed metrics for the selected period\nresults = precomputed_results.get(selected_period, {})\nif not results:",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "algorithms",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "algorithms = {algo for _, oracles in results.items() for _, algos in oracles.items() for algo in algos.keys()}\nalgorithm_color_mapping = {algo: sns.color_palette(\"bright\", len(algorithms))[i] for i, algo in enumerate(algorithms)}\n# Retrieve precomputed metrics for the selected period\nresults = precomputed_results.get(selected_period, {})\nif not results:\n    st.error(f\"No data available for period {selected_period}.\")\n    st.stop()\n# Sidebar: Select Dataset\ndatasets = list(results.keys())\nselected_dataset = st.sidebar.selectbox(",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "algorithm_color_mapping",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "algorithm_color_mapping = {algo: sns.color_palette(\"bright\", len(algorithms))[i] for i, algo in enumerate(algorithms)}\n# Retrieve precomputed metrics for the selected period\nresults = precomputed_results.get(selected_period, {})\nif not results:\n    st.error(f\"No data available for period {selected_period}.\")\n    st.stop()\n# Sidebar: Select Dataset\ndatasets = list(results.keys())\nselected_dataset = st.sidebar.selectbox(\n    \"Select Dataset\",",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "results",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "results = precomputed_results.get(selected_period, {})\nif not results:\n    st.error(f\"No data available for period {selected_period}.\")\n    st.stop()\n# Sidebar: Select Dataset\ndatasets = list(results.keys())\nselected_dataset = st.sidebar.selectbox(\n    \"Select Dataset\",\n    options=datasets,\n    format_func=lambda x: f\"Dataset: {x}\",",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "datasets",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "datasets = list(results.keys())\nselected_dataset = st.sidebar.selectbox(\n    \"Select Dataset\",\n    options=datasets,\n    format_func=lambda x: f\"Dataset: {x}\",\n)\n# Sidebar: Select Oracle\noracles = list(results[selected_dataset].keys())\nselected_oracle = st.sidebar.selectbox(\n    \"Select Oracle\",",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "selected_dataset",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "selected_dataset = st.sidebar.selectbox(\n    \"Select Dataset\",\n    options=datasets,\n    format_func=lambda x: f\"Dataset: {x}\",\n)\n# Sidebar: Select Oracle\noracles = list(results[selected_dataset].keys())\nselected_oracle = st.sidebar.selectbox(\n    \"Select Oracle\",\n    options=oracles,",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "oracles",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "oracles = list(results[selected_dataset].keys())\nselected_oracle = st.sidebar.selectbox(\n    \"Select Oracle\",\n    options=oracles,\n    format_func=lambda x: f\"Oracle: {x}\",\n)\n# Filter results by selected dataset and oracle\nfiltered_results = results[selected_dataset][selected_oracle]\n# Prepare data for plotting\nst.title(f\"Uncertainty Plots for Period {selected_period} - {selected_dataset} - {selected_oracle}\")",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "selected_oracle",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "selected_oracle = st.sidebar.selectbox(\n    \"Select Oracle\",\n    options=oracles,\n    format_func=lambda x: f\"Oracle: {x}\",\n)\n# Filter results by selected dataset and oracle\nfiltered_results = results[selected_dataset][selected_oracle]\n# Prepare data for plotting\nst.title(f\"Uncertainty Plots for Period {selected_period} - {selected_dataset} - {selected_oracle}\")\nalgorithms = list(filtered_results.keys())",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "filtered_results",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "filtered_results = results[selected_dataset][selected_oracle]\n# Prepare data for plotting\nst.title(f\"Uncertainty Plots for Period {selected_period} - {selected_dataset} - {selected_oracle}\")\nalgorithms = list(filtered_results.keys())\nalgorithm_color_mapping = {algo: sns.color_palette(\"bright\", len(algorithms))[i] for i, algo in enumerate(algorithms)}\ndata_precision_1 = []\ndata_precision_10 = []\nfor algorithm, folds_data in filtered_results.items():\n    for fold_id, metrics in folds_data.items():\n        for i, (prec_1, prec_10) in enumerate(zip(metrics[\"avg_precision_1\"], metrics[\"avg_precision_10\"])):",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "algorithms",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "algorithms = list(filtered_results.keys())\nalgorithm_color_mapping = {algo: sns.color_palette(\"bright\", len(algorithms))[i] for i, algo in enumerate(algorithms)}\ndata_precision_1 = []\ndata_precision_10 = []\nfor algorithm, folds_data in filtered_results.items():\n    for fold_id, metrics in folds_data.items():\n        for i, (prec_1, prec_10) in enumerate(zip(metrics[\"avg_precision_1\"], metrics[\"avg_precision_10\"])):\n            data_precision_1.append({\n                \"Algorithm\": algorithm,\n                \"Iteration\": i + 1,",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "algorithm_color_mapping",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "algorithm_color_mapping = {algo: sns.color_palette(\"bright\", len(algorithms))[i] for i, algo in enumerate(algorithms)}\ndata_precision_1 = []\ndata_precision_10 = []\nfor algorithm, folds_data in filtered_results.items():\n    for fold_id, metrics in folds_data.items():\n        for i, (prec_1, prec_10) in enumerate(zip(metrics[\"avg_precision_1\"], metrics[\"avg_precision_10\"])):\n            data_precision_1.append({\n                \"Algorithm\": algorithm,\n                \"Iteration\": i + 1,\n                \"Average Precision 1%\": prec_1",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "data_precision_1",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "data_precision_1 = []\ndata_precision_10 = []\nfor algorithm, folds_data in filtered_results.items():\n    for fold_id, metrics in folds_data.items():\n        for i, (prec_1, prec_10) in enumerate(zip(metrics[\"avg_precision_1\"], metrics[\"avg_precision_10\"])):\n            data_precision_1.append({\n                \"Algorithm\": algorithm,\n                \"Iteration\": i + 1,\n                \"Average Precision 1%\": prec_1\n            })",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "data_precision_10",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "data_precision_10 = []\nfor algorithm, folds_data in filtered_results.items():\n    for fold_id, metrics in folds_data.items():\n        for i, (prec_1, prec_10) in enumerate(zip(metrics[\"avg_precision_1\"], metrics[\"avg_precision_10\"])):\n            data_precision_1.append({\n                \"Algorithm\": algorithm,\n                \"Iteration\": i + 1,\n                \"Average Precision 1%\": prec_1\n            })\n            data_precision_10.append({",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "df_precision_1",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "df_precision_1 = pd.DataFrame(data_precision_1)\ndf_precision_10 = pd.DataFrame(data_precision_10)\nif df_precision_1.empty or df_precision_10.empty:\n    st.error(f\"No data available for dataset {selected_dataset} and oracle {selected_oracle}.\")\n    st.stop()\n# Plot: Average Precision at 10%\nst.subheader(\"Average Precision at 10%\")\nfig1, ax1 = plt.subplots(figsize=(10, 5))\nsns.lineplot(\n    x=\"Iteration\",",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "df_precision_10",
+        "kind": 5,
+        "importPath": "scripts.app",
+        "description": "scripts.app",
+        "peekOfCode": "df_precision_10 = pd.DataFrame(data_precision_10)\nif df_precision_1.empty or df_precision_10.empty:\n    st.error(f\"No data available for dataset {selected_dataset} and oracle {selected_oracle}.\")\n    st.stop()\n# Plot: Average Precision at 10%\nst.subheader(\"Average Precision at 10%\")\nfig1, ax1 = plt.subplots(figsize=(10, 5))\nsns.lineplot(\n    x=\"Iteration\",\n    y=\"Average Precision 10%\",",
+        "detail": "scripts.app",
+        "documentation": {}
+    },
+    {
+        "label": "regroup_files_by_metadata",
+        "kind": 2,
+        "importPath": "scripts.coordinate_dist",
+        "description": "scripts.coordinate_dist",
+        "peekOfCode": "def regroup_files_by_metadata(directory_path):\n    grouped_files = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))\n    for filename in os.listdir(directory_path):\n        if not filename.endswith('.json'):\n            continue\n        try:\n            dataset_name, fold_idx, algorithm_name, oracle_name_with_ext = filename.split('_')\n            oracle_name = oracle_name_with_ext.split('.json')[0]\n            fold_idx = int(fold_idx.replace('fold', ''))\n        except ValueError:",
+        "detail": "scripts.coordinate_dist",
+        "documentation": {}
+    },
+    {
+        "label": "load_data",
+        "kind": 2,
+        "importPath": "scripts.coordinate_dist",
+        "description": "scripts.coordinate_dist",
+        "peekOfCode": "def load_data(grouped_files, dataset_name, algorithm_name, oracle_name):\n    all_data = []\n    try:\n        for fold_idx, file_path in grouped_files[dataset_name][oracle_name][algorithm_name].items():\n            with open(file_path, 'r') as file:\n                data = json.load(file)\n                all_data.append(data['alternatives'])\n    except KeyError:\n        print(f\"No data found for {algorithm_name} with oracle {oracle_name} in dataset {dataset_name}\")\n    return all_data",
+        "detail": "scripts.coordinate_dist",
+        "documentation": {}
+    },
+    {
+        "label": "calculate_statistics",
+        "kind": 2,
+        "importPath": "scripts.coordinate_dist",
+        "description": "scripts.coordinate_dist",
+        "peekOfCode": "def calculate_statistics(data_by_oracle):\n    for oracle, data in data_by_oracle.items():\n        # Flatten the list of lists to get a single list of all alternatives across all folds\n        num_alternatives = [len(fold) for fold in data]\n        mean_num = np.mean(num_alternatives)\n        std_num = np.std(num_alternatives)\n        print(f\"{oracle}: Mean = {mean_num:.2f}, Std = {std_num:.2f}\")\n# Example usage\ndirectory_path = \"results_ab/ExpAllDatasets/input\"\ngrouped_files = regroup_files_by_metadata(directory_path)",
+        "detail": "scripts.coordinate_dist",
+        "documentation": {}
+    },
+    {
+        "label": "directory_path",
+        "kind": 5,
+        "importPath": "scripts.coordinate_dist",
+        "description": "scripts.coordinate_dist",
+        "peekOfCode": "directory_path = \"results_ab/ExpAllDatasets/input\"\ngrouped_files = regroup_files_by_metadata(directory_path)\ndatasets = [\"bank\", \"credit\"]\nalgorithm_name = \"KappalabIterative-Mining\"\noracles = [\"InformationGain\", \"chiSquared\"]\nfor dataset_name in datasets:\n    print(f\"\\nDataset: {dataset_name}\")\n    data_by_oracle = {oracle: load_data(grouped_files, dataset_name, algorithm_name, oracle) for oracle in oracles}\n    calculate_statistics(data_by_oracle)",
+        "detail": "scripts.coordinate_dist",
+        "documentation": {}
+    },
+    {
+        "label": "grouped_files",
+        "kind": 5,
+        "importPath": "scripts.coordinate_dist",
+        "description": "scripts.coordinate_dist",
+        "peekOfCode": "grouped_files = regroup_files_by_metadata(directory_path)\ndatasets = [\"bank\", \"credit\"]\nalgorithm_name = \"KappalabIterative-Mining\"\noracles = [\"InformationGain\", \"chiSquared\"]\nfor dataset_name in datasets:\n    print(f\"\\nDataset: {dataset_name}\")\n    data_by_oracle = {oracle: load_data(grouped_files, dataset_name, algorithm_name, oracle) for oracle in oracles}\n    calculate_statistics(data_by_oracle)",
+        "detail": "scripts.coordinate_dist",
+        "documentation": {}
+    },
+    {
+        "label": "datasets",
+        "kind": 5,
+        "importPath": "scripts.coordinate_dist",
+        "description": "scripts.coordinate_dist",
+        "peekOfCode": "datasets = [\"bank\", \"credit\"]\nalgorithm_name = \"KappalabIterative-Mining\"\noracles = [\"InformationGain\", \"chiSquared\"]\nfor dataset_name in datasets:\n    print(f\"\\nDataset: {dataset_name}\")\n    data_by_oracle = {oracle: load_data(grouped_files, dataset_name, algorithm_name, oracle) for oracle in oracles}\n    calculate_statistics(data_by_oracle)",
+        "detail": "scripts.coordinate_dist",
+        "documentation": {}
+    },
+    {
+        "label": "algorithm_name",
+        "kind": 5,
+        "importPath": "scripts.coordinate_dist",
+        "description": "scripts.coordinate_dist",
+        "peekOfCode": "algorithm_name = \"KappalabIterative-Mining\"\noracles = [\"InformationGain\", \"chiSquared\"]\nfor dataset_name in datasets:\n    print(f\"\\nDataset: {dataset_name}\")\n    data_by_oracle = {oracle: load_data(grouped_files, dataset_name, algorithm_name, oracle) for oracle in oracles}\n    calculate_statistics(data_by_oracle)",
+        "detail": "scripts.coordinate_dist",
+        "documentation": {}
+    },
+    {
+        "label": "oracles",
+        "kind": 5,
+        "importPath": "scripts.coordinate_dist",
+        "description": "scripts.coordinate_dist",
+        "peekOfCode": "oracles = [\"InformationGain\", \"chiSquared\"]\nfor dataset_name in datasets:\n    print(f\"\\nDataset: {dataset_name}\")\n    data_by_oracle = {oracle: load_data(grouped_files, dataset_name, algorithm_name, oracle) for oracle in oracles}\n    calculate_statistics(data_by_oracle)",
+        "detail": "scripts.coordinate_dist",
+        "documentation": {}
+    },
+    {
+        "label": "generate_uncertainty_sampling_config",
+        "kind": 2,
+        "importPath": "scripts.make_ablation_study_configs",
+        "description": "scripts.make_ablation_study_configs",
+        "peekOfCode": "def generate_uncertainty_sampling_config(base_config, output_path, change_period, certainty_type, start_uncertainty, max_iterations):\n    \"\"\"Generate Uncertainty Sampling Config with specific settings.\"\"\"\n    config = base_config.copy()\n    config[\"changePeriod\"] = change_period\n    config[\"certaintyType\"] = certainty_type\n    config[\"startUncertainty\"] = start_uncertainty\n    config[\"maximumIterations\"] = max_iterations\n    with open(output_path, 'w') as f:\n        json.dump(config, f, indent=4)\n    print(f\"Generated UncertaintySamplingConfig with changePeriod={change_period}, certaintyType={certainty_type}, startUncertainty={start_uncertainty}, maximumIterations={max_iterations} at {output_path}\")",
+        "detail": "scripts.make_ablation_study_configs",
+        "documentation": {}
+    },
+    {
+        "label": "generate_experiment_config",
+        "kind": 2,
+        "importPath": "scripts.make_ablation_study_configs",
+        "description": "scripts.make_ablation_study_configs",
+        "peekOfCode": "def generate_experiment_config(base_config, output_path, uncertainty_config_path, name):\n    \"\"\"Generate Experiment Config with updated uncertainty sampling config path.\"\"\"\n    config = base_config.copy()\n    config[\"experimentName\"] = name\n    config[\"querySelectionConfigPaths\"] = [\n        uncertainty_config_path\n    ]\n    with open(output_path, 'w') as f:\n        json.dump(config, f, indent=4)\n    print(f\"Generated ExperimentConfig referencing {uncertainty_config_path} at {output_path}\")",
+        "detail": "scripts.make_ablation_study_configs",
+        "documentation": {}
+    },
+    {
+        "label": "delete_folders",
+        "kind": 2,
+        "importPath": "scripts.make_ablation_study_configs",
+        "description": "scripts.make_ablation_study_configs",
+        "peekOfCode": "def delete_folders(base_dir):\n    \"\"\"Deletes 'query_selection' and 'experiments' folders from the given base directory.\"\"\"\n    folders_to_delete = [\"query_selection\", \"experiments\"]\n    for folder_name in folders_to_delete:\n        folder_path = os.path.join(base_dir, folder_name)\n        if os.path.exists(folder_path):\n            try:\n                shutil.rmtree(folder_path)\n                print(f\"Deleted folder: {folder_path}\")\n            except Exception as e:",
+        "detail": "scripts.make_ablation_study_configs",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "scripts.make_ablation_study_configs",
+        "description": "scripts.make_ablation_study_configs",
+        "peekOfCode": "def main():\n    # Base configuration template for uncertainty sampling\n    uncertainty_base_config = {\n        \"noise\": 0.0,\n        \"maximumIterations\": 250,  # This will be overridden\n        \"certaintyType\": \"Sensitivity\",  # This will be overridden\n        \"normalizationMethod\": \"MIN_MAX_SCALING\",\n        \"nbLearningIterations\": 100,\n        \"changePeriod\": 10,  # This will be overridden\n        \"startUncertainty\": False  # This will be overridden",
+        "detail": "scripts.make_ablation_study_configs",
+        "documentation": {}
+    },
+    {
         "label": "parse_filename",
         "kind": 2,
         "importPath": "scripts.plot_active_learning",
         "description": "scripts.plot_active_learning",
-        "peekOfCode": "def parse_filename(filename):\n    \"\"\"\n    Parses the filename to extract datasetName, foldID, LearningAlgorithm, Oracle, and timestamp.\n    Expected filename format: datasetName_foldID_LearningAlgorithm_Oracle_timestamp.csv\n    \"\"\"\n    basename = os.path.basename(filename)\n    pattern = r'^(.*?)_(.*?)_(.*?)_(.*?)_(.*?)\\.csv$'\n    match = re.match(pattern, basename)\n    if match:\n        datasetName, foldID, LearningAlgorithm, Oracle, timestamp = match.groups()",
+        "peekOfCode": "def parse_filename(filename):\n    \"\"\"\n    Parses the filename to extract datasetName, foldID, LearningAlgorithm, Oracle, and timestamp.\n    Expected filename format: datasetName_foldID_LearningAlgorithm_Oracle_timestamp.csv\n    \"\"\"\n    logger.debug(f\"Parsing filename: {filename}\")\n    basename = os.path.basename(filename)\n    pattern = r'^(.*?)_(.*?)_(.*?)_(.*?)_(.*?)\\.csv$'\n    match = re.match(pattern, basename)\n    if match:",
         "detail": "scripts.plot_active_learning",
         "documentation": {}
     },
@@ -249,7 +712,7 @@
         "kind": 2,
         "importPath": "scripts.plot_active_learning",
         "description": "scripts.plot_active_learning",
-        "peekOfCode": "def group_files(directory):\n    \"\"\"\n    Groups files by datasetName, LearningAlgorithm, Oracle, and foldID in a nested dictionary.\n    \"\"\"\n    files_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(list))))\n    for filename in os.listdir(directory):\n        if filename.endswith('.csv'):\n            parsed = parse_filename(filename)\n            if parsed:\n                datasetName, foldID, LearningAlgorithm, Oracle, timestamp = parsed",
+        "peekOfCode": "def group_files(directory):\n    \"\"\"\n    Groups files by datasetName, LearningAlgorithm, Oracle, and foldID in a nested dictionary.\n    \"\"\"\n    logger.info(f\"Grouping files in directory: {directory}\")\n    files_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(list))))\n    for filename in os.listdir(directory):\n        if filename.endswith('.csv'):\n            parsed = parse_filename(filename)\n            if parsed:",
         "detail": "scripts.plot_active_learning",
         "documentation": {}
     },
@@ -258,7 +721,7 @@
         "kind": 2,
         "importPath": "scripts.plot_active_learning",
         "description": "scripts.plot_active_learning",
-        "peekOfCode": "def compute_rankings(df):\n    \"\"\"\n    Computes rankings based on scoreApprox and scoreOracle.\n    \"\"\"\n    df = df.copy()\n    df['rankApprox'] = df['scoreApprox'].rank(ascending=False, method='first')\n    df['rankOracle'] = df['scoreOracle'].rank(ascending=False, method='first')\n    return df\ndef compute_average_precision_at_k(df, k):\n    \"\"\"",
+        "peekOfCode": "def compute_rankings(df):\n    \"\"\"\n    Computes rankings based on scoreApprox and scoreOracle.\n    \"\"\"\n    logger.debug(\"Computing rankings.\")\n    df = df.copy()\n    df['rankApprox'] = df['scoreApprox'].rank(ascending=False, method='first')\n    df['rankOracle'] = df['scoreOracle'].rank(ascending=False, method='first')\n    return df\ndef compute_average_precision_at_k(df, k):",
         "detail": "scripts.plot_active_learning",
         "documentation": {}
     },
@@ -267,7 +730,7 @@
         "kind": 2,
         "importPath": "scripts.plot_active_learning",
         "description": "scripts.plot_active_learning",
-        "peekOfCode": "def compute_average_precision_at_k(df, k):\n    \"\"\"\n    Computes Average Precision at top k entries.\n    \"\"\"\n    df = df.nsmallest(k, 'rankApprox')\n    relevant = df['rankOracle'] <= k\n    precision_at_k = relevant.sum() / k\n    return precision_at_k\ndef process_files(grouped_files, cumulative):\n    \"\"\"",
+        "peekOfCode": "def compute_average_precision_at_k(df, k):\n    \"\"\"\n    Computes Average Precision at top k entries.\n    \"\"\"\n    logger.debug(f\"Computing average precision at k={k}.\")\n    df = df.nsmallest(k, 'rankApprox')\n    relevant = df['rankOracle'] <= k\n    precision_at_k = relevant.sum() / k\n    logger.debug(f\"Average precision at k={k}: {precision_at_k}\")\n    return precision_at_k",
         "detail": "scripts.plot_active_learning",
         "documentation": {}
     },
@@ -276,7 +739,7 @@
         "kind": 2,
         "importPath": "scripts.plot_active_learning",
         "description": "scripts.plot_active_learning",
-        "peekOfCode": "def process_files(grouped_files, cumulative):\n    \"\"\"\n    Processes each group of files and computes metrics.\n    \"\"\"\n    results = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: {\n        'avg_precision_1': [], 'avg_precision_10': [], 'timestamps': []\n    }))))\n    top_percentage_1 = 0.01\n    top_percentage_10 = 0.10\n    for datasetName, oracles in grouped_files.items():",
+        "peekOfCode": "def process_files(grouped_files, cumulative):\n    \"\"\"\n    Processes each group of files and computes metrics.\n    \"\"\"\n    logger.info(\"Processing files.\")\n    results = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: {\n        'avg_precision_1': [], 'avg_precision_10': [], 'timestamps': []\n    }))))\n    top_percentage_1 = 0.01\n    top_percentage_10 = 0.10",
         "detail": "scripts.plot_active_learning",
         "documentation": {}
     },
@@ -285,7 +748,16 @@
         "kind": 2,
         "importPath": "scripts.plot_active_learning",
         "description": "scripts.plot_active_learning",
-        "peekOfCode": "def plot_metrics(results, algorithm_color_mapping, cumulative, use_latex):\n    \"\"\"\n    Generates and saves plots for average precision.\n    \"\"\"\n    if use_latex:\n        plt.rc('text', usetex=True)\n        plt.rc('font', family='serif')\n    else:\n        plt.rc('text', usetex=False)\n    for datasetName, oracles in results.items():",
+        "peekOfCode": "def plot_metrics(results, algorithm_color_mapping, cumulative, use_latex):\n    \"\"\"\n    Generates and saves plots for average precision.\n    \"\"\"\n    logger.info(\"Plotting metrics.\")\n    if use_latex:\n        logger.debug(\"Using LaTeX for rendering plots.\")\n        plt.rc('text', usetex=True)\n        plt.rc('font', family='serif')\n    else:",
+        "detail": "scripts.plot_active_learning",
+        "documentation": {}
+    },
+    {
+        "label": "plot_metrics_single_figure",
+        "kind": 2,
+        "importPath": "scripts.plot_active_learning",
+        "description": "scripts.plot_active_learning",
+        "peekOfCode": "def plot_metrics_single_figure(results, algorithm_color_mapping, output_dir, cumulative, use_latex):\n    \"\"\"\n    Generates and saves plots for average precision with all algorithms on the same figure for each dataset and oracle.\n    \"\"\"\n    logger.info(\"Plotting metrics with all algorithms on the same figure.\")\n    if use_latex:\n        logger.debug(\"Using LaTeX for rendering plots.\")\n        plt.rc('text', usetex=True)\n        plt.rc('font', family='serif')\n    else:",
         "detail": "scripts.plot_active_learning",
         "documentation": {}
     },
@@ -294,7 +766,16 @@
         "kind": 2,
         "importPath": "scripts.plot_active_learning",
         "description": "scripts.plot_active_learning",
-        "peekOfCode": "def main():\n    parser = argparse.ArgumentParser(description='Process CSV files to compute metrics and generate plots.')\n    parser.add_argument('directory', type=str, help='Directory containing CSV files.')\n    parser.add_argument('--cumulative', action='store_true', help='Plot cumulative metrics.')\n    parser.add_argument('--use_latex', action='store_true', help='Use LaTeX for rendering text in plots.')\n    args = parser.parse_args()\n    grouped_files = group_files(args.directory)\n    results = process_files(grouped_files, args.cumulative)\n    algorithms = {algo for _, oracles in results.items() for _, algos in oracles.items() for algo in algos.keys()}\n    algorithm_color_mapping = {algo: sns.color_palette(\"bright\", len(algorithms))[i] for i, algo in enumerate(algorithms)}",
+        "peekOfCode": "def main():\n    parser = argparse.ArgumentParser(description='Process CSV files to compute metrics and generate plots.')\n    parser.add_argument('directory', type=str, help='Directory containing CSV files.')\n    parser.add_argument('--cumulative', action='store_true', help='Plot cumulative metrics.')\n    parser.add_argument('--use_latex', action='store_true', help='Use LaTeX for rendering text in plots.')\n    args = parser.parse_args()\n    logger.info(\"Starting script.\")\n    grouped_files = group_files(args.directory)\n    results = process_files(grouped_files, args.cumulative)\n    algorithms = {algo for _, oracles in results.items() for _, algos in oracles.items() for algo in algos.keys()}",
+        "detail": "scripts.plot_active_learning",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "kind": 5,
+        "importPath": "scripts.plot_active_learning",
+        "description": "scripts.plot_active_learning",
+        "peekOfCode": "logger = logging.getLogger(__name__)\ndef parse_filename(filename):\n    \"\"\"\n    Parses the filename to extract datasetName, foldID, LearningAlgorithm, Oracle, and timestamp.\n    Expected filename format: datasetName_foldID_LearningAlgorithm_Oracle_timestamp.csv\n    \"\"\"\n    logger.debug(f\"Parsing filename: {filename}\")\n    basename = os.path.basename(filename)\n    pattern = r'^(.*?)_(.*?)_(.*?)_(.*?)_(.*?)\\.csv$'\n    match = re.match(pattern, basename)",
         "detail": "scripts.plot_active_learning",
         "documentation": {}
     },

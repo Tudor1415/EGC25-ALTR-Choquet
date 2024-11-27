@@ -2,27 +2,16 @@
   "experimentName": "ExpMaximumEntropy",
   "dataDirectory": "data/folds/",
   "loggingPath": "results/",
-  "datasetNames": [
-    "bank",
-    "credit",
-    "dota",
-    "toms",
-    "connect",
-    "mushroom"
-  ],
+  "datasetNames": ["bank", "credit", "dota", "toms", "connect", "mushroom"],
   "measureNames": ["yuleQ", "cosine", "kruskal", "pavillon", "certainty"],
   "oracles": ["ChiSquaredOracle", "InformationGainOracle"],
-  "learningToRankAlgorithms": [
-    "KappalabIterative"
-  ],
-  "querySelectionAlgorithms": [
-    "UncertaintyMining"
-  ],
+  "learningToRankAlgorithms": ["KappalabIterative"],
+  "querySelectionAlgorithms": ["UncertaintyMining"],
   "querySelectionConfigPaths": [
     "experimental_configs/testing/query_selection/uncertainty_mining_conf.json"
   ],
   "nbLearningIterations": 100,
-  "nbParallelThreads": 100,
+  "nbParallelThreads": 2,
   "testSetSize": 1000,
   "maxAntSize": 10,
   "logToFile": true

@@ -1,34 +1,18 @@
 package tools.train.iterative;
 
-import java.io.File;
-import java.util.List;
-import java.io.FileWriter;
-import java.util.ArrayList;
-import java.io.IOException;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.CancellationException;
-
-import com.google.gson.Gson;
-
-import lombok.Setter;
-import tools.ranking.Ranking;
-import tools.utils.FunctionUtil;
-import tools.ranking.RankingsProvider;
-import tools.alternatives.IAlternative;
-import tools.train.IterativeRankingLearn;
-import tools.utils.kappalab.KappalabInput;
-import tools.utils.kappalab.KappalabUtils;
-import tools.utils.kappalab.KappalabOutput;
-import tools.utils.kappalab.KappalabRScriptCaller;
-import tools.functions.singlevariate.FunctionParameters;
-import tools.functions.singlevariate.ISinglevariateFunction;
-import tools.functions.singlevariate.Choquet.ChoquetMobiusScoreFunction;
 
 /**
  * Kappalab Iterative is a learning class that communicates with an R script
@@ -42,7 +26,28 @@ import tools.functions.singlevariate.Choquet.ChoquetMobiusScoreFunction;
  *                         learning (e.g., the Choquet integral).
  * @param nbMeasures       Number of measures/criteria in the ranking.
  */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+
+import lombok.Setter;
+import tools.alternatives.IAlternative;
+import tools.functions.singlevariate.FunctionParameters;
+import tools.functions.singlevariate.ISinglevariateFunction;
+import tools.functions.singlevariate.Choquet.ChoquetMobiusScoreFunction;
+import tools.ranking.Ranking;
+import tools.ranking.RankingsProvider;
+import tools.train.IterativeRankingLearn;
+import tools.utils.FunctionUtil;
+import tools.utils.kappalab.KappalabInput;
+import tools.utils.kappalab.KappalabOutput;
+import tools.utils.kappalab.KappalabRScriptCaller;
+import tools.utils.kappalab.KappalabUtils;
+
 public class KappalabIterative extends IterativeRankingLearn {
+
+    private static final Logger logger = LoggerFactory.getLogger(KappalabIterative.class.getSimpleName());
 
     @Setter
     private double delta = 1e-6d;
@@ -51,7 +56,6 @@ public class KappalabIterative extends IterativeRankingLearn {
     @Setter
     private String approachType = "Generalized Least Squares";
 
-    // Class variables to store the last KappalabInput and FunctionParameters
     private KappalabInput lastKappalabInput;
     private FunctionParameters lastFunctionParameters;
 
@@ -60,52 +64,39 @@ public class KappalabIterative extends IterativeRankingLearn {
         super(nbIterations, rankingsProvider, func, nbMeasures);
     }
 
-    /**
-     * Logs the current KappalabInput to a specified directory as a JSON file.
-     * Creates the directory if it does not exist.
-     */
     public void logCurrentKappalabInput(String directoryPath, String filePath) throws IOException {
         if (lastKappalabInput == null) {
-            System.err.println("No KappalabInput available to log.");
+            logger.warn("No KappalabInput available to log.");
             return;
         }
 
         logObjectToFile(directoryPath, filePath, lastKappalabInput);
     }
 
-    /**
-     * Logs the current FunctionParameters to a specified directory as a JSON file.
-     * Creates the directory if it does not exist.
-     */
     public void logCurrentFunctionParameters(String directoryPath, String filePath) throws IOException {
         if (lastFunctionParameters == null) {
-            System.err.println("No FunctionParameters available to log.");
+            logger.warn("No FunctionParameters available to log.");
             return;
         }
 
         logObjectToFile(directoryPath, filePath, lastFunctionParameters);
     }
 
-    /**
-     * Helper method to log an object to a JSON file.
-     */
     private void logObjectToFile(String directoryPath, String filePath, Object object) throws IOException {
-        // Ensure the directory exists
         File directory = new File(directoryPath);
         if (!directory.exists() && !directory.mkdirs()) {
+            logger.error("Failed to create directory: {}", directoryPath);
             throw new IOException("Failed to create directory: " + directoryPath);
         }
 
-        // Create the JSON file
         File jsonFile = new File(filePath);
 
-        // Write the object to the JSON file
         Gson gson = new Gson();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFile))) {
             writer.write(gson.toJson(object));
         }
 
-        System.out.println("Logged to: " + filePath);
+        logger.info("Logged to: {}", filePath);
     }
 
     @Override
@@ -137,6 +128,7 @@ public class KappalabIterative extends IterativeRankingLearn {
                 timeRemaining -= time;
 
                 if (output.getErrorMessages() != null) {
+                    logger.error("Kappalab R script returned error messages: {}", (Object) output.getErrorMessages());
                     return FunctionUtil.logErrorFunction(output.getErrorMessages());
                 }
 
@@ -146,16 +138,19 @@ public class KappalabIterative extends IterativeRankingLearn {
                 return lastFunctionParameters;
 
             } catch (TimeoutException e) {
+                logger.error("Timeout while waiting for Kappalab R script to finish.", e);
                 String[] errorMessages = { "Timeout while waiting for Kappalab R script to finish." };
                 return FunctionUtil.logErrorFunction(errorMessages);
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                logger.error("Execution was interrupted.", e);
                 String[] errorMessages = { "Execution was interrupted." };
                 return FunctionUtil.logErrorFunction(errorMessages);
 
             } catch (ExecutionException | CancellationException e) {
                 String causeMessage = e.getCause() != null ? e.getCause().getMessage() : "Unknown error";
+                logger.error("Execution or cancellation error: {}", causeMessage, e);
                 String[] errorMessages = { "Execution or cancellation error: " + causeMessage };
                 return FunctionUtil.logErrorFunction(errorMessages);
 
@@ -164,6 +159,7 @@ public class KappalabIterative extends IterativeRankingLearn {
             }
         }
 
+        logger.error("Failed to learn from rankings. All alternatives have been removed.");
         String[] errorMessages = { "Failed to learn from rankings. All alternatives have been removed." };
         return FunctionUtil.logErrorFunction(errorMessages);
     }
