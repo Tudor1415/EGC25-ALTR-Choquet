@@ -49,59 +49,61 @@ public class ActiveLearningExperimentRunner {
 
         try {
             for (String datasetName : config.getDatasetNames()) {
+
                 try {
-                    // Load all the folds for the current dataset
-                    String dataPath = config.getDataDirectory() + datasetName;
-                    List<Dataset> trainDatasets = loadDatasets(dataPath, "/train/", datasetName);
-                    List<Dataset> testDatasets = loadDatasets(dataPath, "/test/", datasetName);
+                    executor.submit(() -> {
+                        // Load all the folds for the current dataset
+                        String dataPath = config.getDataDirectory() + datasetName;
+                        List<Dataset> trainDatasets = loadDatasets(dataPath, "/train/", datasetName);
+                        List<Dataset> testDatasets = loadDatasets(dataPath, "/test/", datasetName);
 
-                    int numFolds = trainDatasets.size();
+                        int numFolds = trainDatasets.size();
 
-                    // Process each fold
-                    for (int foldIdx = 0; foldIdx < numFolds; foldIdx++) {
-                        final int currentFoldIdx = foldIdx;
+                        // Process each fold
+                        for (int foldIdx = 0; foldIdx < numFolds; foldIdx++) {
+                            final int currentFoldIdx = foldIdx;
 
-                        try {
-                            Dataset trainDataset = trainDatasets.get(currentFoldIdx);
-                            Dataset testDataset = testDatasets.get(currentFoldIdx);
+                            try {
+                                Dataset trainDataset = trainDatasets.get(currentFoldIdx);
+                                Dataset testDataset = testDatasets.get(currentFoldIdx);
 
-                            // Initialize Oracles
-                            List<ArtificialOracle> trainOracles = initializeOracles(trainDataset);
-                            List<ArtificialOracle> testOracles = initializeOracles(testDataset);
+                                // Initialize Oracles
+                                List<ArtificialOracle> trainOracles = initializeOracles(trainDataset);
+                                List<ArtificialOracle> testOracles = initializeOracles(testDataset);
 
-                            if (trainOracles.size() != testOracles.size()) {
-                                throw new IllegalArgumentException(
-                                        "Mismatch between the number of train and test oracles.");
-                            }
+                                if (trainOracles.size() != testOracles.size()) {
+                                    throw new IllegalArgumentException(
+                                            "Mismatch between the number of train and test oracles.");
+                                }
 
-                            // Run experiment for each pair of train and test oracles
-                            for (int i = 0; i < trainOracles.size(); i++) {
-                                ArtificialOracle trainOracle = trainOracles.get(i);
-                                ArtificialOracle testOracle = testOracles.get(i);
+                                // Run experiment for each pair of train and test oracles
+                                for (int i = 0; i < trainOracles.size(); i++) {
+                                    ArtificialOracle trainOracle = trainOracles.get(i);
+                                    ArtificialOracle testOracle = testOracles.get(i);
 
-                                // Initialize selection strategies and learning algorithms
-                                List<QuerySelectionConfig> selectionStrategies = initializeQuerySelectionConfigs(
-                                        trainOracle, trainDataset, config.getMeasureNames());
+                                    // Initialize selection strategies and learning algorithms
+                                    List<QuerySelectionConfig> selectionStrategies = initializeQuerySelectionConfigs(
+                                            trainOracle, trainDataset, config.getMeasureNames());
 
-                                List<IterativeRankingLearn> learningAlgorithms = initializeLearningAlgorithms(
-                                        selectionStrategies);
+                                    List<IterativeRankingLearn> learningAlgorithms = initializeLearningAlgorithms(
+                                            selectionStrategies);
 
-                                // Submit task to executor
-                                executor.submit(() -> {
+                                    // Run the experiment on the current fold
                                     runExperimentOnFold(datasetName, trainDataset, testDataset, testOracle,
                                             learningAlgorithms,
                                             currentFoldIdx);
-                                });
+                                }
+                            } catch (Exception e) {
+                                logger.error("Error processing fold {} of dataset {}: {}", currentFoldIdx, datasetName,
+                                        e.getMessage(), e);
                             }
-                        } catch (Exception e) {
-                            logger.error("Error processing fold {} of dataset {}: {}", foldIdx, datasetName,
-                                    e.getMessage(), e);
                         }
-                    }
+                    });
                 } catch (Exception e) {
                     logger.error("Error processing dataset {}: {}", datasetName, e.getMessage(), e);
                 }
             }
+
             executor.shutdown();
 
             if (!executor.awaitTermination(24, TimeUnit.HOURS)) {
@@ -117,14 +119,22 @@ public class ActiveLearningExperimentRunner {
         }
     }
 
-    private List<Dataset> loadDatasets(String dataDirectory, String subDirectory, String datasetName) throws Exception {
+    private List<Dataset> loadDatasets(String dataDirectory, String subDirectory, String datasetName) {
         synchronized (DatasetLoader.class) {
             String datasetPath = dataDirectory + subDirectory;
-            List<Dataset> datasets = DatasetLoader.loadDatasetsFromDirectory(datasetPath, datasetName);
+            List<Dataset> datasets = new ArrayList<>();
 
-            if (datasets.isEmpty()) {
-                throw new Exception("No datasets found in directory: " + datasetPath);
+            try {
+                datasets = DatasetLoader.loadDatasetsFromDirectory(datasetPath, datasetName);
+
+                if (datasets.isEmpty()) {
+                    logger.error("No datasets found in directory: {}", datasetPath);
+                }
+            } catch (Exception e) {
+                logger.error("Failed to load datasets from directory {}: {}",
+                        datasetPath, e.getMessage(), e);
             }
+
             return datasets;
         }
     }
@@ -309,8 +319,8 @@ public class ActiveLearningExperimentRunner {
             logger.info("Loaded {} test rules on dataset {} fold {}",
                     testRuleList.size(), datasetName, foldIdx);
 
-            // Step 2: Run Learning Algorithms in Parallel
-            algorithms.parallelStream().forEach(algorithm -> {
+            // Step 2: Run Learning Algorithms Sequentially
+            for (IterativeRankingLearn algorithm : algorithms) {
                 try {
                     // Step 2.1: Initialize Experiment Logger for the current algorithm
                     String loggingPath = config.getLoggingPath() + config.getExperimentName();
@@ -349,8 +359,8 @@ public class ActiveLearningExperimentRunner {
                     }
 
                     logger.info(
-                            "Completed experiments for train oracle: {} on fold {} of dataset: {}",
-                            oracle.getTYPE(), foldIdx + 1, datasetName);
+                            "Completed algorithm: {} with oracle: {} on fold {} of dataset: {}",
+                            algorithm.getName(), oracle.getTYPE(), foldIdx, datasetName);
 
                 } catch (IllegalArgumentException e) {
                     logger.error(
@@ -372,10 +382,11 @@ public class ActiveLearningExperimentRunner {
                     logger.warn("Skipping fold {} for dataset: {} due to unexpected error.",
                             foldIdx + 1, datasetName);
                 }
-            });
+            }
 
         } catch (Exception e) {
             logger.error("Error during fold {}: {}", foldIdx + 1, e.getMessage(), e);
         }
     }
+
 }

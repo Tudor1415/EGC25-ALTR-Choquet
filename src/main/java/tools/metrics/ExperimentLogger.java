@@ -3,6 +3,8 @@ package tools.metrics;
 import java.io.File;
 import java.util.Set;
 import java.util.List;
+import java.time.ZoneId;
+import java.time.Instant;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,7 +82,10 @@ public class ExperimentLogger implements PropertyChangeListener {
      */
     public void writeSampleToCSV(List<DecisionRule> rules, List<Double> scoresApprox, List<Double> scoresOracle,
             String fileName) {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        Instant now = Instant.now();
+        String timestamp = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+                .withZone(ZoneId.systemDefault())
+                .format(now) + String.format("%09d", now.getNano());
         String filePath = loggingPath + "/" + fileName + "_" + timestamp + ".csv";
 
         try (FileWriter writer = new FileWriter(filePath)) {
@@ -167,16 +172,16 @@ public class ExperimentLogger implements PropertyChangeListener {
      * Writes the iteration times to a CSV file.
      */
 
-     public void writeIterationTimes(String oracleName) {
+    public void writeIterationTimes(String oracleName) {
         String directoryPath = loggingPath;
 
         if (loggingPath.endsWith("/samples/")) {
             directoryPath = loggingPath.substring(0, loggingPath.length() - "/samples/".length());
         }
-        
+
         directoryPath = directoryPath + "/timing/";
         String filename = directoryPath + learningAlgName + "_" + oracleName + "_times_fold_" + foldIdx + ".csv";
-    
+
         // Ensure the directory exists
         File directory = new File(directoryPath);
         if (!directory.exists()) {
@@ -185,7 +190,7 @@ public class ExperimentLogger implements PropertyChangeListener {
                 return;
             }
         }
-    
+
         // Write the file
         try (FileWriter writer = new FileWriter(filename)) {
             writer.write("Iteration,Time(ms)\n");

@@ -6,12 +6,12 @@
   "measureNames": ["yuleQ", "cosine", "kruskal", "pavillon", "certainty"],
   "oracles": ["ChiSquaredOracle", "InformationGainOracle"],
   "learningToRankAlgorithms": ["KappalabIterative"],
-  "querySelectionAlgorithms": ["UncertaintyMining"],
+  "querySelectionAlgorithms": ["MaximumEntropySampling"],
   "querySelectionConfigPaths": [
-    "experimental_configs/testing/query_selection/uncertainty_mining_conf.json"
+    "experimental_configs/testing/query_selection/maximum_entropy_sampling_conf.json"
   ],
   "nbLearningIterations": 100,
-  "nbParallelThreads": 2,
+  "nbParallelThreads": 1,
   "testSetSize": 1000,
   "maxAntSize": 10,
   "logToFile": true
