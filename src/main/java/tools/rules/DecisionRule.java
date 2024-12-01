@@ -345,6 +345,50 @@ public class DecisionRule implements IRule {
     }
 
     /**
+     * Adds a set of item indices to set X and updates set Z, covers, and
+     * frequencies accordingly.
+     *
+     * @param itemValues The set of itemValues to be added to set X.
+     */
+    public void addToX(Set<String> itemValues) {
+        // Add all items to the antecedent cover and item set
+        this.itemsInX.addAll(itemValues);
+
+        SparseBitSet fromMemoryX = memoizedCoverX.get(this.itemsInX);
+        if (fromMemoryX != null) {
+            // Use memoized cover if available
+            this.coverX = SetUtil.copyCover(fromMemoryX);
+        } else {
+            // Compute cover for all added items using the AND operation
+            for (String itemValue : itemValues) {
+                this.coverX.and(this.itemsMap.get(itemValue));
+            }
+            // Memoize the computed cover
+            memoizedCoverX.put(SetUtil.copySet(this.itemsInX), SetUtil.copyCover(this.coverX));
+        }
+
+        // Compute the new union
+        computeItemsInZ();
+
+        SparseBitSet fromMemoryZ = memoizedCoverZ.get(this.itemsInZ);
+        if (fromMemoryZ != null) {
+            // Use memoized cover if available
+            this.coverZ = SetUtil.copyCover(fromMemoryZ);
+        } else {
+            // Compute cover for all added items in set Z using the AND operation
+            for (String itemValue : itemValues) {
+                this.coverZ.and(this.itemsMap.get(itemValue));
+            }
+            // Memoize the computed cover
+            memoizedCoverZ.put(SetUtil.copySet(this.itemsInZ), SetUtil.copyCover(this.coverZ));
+        }
+
+        // Update frequencies for sets X and Z
+        updateFrequencies(new String[] { "x", "z" });
+        updateAlternative();
+    }
+
+    /**
      * Removes an item index from set X and updates set Z and frequencies
      * accordingly.
      *
@@ -365,6 +409,31 @@ public class DecisionRule implements IRule {
         } else {
             // Throw a RuntimeException if the itemValue is not in set X
             throw new RuntimeException("Item index " + itemValue + " not found in item set X.");
+        }
+    }
+
+    /**
+     * Removes a set of item indices from set X and updates set Z and frequencies
+     * accordingly.
+     *
+     * @param itemValues The set of itemValues to be removed from set X.
+     * @throws RuntimeException If any specified itemValue is not present in set X.
+     */
+    public void removeFromX(Set<String> itemValues) {
+        // Check if all itemValues are present in item set X
+        if (this.itemsInX.containsAll(itemValues)) {
+            // Remove all specified indices from X
+            this.itemsInX.removeAll(itemValues);
+            computeItemsInZ();
+
+            // Update covers and frequencies for directions X and Z
+            computeNewCover(new String[] { "x", "z" });
+            updateFrequencies(new String[] { "x", "z" });
+            updateAlternative();
+        } else {
+            Set<String> missingItems = new HashSet<>(itemValues);
+            missingItems.removeAll(this.itemsInX);
+            throw new RuntimeException("Item indices " + missingItems + " not found in item set X.");
         }
     }
 
@@ -395,17 +464,17 @@ public class DecisionRule implements IRule {
         if (obj == null || getClass() != obj.getClass())
             return false;
         DecisionRule rule = (DecisionRule) obj;
-    
+
         // First, check if itemsInX and Y are equal
         if (Objects.equals(itemsInX, rule.itemsInX) && Objects.equals(Y, rule.Y)) {
             return true;
         }
-        
+
         // Second, check if frequencies are equal
         return Objects.equals(freqX, rule.getFreqX()) &&
-               Objects.equals(freqY, rule.getFreqY()) &&
-               Objects.equals(freqZ, rule.getFreqZ());
-    }    
+                Objects.equals(freqY, rule.getFreqY()) &&
+                Objects.equals(freqZ, rule.getFreqZ());
+    }
 
     @Override
     public int hashCode() {

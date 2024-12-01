@@ -10,6 +10,7 @@ import java.util.Set;
 import tools.data.Dataset;
 import tools.functions.singlevariate.ISinglevariateFunction;
 import tools.rules.DecisionRule;
+import tools.utils.RuleUtil;
 
 public class BatchSampler extends SMAS {
 
@@ -20,25 +21,27 @@ public class BatchSampler extends SMAS {
 
     @Override
     protected void processAntecedents(DecisionRule rule, String[] antecedentItems, int[] antecedentShuffle) {
+        DecisionRule bestRule = RuleUtil.simpleCopy(rule);
+        double bestScore = getValidRuleScore(bestRule);
 
-        // Random skip to half the rule
         skipToHalf(rule);
 
-        for (int i = 0; i < antecedentShuffle.length; ++i) {
+        for (int i = 0; i < antecedentShuffle.length; i++) {
             updateNormalization(rule);
 
             double originalScore = getValidRuleScore(rule);
-
             rule.addToX(antecedentItems[antecedentShuffle[i]]);
-
             double modifiedScore = getValidRuleScore(rule);
 
-            if (isCertaintyHighEnough(modifiedScore, originalScore)) {
-                break;
+            if (!isCertaintyHighEnough(modifiedScore, originalScore)) {
+                rule.removeFromX(antecedentItems[antecedentShuffle[i]]);
+            } else if (modifiedScore > bestScore) {
+                bestRule = RuleUtil.simpleCopy(rule);
+                bestScore = modifiedScore;
             }
-
-            rule.removeFromX(antecedentItems[antecedentShuffle[i]]);
         }
+
+        rule = bestRule;
     }
 
     private void skipToHalf(DecisionRule rule) {
@@ -46,15 +49,12 @@ public class BatchSampler extends SMAS {
 
         double originalScore = getValidRuleScore(rule);
 
-        for (String item : halfAntecedent)
-            rule.removeFromX(item);
+        rule.removeFromX(halfAntecedent);
 
         double modifiedScore = getValidRuleScore(rule);
 
-        if (!isCertaintyHighEnough(modifiedScore, originalScore)) {
-            for (String item : halfAntecedent)
-                rule.addToX(item);
-        }
+        if (!isCertaintyHighEnough(modifiedScore, originalScore)) 
+            rule.addToX(halfAntecedent);
     }
 
     public static <T> List<Set<T>> splitSet(Set<T> originalSet) {

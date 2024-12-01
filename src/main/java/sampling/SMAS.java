@@ -126,36 +126,51 @@ public class SMAS implements ISampler {
     }
 
     protected void processAntecedents(DecisionRule rule, String[] antecedentItems, int[] antecedentShuffle) {
+        DecisionRule bestRule = RuleUtil.simpleCopy(rule);
+        double bestScore = getValidRuleScore(bestRule);
+    
         for (int i = 0; i < antecedentShuffle.length; i++) {
             updateNormalization(rule);
-
+    
             double originalScore = getValidRuleScore(rule);
             rule.addToX(antecedentItems[antecedentShuffle[i]]);
             double modifiedScore = getValidRuleScore(rule);
-
-            if (isCertaintyHighEnough(modifiedScore, originalScore)) {
-                break;
+    
+            if (!isCertaintyHighEnough(modifiedScore, originalScore)) {
+                rule.removeFromX(antecedentItems[antecedentShuffle[i]]);
+            } else if (modifiedScore > bestScore) {
+                bestRule = RuleUtil.simpleCopy(rule);
+                bestScore = modifiedScore;
             }
-
-            rule.removeFromX(antecedentItems[antecedentShuffle[i]]);
         }
+    
+        rule = bestRule;
     }
+    
 
     protected void processConsequents(DecisionRule rule, String[] consequentItems, int[] consequentShuffle) {
+        DecisionRule bestRule = RuleUtil.simpleCopy(rule);
+        double bestScore = getValidRuleScore(bestRule);
+    
         for (int i = 0; i < consequentShuffle.length; i++) {
             updateNormalization(rule);
-
+    
             double originalScore = getValidRuleScore(rule);
             String originalConsequent = rule.getY();
             rule.setY(consequentItems[consequentShuffle[i]]);
             double modifiedScore = getValidRuleScore(rule);
-
+    
             if (isCertaintyHighEnough(modifiedScore, originalScore)) {
-                break;
+                if (modifiedScore > bestScore) {
+                    bestRule = RuleUtil.simpleCopy(rule);
+                    bestScore = modifiedScore;
+                }
+            } else {
+                rule.setY(originalConsequent);
             }
-
-            rule.setY(originalConsequent);
         }
+    
+        rule = bestRule;
     }
 
     protected boolean isCertaintyHighEnough(double modifiedScore, double originalScore) {

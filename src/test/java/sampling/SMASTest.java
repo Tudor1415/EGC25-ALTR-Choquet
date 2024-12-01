@@ -60,17 +60,17 @@ class SMASTest {
         int maxIterations = 10000;
         String outputDir = "src/test/output/";
 
-        List<BatchSampler> samplerList = new ArrayList<>();
-        // Create BatchSampler instance with specific normalization method
-        BatchSampler BatchSamplerSD = new BatchSampler(maxIterations, dataset, scoringFunction,
+        List<SMAS> samplerList = new ArrayList<>();
+        // Create SMAS instance with specific normalization method
+        SMAS SMASSD = new SMAS(maxIterations, dataset, scoringFunction,
                 measureNames,
                 1);
-        // BatchSampler BatchSamplerBT = new BatchSampler(maxIterations, dataset, scoringFunction, measureNames,
+        // SMAS SMASBT = new SMAS(maxIterations, dataset, scoringFunction, measureNames,
         //         1);
-        // BatchSampler BatchSamplerTh = new BatchSampler(maxIterations, dataset, scoringFunction, measureNames,
+        // SMAS SMASTh = new SMAS(maxIterations, dataset, scoringFunction, measureNames,
         //         1);
 
-        samplerList.add(BatchSamplerSD);
+        samplerList.add(SMASSD);
         // samplerList.add(BatchSamplerBT);
         // samplerList.add(BatchSamplerTh);
 
