@@ -20,6 +20,8 @@ sampling_experiment/output_plots/*/*.png
 sampling_experiment/output_plots/*/*.svg
 
 results/*
+results_ablation/*
+results_cosine/*
 
 sampling_experiment/output_plots/ratio_1\:1/*.pdf
 sampling_experiment/output_plots/ratio_1\:10/*.png

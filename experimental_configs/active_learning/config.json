@@ -1,0 +1,5 @@
+{
+    "maxParallelExperiments": 3,
+    "experimentConfigFolderPath": "experimental_configs/active_learning/experiments",
+    "waitTimeBetweenExp": 30000
+}

@@ -1,4 +1,3 @@
-# main.py
 import re
 import os
 import argparse
@@ -8,16 +7,42 @@ from plotting import plot_results
 from java_runner import run_extract_sample
 from maven_utils import get_maven_classpath
 from model_evaluation import evaluate_datasets
+from concurrent.futures import ProcessPoolExecutor
+
+def process_dataset(dataset_file, dat_file_folder, output_base, nb_samples, timeout_minutes, measure, weights, execution_classpath, project_root):
+    dataset_name = dataset_file
+    # Construct the output directory
+    dataset_name_without_extension = os.path.splitext(dataset_name)[0]
+    output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples', measure) + "/"
+
+    # Ensure the output directory exists
+    os.makedirs(output_directory, exist_ok=True)
+
+    # Run the Java program
+    run_extract_sample(
+        dataset_name,
+        dat_file_folder,
+        output_directory,
+        nb_samples,
+        timeout_minutes,
+        measure,
+        weights,
+        execution_classpath,
+        project_root
+    )
+
 
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Run ExtractSample Java program on datasets.')
-    parser.add_argument('--nb_samples', type=int, default=1_000_000, help='Number of samples to generate')
-    parser.add_argument('--top_k', type=int, default=90, help='Top samples to compute the metrics on')
+    parser.add_argument('--nb_samples', type=int, default=100_000, help='Number of samples to generate')
+    parser.add_argument('--top_k', type=int, default=1, help='Top samples to compute the metrics on')
+    parser.add_argument('--parallel_jobs', type=int, default=21, help='Number of parallel jobs')
     args = parser.parse_args()
 
     nb_samples = args.nb_samples
     top_k = args.top_k
+    parallel_jobs = args.parallel_jobs
 
     # Paths relative to the scripts folder
     exp_dir = os.path.dirname(os.path.abspath(__file__))
@@ -28,7 +53,7 @@ def main():
     output_base = os.path.join(project_root, 'results', 'decision_tree_sampling')
 
     # Timeout in minutes
-    timeout_minutes = 30
+    timeout_minutes = 240
 
     # Measure names and weights (can be adjusted as needed)
     measure_names = ['phi', 'IG']
@@ -42,20 +67,19 @@ def main():
 
     # Step 2: Iterate over all dataset files in the dataset folder and run Java program
     for measure in measure_names:
-        for dataset_file in os.listdir(dat_file_folder):
-            if os.path.isfile(os.path.join(dat_file_folder, dataset_file)):
-                dataset_name = dataset_file
-                # Construct the output directory
-                dataset_name_without_extension = os.path.splitext(dataset_name)[0]
-                output_directory = os.path.join(output_base, dataset_name_without_extension, 'samples', measure) + "/"
+        dataset_files = [
+            file for file in os.listdir(dat_file_folder)
+            if os.path.isfile(os.path.join(dat_file_folder, file))
+        ]
 
-                # Ensure the output directory exists
-                os.makedirs(output_directory, exist_ok=True)
-                # Run the Java program
-                run_extract_sample(
-                    dataset_name,
+        # Run processing in parallel
+        with ProcessPoolExecutor(max_workers=parallel_jobs) as executor:
+            futures = [
+                executor.submit(
+                    process_dataset,
+                    dataset_file,
                     dat_file_folder,
-                    output_directory,
+                    output_base,
                     nb_samples,
                     timeout_minutes,
                     measure,
@@ -63,9 +87,14 @@ def main():
                     execution_classpath,
                     project_root
                 )
+                for dataset_file in dataset_files
+            ]
+
+            # Wait for all futures to complete
+            for future in futures:
+                future.result()
 
         results = evaluate_datasets(dat_file_folder, output_base, measure, top_k=top_k)
-
         plot_results(results, output_base, measure, top_k)
 
     print("Processing complete.")

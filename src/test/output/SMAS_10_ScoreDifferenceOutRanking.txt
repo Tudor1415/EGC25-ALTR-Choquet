@@ -1,17 +1,17 @@
 Maximizing Rule:
-Antecedents: [67, 100, 68, 3, 58, 16, 83, 65]
-Consequent: 145
-Measures: 1,317192  1,000000  0,000123  0,999998  0,000000  
-Score: 0.6634626495398956
+Antecedents: [193, 672, 794, 355, 234, 556, 116, 319, 97, 164, 483, 285, 242, 365, 3, 169, 643, 6, 843, 767, 129, 724, 803, 63, 573, 177, 134, 651, 377, 895, 533, 139, 777, 734, 339, 33, 77, 39, 181, 260, 187, 146, 664, 346, 786, 621, 149, 105, 425, 505, 629, 85, 706]
+Consequent: 912
+Measures: 0.000058  
+Score: 5.80114995752945E-5
 
 Cumulative Distribution of Score History (10 bins):
-Bin  1 [    0,6634 -     0,6634]: 7 (Cumulative: 7)
-Bin  2 [    0,6634 -     0,6634]: 0 (Cumulative: 7)
-Bin  3 [    0,6634 -     0,6634]: 0 (Cumulative: 7)
-Bin  4 [    0,6634 -     0,6635]: 0 (Cumulative: 7)
-Bin  5 [    0,6635 -     0,6635]: 0 (Cumulative: 7)
-Bin  6 [    0,6635 -     0,6635]: 0 (Cumulative: 7)
-Bin  7 [    0,6635 -     0,6635]: 0 (Cumulative: 7)
-Bin  8 [    0,6635 -     0,6635]: 0 (Cumulative: 7)
-Bin  9 [    0,6635 -     0,6635]: 0 (Cumulative: 7)
-Bin 10 [    0,6635 -     0,6635]: 3 (Cumulative: 10)
+Bin  1 [    0.0001 -     0.0001]: 10 (Cumulative: 10)
+Bin  2 [    0.0001 -     0.0001]: 0 (Cumulative: 10)
+Bin  3 [    0.0001 -     0.0001]: 0 (Cumulative: 10)
+Bin  4 [    0.0001 -     0.0001]: 0 (Cumulative: 10)
+Bin  5 [    0.0001 -     0.0001]: 0 (Cumulative: 10)
+Bin  6 [    0.0001 -     0.0001]: 0 (Cumulative: 10)
+Bin  7 [    0.0001 -     0.0001]: 0 (Cumulative: 10)
+Bin  8 [    0.0001 -     0.0001]: 0 (Cumulative: 10)
+Bin  9 [    0.0001 -     0.0001]: 0 (Cumulative: 10)
+Bin 10 [    0.0001 -     0.0001]: 0 (Cumulative: 10)

@@ -33,7 +33,7 @@ public class SMAS implements ISampler {
     protected @Getter @Setter double smoothCounts = DEFAULT_SMOOTH_COUNTS;
     protected @Getter RandomUtil random = new RandomUtil();
     protected @Getter List<Double> scoreHistory = new ArrayList<>();
-    protected @Getter @Setter Normalizer.NormalizationMethod normalizationTechnique = NormalizationMethod.MIN_MAX_SCALING;
+    protected @Getter @Setter Normalizer.NormalizationMethod normalizationTechnique = NormalizationMethod.NO_NORMALIZATION;
     protected @Getter Normalizer normalizer = new Normalizer();
 
     public SMAS(int maximumIterations, Dataset dataset, CertaintyFunction outRankingCertainty,
@@ -63,7 +63,7 @@ public class SMAS implements ISampler {
 
         // Erase the memory before each run
         topRules = new TreeSet<>(Comparator.comparingDouble(this::getValidRuleScore).reversed());
-        
+
         topRules.add(RuleUtil.simpleCopy(getRule()));
 
         for (int i = 0; i < getMaximumIterations(); i++) {
@@ -126,37 +126,53 @@ public class SMAS implements ISampler {
     }
 
     protected void processAntecedents(DecisionRule rule, String[] antecedentItems, int[] antecedentShuffle) {
+        DecisionRule bestRule = RuleUtil.simpleCopy(rule);
+        double bestScore = getValidRuleScore(bestRule);
+    
         for (int i = 0; i < antecedentShuffle.length; i++) {
             updateNormalization(rule);
-
+    
             double originalScore = getValidRuleScore(rule);
             rule.addToX(antecedentItems[antecedentShuffle[i]]);
             double modifiedScore = getValidRuleScore(rule);
-
-            if (isCertaintyHighEnough(modifiedScore, originalScore)) {
-                break;
+    
+            if (!isCertaintyHighEnough(modifiedScore, originalScore)) {
+                rule.removeFromX(antecedentItems[antecedentShuffle[i]]);
+            } else if (modifiedScore > bestScore) {
+                bestRule = RuleUtil.simpleCopy(rule);
+                bestScore = modifiedScore;
             }
-
-            rule.removeFromX(antecedentItems[antecedentShuffle[i]]);
         }
+    
+        rule = bestRule;
     }
+    
 
     protected void processConsequents(DecisionRule rule, String[] consequentItems, int[] consequentShuffle) {
+        DecisionRule bestRule = RuleUtil.simpleCopy(rule);
+        double bestScore = getValidRuleScore(bestRule);
+    
         for (int i = 0; i < consequentShuffle.length; i++) {
             updateNormalization(rule);
-
+    
             double originalScore = getValidRuleScore(rule);
             String originalConsequent = rule.getY();
             rule.setY(consequentItems[consequentShuffle[i]]);
             double modifiedScore = getValidRuleScore(rule);
-
+    
             if (isCertaintyHighEnough(modifiedScore, originalScore)) {
-                break;
+                if (modifiedScore > bestScore) {
+                    bestRule = RuleUtil.simpleCopy(rule);
+                    bestScore = modifiedScore;
+                }
+            } else {
+                rule.setY(originalConsequent);
             }
-
-            rule.setY(originalConsequent);
         }
+    
+        rule = bestRule;
     }
+    
 
     protected boolean isCertaintyHighEnough(double modifiedScore, double originalScore) {
         double certainty = modifiedScore == 0 ? 0 : getOutRankingCertainty().computeScore(modifiedScore, originalScore);

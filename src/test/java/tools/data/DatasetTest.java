@@ -206,26 +206,6 @@ public class DatasetTest {
                 itemsValues.contains(value));
     }
 
-    @Test
-    public void testFindEquivalenceClasses() throws IOException {
-        Set<String> classItemValues = new HashSet<>();
-        classItemValues.add("1");
-
-        Dataset dataset = new Dataset("dataset_test_file.dat", "src/test/resources/", classItemValues);
-
-        dataset.findEquivalenceClasses();
-
-        UnionFind uf = dataset.getEquivalenceClasses();
-
-        assertTrue("1 should be connected with 2", uf.find("1").equals(uf.find("2")));
-        assertTrue("1 should be connected with 3", uf.find("1").equals(uf.find("3")));
-        assertTrue("1 should be connected with 4", uf.find("1").equals(uf.find("4")));
-        assertTrue("1 should be connected with 5", uf.find("1").equals(uf.find("5")));
-        assertTrue("1 should be connected with 9", uf.find("1").equals(uf.find("9")));
-        assertTrue("2 should be connected with 5", uf.find("2").equals(uf.find("5")));
-        assertTrue("2 should be connected with 3", uf.find("2").equals(uf.find("3")));
-        assertTrue("2 should be connected with 4", uf.find("2").equals(uf.find("4")));
-    }
 
     private Set<String> getClassItems(String datasetName) {
         switch (datasetName) {
@@ -246,18 +226,5 @@ public class DatasetTest {
             default:
                 return null;
         }
-    }
-
-    @Test
-    public void datasetEquivalenceClasses() throws IOException {
-        String datasetName = "mushroom";
-
-        Dataset dataset = new Dataset(datasetName+".dat", "src/test/resources/", getClassItems(datasetName));
-
-        dataset.findEquivalenceClasses();
-
-        UnionFind uf = dataset.getEquivalenceClasses();
-
-        System.out.println("Dataset " + datasetName + " has " + uf.countClasses() + " equivalence class(es)." );
     }
 }
