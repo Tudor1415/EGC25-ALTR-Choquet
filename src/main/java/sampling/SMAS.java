@@ -125,10 +125,7 @@ public class SMAS implements ISampler {
         return rule;
     }
 
-    protected void processAntecedents(DecisionRule rule, String[] antecedentItems, int[] antecedentShuffle) {
-        DecisionRule bestRule = RuleUtil.simpleCopy(rule);
-        double bestScore = getValidRuleScore(bestRule);
-    
+     protected void processAntecedents(DecisionRule rule, String[] antecedentItems, int[] antecedentShuffle) {
         for (int i = 0; i < antecedentShuffle.length; i++) {
             updateNormalization(rule);
     
@@ -136,22 +133,25 @@ public class SMAS implements ISampler {
             rule.addToX(antecedentItems[antecedentShuffle[i]]);
             double modifiedScore = getValidRuleScore(rule);
     
-            if (!isCertaintyHighEnough(modifiedScore, originalScore)) {
-                rule.removeFromX(antecedentItems[antecedentShuffle[i]]);
-            } else if (modifiedScore > bestScore) {
-                bestRule = RuleUtil.simpleCopy(rule);
-                bestScore = modifiedScore;
+            if (isCertaintyHighEnough(modifiedScore, originalScore)) {
+                updateTopRules();
             }
-        }
     
-        rule = bestRule;
+            rule.removeFromX(antecedentItems[antecedentShuffle[i]]);
+        }
     }
     
-
-    protected void processConsequents(DecisionRule rule, String[] consequentItems, int[] consequentShuffle) {
-        DecisionRule bestRule = RuleUtil.simpleCopy(rule);
-        double bestScore = getValidRuleScore(bestRule);
+    protected void updateTopRules() {
+        if (!topRules.contains(getRule())) {
+            topRules.add(RuleUtil.simpleCopy(getRule()));
     
+            if (topRules.size() > topK) {
+                topRules.pollLast();
+            }
+        }
+    }
+    
+    protected void processConsequents(DecisionRule rule, String[] consequentItems, int[] consequentShuffle) {
         for (int i = 0; i < consequentShuffle.length; i++) {
             updateNormalization(rule);
     
@@ -161,18 +161,12 @@ public class SMAS implements ISampler {
             double modifiedScore = getValidRuleScore(rule);
     
             if (isCertaintyHighEnough(modifiedScore, originalScore)) {
-                if (modifiedScore > bestScore) {
-                    bestRule = RuleUtil.simpleCopy(rule);
-                    bestScore = modifiedScore;
-                }
-            } else {
-                rule.setY(originalConsequent);
+                updateTopRules();
             }
+    
+            rule.setY(originalConsequent);
         }
-    
-        rule = bestRule;
     }
-    
 
     protected boolean isCertaintyHighEnough(double modifiedScore, double originalScore) {
         double certainty = modifiedScore == 0 ? 0 : getOutRankingCertainty().computeScore(modifiedScore, originalScore);

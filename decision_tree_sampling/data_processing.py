@@ -1,7 +1,6 @@
+import numpy as np
 from collections import Counter
 from sklearn.tree import DecisionTreeClassifier
-import numpy as np
-from aix360.algorithms.rule_induction import BRCG
 
 def extract_decision_tree_rules(X, y, max_depth = 5):
     """
