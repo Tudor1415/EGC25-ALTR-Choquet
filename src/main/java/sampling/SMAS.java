@@ -125,46 +125,46 @@ public class SMAS implements ISampler {
         return rule;
     }
 
-     protected void processAntecedents(DecisionRule rule, String[] antecedentItems, int[] antecedentShuffle) {
+    protected void processAntecedents(DecisionRule rule, String[] antecedentItems, int[] antecedentShuffle) {
         for (int i = 0; i < antecedentShuffle.length; i++) {
             updateNormalization(rule);
-    
+
             double originalScore = getValidRuleScore(rule);
             rule.addToX(antecedentItems[antecedentShuffle[i]]);
             double modifiedScore = getValidRuleScore(rule);
-    
+
             if (isCertaintyHighEnough(modifiedScore, originalScore)) {
                 updateTopRules();
+            } else {
+                rule.removeFromX(antecedentItems[antecedentShuffle[i]]);
             }
-    
-            rule.removeFromX(antecedentItems[antecedentShuffle[i]]);
         }
     }
-    
+
     protected void updateTopRules() {
         if (!topRules.contains(getRule())) {
             topRules.add(RuleUtil.simpleCopy(getRule()));
-    
+
             if (topRules.size() > topK) {
                 topRules.pollLast();
             }
         }
     }
-    
+
     protected void processConsequents(DecisionRule rule, String[] consequentItems, int[] consequentShuffle) {
         for (int i = 0; i < consequentShuffle.length; i++) {
             updateNormalization(rule);
-    
+
             double originalScore = getValidRuleScore(rule);
             String originalConsequent = rule.getY();
             rule.setY(consequentItems[consequentShuffle[i]]);
             double modifiedScore = getValidRuleScore(rule);
-    
+
             if (isCertaintyHighEnough(modifiedScore, originalScore)) {
                 updateTopRules();
+            } else {
+                rule.setY(originalConsequent);
             }
-    
-            rule.setY(originalConsequent);
         }
     }
 
